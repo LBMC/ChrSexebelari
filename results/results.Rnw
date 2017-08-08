@@ -1,0 +1,146 @@
+\documentclass[a4paper]{article}
+\usepackage{pdfpages}
+\usepackage[latin9]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{color}
+\usepackage{Sweave}
+\usepackage{pdfcolmk}
+\usepackage{multicol}
+\usepackage{ifthen}
+\usepackage{multido}
+\usepackage[labelformat = empty]{caption}
+\usepackage{fancyhdr}
+\usepackage[top=1.2cm, bottom=0.5cm, right=1.3cm, left=1.3cm]{geometry}
+\usepackage{lastpage}
+\pagestyle{fancy}
+\usepackage{fancyvrb}
+\usepackage{etoolbox}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true, %set true if you want colored links
+    linktoc=all,     %set to all if you want both sections and subsections linked
+    linkcolor=blue,  %choose some color if you want links to stand out
+}
+\makeatletter
+\patchcmd{\FV@ListVSpace}{\@topsepadd\topsep}{}{}  %% Reduce space between Sin/output
+\makeatother
+\fancyhf{}
+\rhead{\date\today \hspace{0.2cm}- \thepage/\pageref{LastPage}}
+\renewcommand{\footrulewidth}{0pt}
+\newcommand{\bslash}{\textbackslash}
+
+\begin{document}
+
+\setkeys{Gin}{width = 0.2\textwidth}  %% Auto position of the figures
+
+\setlength\parindent{0pt}
+\SweaveOpts{tidy = FALSE, keep.source = TRUE, keep.space = FALSE, keep.blank.space = FALSE, keep.comment = TRUE}
+\DefineVerbatimEnvironment{Sinput}{Verbatim}{formatcom = {\color[rgb]{0, 0, 0.56}}}
+\DefineVerbatimEnvironment{Soutput}{Verbatim}{formatcom = {\color[rgb]{0.56, 0, 0}}}
+
+<< options, echo = FALSE >>=
+options(prompt = ">", continue = "...", width = 100)
+@
+
+\title{Characterization of sexual chromosome in M. belari}
+\author{Claire Burny, Manon Grosmaire, Marie Sémon, Laurent Modolo, Marie Delattre}
+\maketitle
+\tableofcontents
+\newpage
+
+\section{Settings and sourcing useful functions}
+
+When and where we are :
+<<dir-and-date, echo = FALSE>>=
+date();
+R.Version()$version.string;
+getwd();
+@
+
+We source here useful functions and load necessary packages and tools.
+
+<<load-pack-scripts>>=
+##### Packages #####
+require(xtable)
+@
+
+\setkeys{Gin}{width = 0.2\textwidth}  
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Data post-processing}
+
+Data were sequenced on 1 lane on the same flowcell with an Illumina Hiseq platform 100-read length paired-end in IGBMC (S17140 project). 
+MRDR5 (14,082,768 reads after adapters removal were delivered) and MRDR6 (99,954,850 reads after adapters removal were delivered) paired files were first used as they contain resp. female and male DNA in a pool sequencing. 
+The encoding of quality values is Sanger / Illumina 1.9 format.\\
+See doc directory for reports produced by IGBMC. Forward (R1) reads are less than reverse (R2) reads. 
+
+
+%%%%%%%%%%%%%%%%%%%
+\subsection{FastQC}
+
+\begin{itemize}
+  \item adapter trimming. This was performed by IGBMC and not done, indeed there is no contamination in adapter as regards FASTQ reports. 
+  \item quality of sequencing. Data are good quality data: mean(QPhred), both ends. There is a slightly decrease of quality at the end of the reads but not major issue and we keep all reads whatherver the position on the flowcell. Reverse reads have lower quality and we need to make pairs again.  
+  \item bp content. FIrst 6 bp are biased in bp content probabky due to experimental protocole (random hexamer fixation on DNA fragments), this does not required trimming. However, there is 2 modes as regards the GC content and IGBMC reports previously noted a contamination in E. coli (= worms food). This suggest to mapp against E. coli to remove this contamination.
+\end{itemize}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Data cleaning}
+
+We used cutadapt to trim N ends and tails qith quality lower than 20. No other filter was applied. 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Make paired end reads}
+
+We used Helene Polveche scripts to make pairs and run this on PSMN.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Contaminatino removal}
+
+We mapped reads against E. coli reference genome. 
+
+% ..............................................................
+\subsubsection{Creation of an index for E. coli reference genome}
+
+E. coli strain K12 fasa and gff3 were downloaded resp. with wget from \texttt{ftp://ftp.ensemblgenomes.org/pub/bacteria/release-36/fasta/bacteria\_0\_collection/escherichia\_coli\_str\_k\_12\_substr\_mg1655/dna/Escherichia\_coli\_str\_k\_12\_substr\_mg1655.ASM584v2.dna.chromosome.Chromosome.fa.gz} and \texttt{ftp://ftp.ensemblgenomes.org/pub/bacteria/release-36/gff3/bacteria\_0\_collection/escherichia\_coli\_str\_k\_12\_substr\_mg1655/Escherichia\_coli\_str\_k\_12\_substr\_mg1655.ASM584v2.36.gff3.gz} on 8th April 2017.
+
+\begin{verbatim}
+bowtie2-build Escherichia_coli_str_k_12_substr_mg1655.ASM584v2.dna.chromosome.Chromosome.fa.gz EcoliK12_index 
+\end{verbatim}
+
+
+
+%%%%%%%%%%%%%%%%
+\section{Mapping}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Variants calling}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Coverage of female/male pools}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\end{document}
