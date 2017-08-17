@@ -29,9 +29,10 @@ READS2="/scratch/cburny/Input_Ecoli/2017_08_08_MRDR5_trim_R2.fastq.gz"
 OUTPUT="/scratch/cburny/Output_Ecoli/2017_08_08_MRDR5_trim.bam"
 REPORT_MAPPING="/scratch/cburny/Output_Ecoli/2017_08_08_MRDR5_trim_flagstat.txt"
 REPORT_BOWTIE2="/scratch/cburny/Output_Ecoli/2017_08_08_MRDR5_trim_bowtie2.txt"
+OUTPUT_UNALIGNED="/scratch/cburny/Output_Ecoli/2017_08_08_MRDR5_trim"
 
 # Mapping and BAM output
-bowtie2 $OPTION -p 16 -x $INDEX -1 $READS1 -2 $READS2 2> $REPORT_BOWTIE2 | samtools view -Sb - > $OUTPUT 
+bowtie2 $OPTION -p 16 -x $INDEX -1 $READS1 -2 $READS2 --un--conc-gz $OUTPUT_UNALIGNED 2> $REPORT_BOWTIE2 | samtools view -Sb - > $OUTPUT 
 
 # Mapping report
 samtools flagstat $OUTPUT > $REPORT_MAPPING
