@@ -32,13 +32,13 @@
   }
 
   ##### histogram of mean coverage: !!!!! do function !!!!!
-  mu <- sapply(c("male", "female"), function(x) {tmp <- res[which(res$sex == x), ]; c(mean(tmp$mean.depth), mean(tmp$mean.depth.eff))})
-  mu.df <- data.frame(sex = c("male", "female"), mu.mean.depth = mu[1,], mu.mean.depth.eff = mu[2,])
-  pdf(paste(where, "hist_mean_coverage_over_contig_sex.pdf", sep = ""))
-  ggplot(data = res, aes(mean.depth, fill = sex)) + geom_histogram(binwidth = 5, alpha = .5) + geom_vline(data = mu.df, aes(xintercept=mu.mean.depth, color = sex),inherit.aes =F, linetype="dashed")+xlab("mean depth over contigs")
+  cov.male <- read.table(paste(where, "summary_coverage_contig_inter_male.txt", sep = ""), sep = " " , h = T) 
+  pdf(paste(where, "hist_mean_coverage_over_contig_male.pdf", sep = ""))
+  ggplot(data = cov.male, aes(mean.depth)) + geom_histogram(binwidth = 5, alpha = .5) + theme_bw() + geom_vline(aes(xintercept=mean(mean.depth)), linetype="dashed")+xlab("mean depth over contigs") +
+  scale_x_continuous(limits=c(0, 100)) 
   dev.off()
   pdf(paste(where, "hist_mean_coverage_eff_over_contig_sex.pdf", sep = ""))
-  ggplot(data = res, aes(mean.depth.eff, fill = sex)) + geom_histogram(binwidth = 5, alpha = .5) + geom_vline(data = mu.df, aes(xintercept=mu.mean.depth.eff, color = sex),inherit.aes =F, linetype="dashed")+xlab("mean eff depth over contigs")
+  ggplot(data = res, aes(mean.depth.eff, fill = sex)) + geom_histogram(binwidth = 5, alpha = .5) + theme_bw() + geom_vline(data = mu.df, aes(xintercept=mu.mean.depth.eff, color = sex),inherit.aes =F, linetype="dashed")+xlab("mean eff depth over contigs")
   dev.off()
   
   ##### mean cov female vs male: !!!!! do function !!!!!
