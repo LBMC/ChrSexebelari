@@ -1,0 +1,4 @@
+##### CoverageStat #####
+CoverageStat <- function(){
+  
+}
