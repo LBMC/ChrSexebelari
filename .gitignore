@@ -18,5 +18,8 @@ work/*
 *.log
 *.tex
 *.toc
+*.out
+*.pdf
+src/RNASeq/*
 
 
