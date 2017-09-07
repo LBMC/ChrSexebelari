@@ -1,5 +1,6 @@
 data/* 
-bin/* 
+bin/*
+doc/* 
 results/coverage/*
 results/kallisto_fragmentlength/*
 results/mapping/*
@@ -7,4 +8,7 @@ results/mapping_Ecoli/*
 results/quality_control/*
 .nextflow* 
 trace.txt* 
-
+CITATION
+CONTRIBUTING
+LICENCE
+README
