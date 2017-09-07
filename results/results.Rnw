@@ -190,19 +190,19 @@ MRDR5 (female) & \textcolor{red}{44,438,574 (71.63\%)} & 43,990,245; 87,980,490 
  & & 771,810 (0.88\%) aligned exactly 1 time  & & & & \\
  & & 1,715,918 (1.95\%) aligned >1 times  & & & & \\
  \hline
- MRDR5 (female) & \textcolor{red}{46,087,121 (74.28\%)} & 45,198,057; 90,396,114 mates   & 13,065,484 (21.06\%) & 2,888,779 (4.66\%) & \textcolor{red}{29.78\%} & \\
+ MRDR5 (female) & \textcolor{red}{46,087,121 (74.28\%)} & 45,198,057; 90,396,114 mates   & 13,065,484 (21.06\%) & 2,888,779 (4.66\%) & \textcolor{red}{29.78\%} & 30,894,810\\
  end-to-end mode & & 87,125,031 (96.38\%) aligned 0 times  & & & & \\
  & & 1,607,309 (1.78\%) aligned exactly 1 time  & & & & \\
  & & 1,663,064 (1.84\%) aligned >1 times  & & & & \\
  \hline
  \hline
 MRDR6 (male) & \textcolor{red}{39,369,431 (78.77\%)} & 39,153,767; 78,307,534 mates make  & 5,396,751 (10.80\%)& 5,211,243 (10.43\%) & \textcolor{red}{23.12\%} & 15,489,753 \\
- & & 76,845,148 (98.13\%) aligned 0 times  & & & & \\
+local mode  & & 76,845,148 (98.13\%) aligned 0 times  & & & & \\
  & & 423,581 (0.54\%) aligned exactly 1 time  & & & & \\
 & & 1,038,805 (1.33\%) aligned >1 times  & & & & \\
  \hline
-MRDR6 (male) & \textcolor{red}{40,499,223 (81.04\%)} & 40,073,150; 80,146,300 mates make  & 6,760,393 (13.53\%)& 2,717,809 (5.44\%) & \textcolor{red}{21.92\%} &  \\
- & & 78,049,169 (97.38\%) aligned 0 times  & & & & \\
+MRDR6 (male) & \textcolor{red}{40,499,223 (81.04\%)} & 40,073,150; 80,146,300 mates make  & 6,760,393 (13.53\%)& 2,717,809 (5.44\%) & \textcolor{red}{21.92\%} & 15,832,251  \\
+end-to-end mode & & 78,049,169 (97.38\%) aligned 0 times  & & & & \\
  & & 899,287 (1.12\%) aligned exactly 1 time  & & & & \\
 & & 1,197,844 (1.49\%) aligned >1 times  & & & & \\
 \end{tabular}
@@ -214,10 +214,13 @@ On the first rows for each sample, result are presented after applying local and
 % ....................................
 \subsection{FastQC on mapped reads}
 
-\textcolor{blue}{QC\_Mapped\_Mbelari\_fastq.sh}\\
+\textcolor{blue}{QC\_Mapped\_Mbelari\_fastq.sh} allows to extract reads from BAM.\\
 
-I needed to extract filtered mapped reads. 
+\begin{itemize}
+  \item bp content. First 6 bp are really less biased in bp content probably than after QC on whole set of reads. However, there are still 2 modes as regards the GC content especially for male sample (MRDR6) with a second mode around 41\% of GC (MRD6 male sample is in orange and MRDR5 female sample is in green). 
+\end{itemize}
 
+\includegraphics{{./mapping/mapped/multiqc/fastqc_per_sequence_gc_content_plot}.png}
 
 
 % ......................
