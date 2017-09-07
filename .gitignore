@@ -12,3 +12,11 @@ CITATION
 CONTRIBUTING
 LICENCE
 README
+todo.txt
+work/*
+*.aux
+*.log
+*.tex
+*.toc
+
+
