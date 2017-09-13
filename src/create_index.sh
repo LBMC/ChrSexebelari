@@ -1,6 +1,6 @@
 #!/bin/bash
 ### nom du job:
-#$ -N index_coli_bowtie2
+#$ -N index_bowtie2
 ### file d'attente:
 #$ -q E5-2670deb128*
 ### parallel environnement & nslots
@@ -20,12 +20,8 @@ module load Base/psmn
 module load Bowtie/2.2.4
 module list
 
-REF_GZ="/scratch/cburny/Input_Ecoli/Ecoli_K12.fa.gz"
-REF_FA="/scratch/cburny/Input_Ecoli/Ecoli_K12.fa"
-INDEX="/scratch/cburny/Input_Ecoli/Ecoli_K12"
-OUTPUT_INDEX="/scratch/cburny/Input_Ecoli/index_bowtie2.txt"
-
-# Build index
-gzip -dc $REF_GZ > $REF_FA
+REF_FA="/scratch/cburny/Ref_Mbelari/2017_09_08_combined_belari_coli.fasta"
+INDEX="/scratch/cburny/Ref_Mbelari/Ref_Mbelari_Ecoli"
+OUTPUT_INDEX="/scratch/cburny/Ref_Mbelari/Ref_Mbelari_Ecoli_index_bowtie2.txt"
 
 bowtie2-build $REF_FA $INDEX > $OUTPUT_INDEX
