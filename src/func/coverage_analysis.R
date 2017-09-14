@@ -37,10 +37,10 @@
   dev.off()
 
  pdf("results/coverage/raw_coverage_per_bp_contig.pdf", w = 7, h = 4)
-  m <- sample(1:dim(cov.female.bed)[1], 10000)
+  m <- sample(1:dim(cov.female.bed)[1], 100000)
   par(mfrow = c(1, 2))
-  hist(cov.female.bed$V3[m], main = "female", xlab = "10,000 coverage per bp per contig")	
-  hist(cov.male.bed$V3[m], main = "male", xlab = "10,000 coverage per per bp contig")
+  hist(cov.female.bed$V3[m], main = "female", xlab = "100,000 coverage per bp per contig")	
+  hist(cov.male.bed$V3[m], main = "male", xlab = "100,000 coverage per per bp contig")
   dev.off()
 
   # Ratio of normalized coverage per contig
