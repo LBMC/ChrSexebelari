@@ -1,6 +1,8 @@
-/usr/local/bin/FastQC/fastqc --outdir results/mapping/mapped/fastqc results/mapping/mapped/2017_08_08_MRDR6_trim_Mbelari_SOFT_end2end_mapped_sort.fastq
+#$ -S /bin/bash
+### change logs folder
+#$ -o /home/cburny/logs
+#$ -e /home/cburny/logs
 
-/usr/local/bin/FastQC/fastqc --outdir results/mapping/mapped/fastqc results/mapping/mapped/2017_08_08_MRDR5_trim_Mbelari_SOFT_end2end_mapped_sort.fastq
+module load nextflow/0.25.1
 
-/usr/local/bin/multiqc results/mapping/mapped/fastqc/*_fastqc.zip -o results/mapping/mapped/multiqc
-
+nextflow src/pipe/quality_control.nf -c src/nextflow.config -profile quality_control_sge --fastq_files "results/mapping/mapped/*.fastq.gz"
