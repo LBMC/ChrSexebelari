@@ -5,4 +5,4 @@
 
 module load nextflow/0.25.1
 
-nextflow src/pipe/quality_control.nf -c src/nextflow.config -profile quality_control_sge --fastq_files "results/mapping/mapped/*.fastq.gz" --paired true --quality_threshold 20 --do_adapter_removal false
+nextflow src/pipe/quality_control.nf -c src/nextflow.config -profile quality_control_sge --fastq_files "results/mapping/mapped/*.fastq.gz"
