@@ -7,7 +7,7 @@ python3 src/dnaPipeTE/dnaPipeTE.py \
 -output results/dnaPipeTE/female_JU2817 \
 -cpu 12 \
 -genome_size 162071050 \
--genome_coverage 15 \
+-genome_coverage 22.9 \
 -sample_number 5
 
 # male_JU2817
@@ -17,5 +17,5 @@ python3 src/dnaPipeTE/dnaPipeTE.py \
 -output results/dnaPipeTE/male_JU2817 \
 -cpu 12 \
 -genome_size 162071050 \
--genome_coverage 15 \
+-genome_coverage 13.6 \
 -sample_number 5
