@@ -75,6 +75,7 @@ We source here useful functions and load necessary packages and tools.
   \item samtools version 1.3.1
   \item tablet version 1.16.09.06
   \item picard 2.3.0
+  \item vcftools 0.1.15
 \end{enumerate}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -286,6 +287,24 @@ Coverage values were first normalized  by dividing median coverage value in each
 %%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Variants calling}
 
+I get vcftools on 14th sept from:
+\begin{verbatim}
+git clone https://github.com/vcftools/vcftools.git
+cd vcftools
+./autogen.sh
+./configure
+make
+make install
+\end{verbatim}
+I copy-paste cd ./vcftools executable in src/cpp/ within the cloned remote to bin of our project. To get the version of vcftools, I type ./vcftools (0.1.15).\\
+
+I get rtg-tools on 15th sept from:
+\begin{verbatim}
+ git clone https://github.com/RealTimeGenomics/rtg-tools.git
+\end{verbatim}
+and I followed the instruction on README.md to get a rtg executable. To get the version of rtg-tools, I type ./rtg (6.8.4).
+
+
 % --------------------------------
 \subsection{Remove PCR duplicates} 
 
@@ -303,13 +322,18 @@ female against belari / after rmdup &  male against belari / after rmdup & descr
 % -----------------------------------------------------
 \subsection{Raw variants calling with samtools mpileup} 
 
-I obtained a summary of variants found using vcftools, vcf-stats toolbox. 
+\textcolor{blue}{remove\_duplicates.sh}\\
 
 \begin{tabular}{c|c|c|c|c} 
  & male & female \\
  \hline
-SNP & 648,864 & 815,270 \\
-INDEL & 86,908 & 122,626\\
+SNPs & 648,864 & 815,270 \\
+Insertions & 54,445 & 80,454\\
+Deletions & 32,446 & 42,138\\
+MNPs & 0 & 0 \\
+het/hom ratio (total / SNPs / Insertions / Deletions) & 3.4 / 3.87 / 1.5 / 1.6 & 8.77 / 11.75 / 2.61 / 3.32 \\
+Insertions/Deletions ratio & 1.68 & 1.91 \\
+SNP Transitions/Transversions & 1.45 & 1.44 \\
 \end{tabular}
 
 
