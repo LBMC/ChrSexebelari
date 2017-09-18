@@ -20,15 +20,15 @@
 # initialiser environnement Module
 source /usr/share/modules/init/bash
 module use /applis/PSMN/Modules
-module load Base/psmn
-module load picard/2.3.0
+module load Base/psmn 
+module load picard/2.3.0 
 module list
 umask 002
 
 PICARDHOME="/applis/PSMN/generic/picard/2.3.0"
-REF="/scratch/cburny/Ref_Mbelari/Mesorhabditis_belari_JU2817_v2.scaffolds.fa.repeatmasker.masked"
-REFOUT="/home/cburny/Ref_Mbelari/Mbelari.genomic.dict"
+REF="/scratch/cburny/Ref_Mbelari/Mesorhabditis_belari_JU2817_v2_scaffolds_repeatmasker_masked.fa"
+REFOUT="/scratch/cburny/Ref_Mbelari/Mesorhabditis_belari_JU2817_v2_scaffolds_repeatmasker_masked.dict"
 
-java -jar $PICARDHOME/picard.jar CreateSequenceDictionary REFERENCE=$REF OUTPUT=$REFOUT
+java -jar $PICARDHOME/picard.jar CreateSequenceDictionary R=$REF O= $REFOUT
 
 echo "termine"
