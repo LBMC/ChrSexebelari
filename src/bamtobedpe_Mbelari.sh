@@ -21,7 +21,14 @@ module load BEDtools/2.24.0
 module list
 
 OPTION="-bedpe"
-INPUT="/scratch/cburny/Output_Mbelari/2017_08_08_MRDR5_trim_Mbelari_SOFT_mapped_qual_sort_read_names.bam"
-OUTPUT="/scratch/cburny/Output_Mbelari/2017_08_08_MRDR5_trim_Mbelari_SOFT_mapped_qual_sort.bedpe"
+INPUT_BAM="/scratch/cburny/Output_Mbelari/2017_09_13_MRDR5_trim_Mbelari_mapped.bam"
+OUTPUT="/scratch/cburny/Output_Mbelari/2017_09_13_MRDR5_trim_Mbelari_mapped_sort_read_names"
+INPUTcov="/scratch/cburny/Output_Mbelari/2017_09_13_MRDR5_trim_Mbelari_mapped_sort_read_names.bam"
+OUTPUTcov="/scratch/cburny/Output_Mbelari/2017_09_13_MRDR5_trim_Mbelari_mapped_sort_read_names.bedpe"
 
-bedtools bamtobed $OPTION -i $INPUT > $OUTPUT
+##### Order by read names 
+samtools sort -n $INPUT_BAM $OUTPUT &&\
+
+bedtools bamtobed $OPTION -i $INPUTcov > $OUTPUTcov
+
+

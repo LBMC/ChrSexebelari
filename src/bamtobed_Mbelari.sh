@@ -1,6 +1,5 @@
-#$ -S /bin/bash
 ### nom du job:
-#$ -N sort_belari
+#$ -N bam_to_bed_belari
 ### file d'attente:
 #$ -q E5-2670deb128*
 ### parallel environnement & nslots
@@ -17,10 +16,11 @@
 source /usr/share/modules/init/bash
 module use /applis/PSMN/Modules
 module load Base/psmn
-module load SAMtools/1.3.1
+module load BEDtools/2.24.0
 module list
 
-INPUT_BAM="/scratch/cburny/Output_Mbelari/2017_08_08_MRDR5_trim_Mbelari_SOFT_mapped_qual.bam"
-OUTPUT="/scratch/cburny/Output_Mbelari/2017_08_08_MRDR5_trim_Mbelari_SOFT_mapped_qual_sort_read_names"
+INPUTcov="/scratch/cburny/Output_Mbelari/2017_09_13_MRDR5_trim_Mbelari_mapped_sort.bam"
+GENOMEsizes="/scratch/cburny/Ref_Mbelari/2017_09_13_Mbelari.sizes.genome"
+OUTPUTcov="/scratch/cburny/Output_Mbelari/2017_09_13_MRDR5_trim_Mbelari_mapped_sort.bed"
 
-samtools sort -n $INPUT_BAM $OUTPUT
+bedtools genomecov -d -ibam $INPUTcov -g $GENOMEsizes > $OUTPUTcov

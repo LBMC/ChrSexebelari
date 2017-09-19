@@ -23,8 +23,12 @@ module list
 INPUT_BAM="/scratch/cburny/Output_Mbelari/2017_08_08_MRDR5_trim_Mbelari_SOFT_mapped_qual.bam"
 OUTPUT="/scratch/cburny/Output_Mbelari/2017_08_08_MRDR5_trim_Mbelari_SOFT_mapped_qual_sort"
 OUTPUT_BAM="/scratch/cburny/Output_Mbelari/2017_08_08_MRDR5_trim_Mbelari_SOFT_mapped_qual_sort.bam"
+REPORT_IDX="/scratch/cburny/Output_Mbelari/2017_08_08_MRDR5_trim_Mbelari_SOFT_mapped_qual_sort_idxstats.txt"
 
 samtools sort $INPUT_BAM $OUTPUT
 samtools index $OUTPUT_BAM
+
+##### idxstats
+samtools idxstats $OUTPUT_BAM > $REPORT_IDX
 
 

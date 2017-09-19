@@ -44,7 +44,7 @@ options(prompt = ">", continue = "...", width = 100)
 @
 
 \title{Characterization of sexual chromosome in M. belari}
-\author{Claire Burny, Manon Grosmaire, Marie Sémon, Laurent Modolo, Marie Delattre}
+\author{Claire Burny, Manon Grosmaire,  Laurent Modolo, Marie Delattre}
 \maketitle
 \tableofcontents
 \newpage
@@ -74,6 +74,8 @@ We source here useful functions and load necessary packages and tools.
   \item bowtie2 version 2.24
   \item samtools version 1.3.1
   \item tablet version 1.16.09.06
+  \item picard 2.3.0
+  \item vcftools 0.1.15
 \end{enumerate}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -88,6 +90,7 @@ Informations as regards the assembly, from Duncan Berger (see data directory):\\
 Total Repeat Content (bp; \% of Genome) &	53,367,850 bp (32.93\%)\\
 Number of Scaffolds	& 16,312\\
 Total assembly length (bp) exclusing Ns &	160,921,675 bp\\
+Total assembly length (bp) &	162,071,050 bp (obtained from 2017\_09\_13\_Mbelari.sizes.genome)\\
 GC content (\%)	& \textcolor{red}{36.96\%} \\
 \end{tabular}
 
@@ -103,7 +106,12 @@ Happy to help with any questions or concerns.
 Regards,
 Duncan
 \end{verbatim}
-Assembly was downloaded on 7th september 2017 from \texttt{https://www.ncbi.nlm.nih.gov/assembly?LinkName=bioproject\_assembly\_all&from\_uid=41499}, following \texttt{https://www.ncbi.nlm.nih.gov/genome/doc/ftpfaq/} instructions.
+
+\begin{verbatim}
+Assembly was downloaded on 7th september 2017 from 
+https://www.ncbi.nlm.nih.gov/assembly?LinkName=bioproject_assembly_all&from_uid=41499
+following https://www.ncbi.nlm.nih.gov/genome/doc/ftpfaq/ instructions.
+ \end{verbatim}
  
 % --------------------------
 \subsection{Pool sequencing}
@@ -117,13 +125,15 @@ MRDR5 (14,082,768 reads after adapters removal were delivered) and MRDR6 (99,954
 
 \begin{itemize}
   \item adapter trimming. This was performed by IGBMC and not done, indeed there is no contamination in adapter as regards FASTQ reports. 
-  \item quality of sequencing. It is good quality data as regards mean(QPhred)>30 whathever the position within the read on both ends. There is a slightly decrease of quality at the end of the reads and near the middle of the read but this is not a major issue and we keep all reads whathever the position on the flowcell. Reverse reads have lower quality.  
+  \item quality of sequencing. It is good quality data as regards mean(QPhred)>30 wathever the position within the read on both ends. There is a slightly decrease of quality at the end of the reads and near the middle of the read but this is not a major issue and we keep all reads whathever the position on the flowcell. Reverse reads have lower quality.  
   \item bp content. First 6 bp are biased in bp content probably due to experimental protocol (random hexamer fixation on DNA fragments), this does not required trimming. However, there are 2 modes as regards the GC content and IGBMC reports previously noted a contamination in E. coli (= worms food) at an extend of 30\% (this seems quite underestimated as regards the histogram of GC \% within reads). This suggest to map against E. coli which contains 50.8\% GC to at least quantify this contamination. There is also a bias between male and female bp content apparently.
 \end{itemize}
 
+Female pool:\\
 \includegraphics{{./quality_control/2017_09_13_female_JU2817_fastqc_per_base_sequence_content_plot}.pdf}
 \includegraphics{{./quality_control/2017_09_13_female_JU2817_fastqc_per_sequence_gc_content_plot}.png}\\
 
+Male pool:\\
 \includegraphics{{./quality_control/2017_09_13_male_JU2817_fastqc_per_base_sequence_content_plot}.pdf}
 \includegraphics{{./quality_control/2017_09_13_male_JU2817_fastqc_per_sequence_gc_content_plot}.png}
 
@@ -152,7 +162,7 @@ MRDR6 (male) & 100,107,230 & 99,954,850 & 85.02 & 49,977,425 fwd - 49,977,425 re
 Manon Grosmaire told us that OP50 strain strain was used to feed the worms and it should be mapped against OP50 strain. \\
 
 \begin{enumerate}
-  \item \textbf{make and hybrid reference of M. belari and E. coli 0P50 genomes}: I created an hybrid reference as a single fasta file, saved as \texttt{data/ReferenceGenomes/combined_belari_coli.fasta.gz}. I will map each pool against this reference.\\
+  \item \textbf{make and hybrid reference of M. belari and E. coli 0P50 genomes}: I created an hybrid reference as a single fasta file, saved as \texttt{data/ReferenceGenomes/combined\_belari\_coli.fasta.gz}. I will map each pool against this reference.\\
     \textcolor{blue}{concatenate\_belari\_coli.sh}
 
   \item \textbf{estimate fragments length distribution}: \\
@@ -169,12 +179,8 @@ Manon Grosmaire told us that OP50 strain strain was used to feed the worms and i
 
   \item \textbf{summary of mapping: quantification of E. coli contamination} \\
   
-  \item
+  \item \textbf{QC on mapped reads}
 \end{enumerate}
-
-
-% -------------------------
-\subsection{Fragment length}
 
 
 % ..............................
@@ -182,7 +188,7 @@ Manon Grosmaire told us that OP50 strain strain was used to feed the worms and i
 
 For the moment, I kept all mapped reads. 
 
-\begin{tiny}
+\begin{small}
 \begin{tabular}{c|c|c}
  female against hybrid ref & male against hybrid ref & description \\
  \hline
@@ -202,15 +208,18 @@ For the moment, I kept all mapped reads.
 92.66\%  & 88.29\% & overall alignment rate\\
 \hline
 \end{tabular}
+\end{small}
 
-\begin{tiny}
+
+\begin{small}
 \begin{tabular}{c|c|c|c|c}
 female against belari & female against coli & male against belari & male gainst coli & description\\
 \hline
 37,074,990 & 77,897,919 & 22,004,523 & 66,241,076 & mapped \\
-34,427,332 (92.86\%) & 62,539,214 (80.28\%) & 20,238,012 (91.97\%) & 53,594,602 (80.91\%) &properly paired\\
+34,427,332 (92.86\%) & 62,539,214 (80.28\%) & 20,238,012 (91.97\%) & 53,594,602 (80.91\%) & properly paired\\
 \hline
 \end{tabular}
+\end{small}
 
 For each sample, result are presented after applying end-to-end mapping modes to avoid to deal with clipped regions. 
 
@@ -218,17 +227,19 @@ For each sample, result are presented after applying end-to-end mapping modes to
 % ....................................
 \subsection{FastQC on belari mapped reads}
 
-\textcolor{blue}{QC\_Mapped\_Mbelari\_fastq.sh} allows to extract reads from BAM.\\
+\textcolor{blue}{QC\_Mapped\_Mbelari\_fastq.sh}\\
 
 \begin{itemize}
-  \item bp content. First 6 bp are really less biased in bp content probably than after QC on whole set of reads. However, there are still 2 modes as regards the GC content especially for male sample (MRDR6) with a second mode around 41\% of GC (MRD6 male sample is in orange and MRDR5 female sample is in green). 
+  \item bp content. First 6 bp are really less biased in bp content probably than after QC on whole set of reads. However, there is no more 2 modes on GC content and expected GC\% of 36 for female and 37 for male.
 \end{itemize}
 
-\includegraphics{{./mapping/mapped/multiqc/fastqc_per_sequence_gc_content_plot}.png}
+\textbf{Female reads}:\\
+\includegraphics{{./mapping/mapped/2017_09_14_female_JU2817_fastqc_per_base_sequence_content_plot_mapped_belari}.png}
+\includegraphics{{./mapping/mapped/2017_09_14_female_JU2817_fastqc_per_sequence_gc_content_plot_mapped_belari}.png}\\
 
-
-% ......................
-\subsection{Insert size}
+\textbf{Male reads}:\\
+\includegraphics{{./mapping/mapped/2017_09_14_male_JU2817_fastqc_per_base_sequence_content_plot_mapped_belari}.png}
+\includegraphics{{./mapping/mapped/2017_09_14_male_JU2817_fastqc_per_sequence_gc_content_plot_mapped_belari}.png}
 
 
 % ----------------------------
@@ -239,9 +250,9 @@ For each sample, result are presented after applying end-to-end mapping modes to
 
 I produced coverage indicators from filtered (on quality) mapped BAM files. 
 \begin{itemize}
- \item Produce bedpe files: \textcolor{blue}{sort\_reads\_names\_Mbelari.sh}, \textcolor{red}{bamtobedpe\_Mbelari.sh}\\
-  \item Produce bed files with depth at each bp: \textcolor{red}{bamtobed\_Mbelari.sh}\\
- \item Open BAM with \texttt{tablet}: I open my sorted mapped BAM providing the soft masked reference with tablet. It provides a table with contig name, contig length and number of mapped reads saved in \texttt{./results/coverage/statistics\_contig\_tablet\_MRDRx\_trim\_Mbelari\_SOFT\_mapped\_sort.txt} files. It generates a  tab-separated files containing informations of the length of contig, the number of reads mapped and the coverage.
+ \item Produce bedpe files: \textcolor{red}{bamtobedpe\_Mbelari.sh}\\
+  \item Produce bed files with depth at each bp: \textcolor{red}{sort\_Mbelari.sh} \textcolor{red}{bamtobed\_Mbelari.sh}\\
+ \item Open BAM with \texttt{tablet}: I open my sorted mapped BAM providing the soft masked reference with tablet. It provides a table with contig name, contig length and number of mapped reads.
 \end{itemize}
 
 Contig length greatly varies:
@@ -251,53 +262,92 @@ Contig length greatly varies:
 \end{verbatim}
 
 \begin{small}
-\begin{tabular}{l|l|l|l|l|l|l}
-sample & nb contigs & average contig length & nb reads before/after filter & average reads per contig before/after filter & N50 & N90\\
+\begin{tabular}{l|l|l|l}
+sample & mean reads per contig  & median reads per contig & mean coverage (nb reads*size contig/size assembly)\\
 \hline
-MRDR5 (female) & 16,312 & 9,935 & 38,590,006 / 30,142,387 &  2,365 / 1,847 & 30,899 &5,483 \\
+MRDR5 (female) & 2,273 & 497 & 22.9 \\
  \hline 
-MRDR6 (male) & 16,312 & 9,935 & 23,109,702 / 15,489,753 & 1,416 / 949 & 30,899 &5,483 \\
+MRDR6 (male) & 1,349 & 295 & 13.6\\
 \end{tabular}
 \end{small}
-
-Library size is twice higher for female sample compared to male sample.
-
-
-% ....................................
-\subsubsection{Mean depth over contig}
-
-\textcolor{blue}{coverage\_analysis.sh}\\
 
 
 % ..................................
 \subsubsection{Normalized coverage}
 
+\textcolor{blue}{coverage\_analysis.sh}\\
 
+Coverage values were first normalized  by dividing median coverage value in each sample.
 
-%---------------------------------------
-\subsubsection{Coverage of female/male pools}
+\includegraphics{{./coverage/2017_09_14_norm_by_med_coverage_per_contig}.pdf}
 
+\includegraphics{{./coverage/2017_09_14_pos_norm_coverage_contigMBELA.09799}.pdf}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Variants calling}
 
+I get vcftools on 14th sept from:
+\begin{verbatim}
+git clone https://github.com/vcftools/vcftools.git
+cd vcftools
+./autogen.sh
+./configure
+make
+make install
+\end{verbatim}
+I copy-paste cd ./vcftools executable in src/cpp/ within the cloned remote to bin of our project. To get the version of vcftools, I type ./vcftools (0.1.15).\\
+
+I get rtg-tools on 15th sept from:
+\begin{verbatim}
+ git clone https://github.com/RealTimeGenomics/rtg-tools.git
+\end{verbatim}
+and I followed the instruction on README.md to get a rtg executable. To get the version of rtg-tools, I type ./rtg (6.8.4).
+
+
+% --------------------------------
+\subsection{Remove PCR duplicates} 
+
+\textcolor{blue}{remove\_duplicates.sh}\\
+
+\begin{tabular}{c|c|c|c|c}
+female against belari / after rmdup &  male against belari / after rmdup & description\\
+\hline
+37,074,990 / 35,389,848 &  22,004,523 / 20,066,441 & mapped \\
+34,427,332 (92.86\%) / 32,744,676 (92.53\%) & 20,238,012 (91.97\%) / 18,301,958 (91.21\%) &  properly paired\\
+\hline
+\end{tabular}
+
+
+% -----------------------------------------------------
+\subsection{Raw variants calling with samtools mpileup} 
+
+\textcolor{blue}{remove\_duplicates.sh}\\
+
+\begin{tabular}{c|c|c|c|c} 
+ & male & female \\
+ \hline
+SNPs & 648,864 & 815,270 \\
+Insertions & 54,445 & 80,454\\
+Deletions & 32,446 & 42,138\\
+MNPs & 0 & 0 \\
+het/hom ratio (total / SNPs / Insertions / Deletions) & 3.4 / 3.87 / 1.5 / 1.6 & 8.77 / 11.75 / 2.61 / 3.32 \\
+Insertions/Deletions ratio & 1.68 & 1.91 \\
+SNP Transitions/Transversions & 1.45 & 1.44 \\
+\end{tabular}
+
+
+% --------------------------------------------------
+\subsection{Realignment around INDELs using GATK}
+
+
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Repeat mask for female and male}
-
-
-
-
-
-
-
-
-
-
+ 
 
 
 
 \end{document}
-
