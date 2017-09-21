@@ -1,34 +1,18 @@
-#$ -S /bin/bash
-### nom du job:
-#$ -N call_var_belari
-### file d'attente:
-#$ -q E5-2670deb128*
-### parallel environnement & nslots
-#$ -pe openmp16 16
-### charger l'environnement utilisateur pour SGE
-#$ -cwd
-### exporte les variables d'environnement sur les noeuds d'exécution
-#$ -V
-### change logs folder
-#$ -o /home/cburny/logs
-#$ -e /home/cburny/logs
+#samtools 1.3
+#bcftools 1.3
 
-# initialiser environnement Module
-source /usr/share/modules/init/bash
-module use /applis/PSMN/Modules
-module load Base/psmn
-module load SAMtools/1.1
-module load BCFtools/1.1
-module list
+# To call variants: samtools mpileup -t DP,AD,ADF,ADR,SP,INFO/AD,INFO/ADF,INFO/ADR -ABQ0 -L 100000 -uf $1 $2 | bcftools call -mv --output-type z -p 0.1 -o $3
+samtools mpileup -t DP,AD,ADF,ADR,SP,INFO/AD,INFO/ADF,INFO/ADR -ABQ0 -L 100000 -uf data/ReferenceGenomes/Mesorhabditis_belari_JU2817_v2_scaffolds_repeatmasker_masked.fa results/mapping/without_duplicates/MRDR5_trim_Mbelari_mapped_rmdup.bam | bcftools call -mv --output-type z -p 0.1 -o results/call_var/MRDR5_trim_Mbelari_mapped_rmdup.vcf.gz &&\
 
-##### Run samtools and bcftools
+samtools mpileup -t DP,AD,ADF,ADR,SP,INFO/AD,INFO/ADF,INFO/ADR -ABQ0 -L 100000 -uf data/ReferenceGenomes/Mesorhabditis_belari_JU2817_v2_scaffolds_repeatmasker_masked.fa results/mapping/without_duplicates/MRDR6_trim_Mbelari_mapped_rmdup.bam | bcftools call -mv --output-type z -p 0.1 -o results/call_var/MRDR6_trim_Mbelari_mapped_rmdup.vcf.gz &&\
 
-OPTION="-S -ABQ0"
+# To call variants (-mv) and get pileup o, vCF format (-mA) after realignment around INDELs: samtools mpileup -t DP,AD,ADF,ADR,SP,INFO/AD,INFO/ADF,INFO/ADR -ABQ0 -L 100000 -uf $1 $2 | bcftools call -mA --output-type z -p 0.1 -o $3
+samtools mpileup -t DP,AD,ADF,ADR,SP,INFO/AD,INFO/ADF,INFO/ADR -ABQ0 -L 100000 -uf data/ReferenceGenomes/Mesorhabditis_belari_JU2817_v2_scaffolds_repeatmasker_masked.fa results/mapping/without_duplicates/MRDR5_trim_Mbelari_mapped_rmdup_rg_realign_indels.bam | bcftools call -mv --output-type z -p 0.1 -o results/call_var/MRDR5_trim_Mbelari_mapped_rmdup_rg_realign_indels.vcf.gz &&\
 
-REF="-u -f /scratch/cburny/Input_Mbelari/mesorhabditis_belari_assembly.2.0.SOFTMASKED.fa"
+samtools mpileup -t DP,AD,ADF,ADR,SP,INFO/AD,INFO/ADF,INFO/ADR -ABQ0 -L 100000 -uf data/ReferenceGenomes/Mesorhabditis_belari_JU2817_v2_scaffolds_repeatmasker_masked.fa results/mapping/without_duplicates/MRDR6_trim_Mbelari_mapped_rmdup_rg_realign_indels.bam | bcftools call -mv --output-type z -p 0.1 -o results/call_var/MRDR6_trim_Mbelari_mapped_rmdup_rg_realign_indels.vcf.gz &&\
 
-INPUT="/scratch/cburny/Output_Mbelari/2017_08_08_MRDR5_trim_Mbelari_SOFT_mapped_qual_sort_read_names.bam"
 
-OUTPUT="/scratch/cburny/Output_Mbelari/2017_08_08_MRDR5_trim_Mbelari_SOFT_mapped_qual_sort_raw.vcf"
+samtools mpileup -t DP,AD,ADF,ADR,SP,INFO/AD,INFO/ADF,INFO/ADR -ABQ0 -L 100000 -uf data/ReferenceGenomes/Mesorhabditis_belari_JU2817_v2_scaffolds_repeatmasker_masked.fa results/mapping/without_duplicates/MRDR5_trim_Mbelari_mapped_rmdup_rg_realign_indels.bam | bcftools call -mA --output-type z -p 0.1 -o results/call_var/MRDR5_trim_Mbelari_mapped_rmdup_rg_realign_indels_A.vcf.gz &&\
 
-samtools mpileup $OPTION $REF $INPUT | bcftools call -mv > $OUTPUT
+samtools mpileup -t DP,AD,ADF,ADR,SP,INFO/AD,INFO/ADF,INFO/ADR -ABQ0 -L 100000 -uf data/ReferenceGenomes/Mesorhabditis_belari_JU2817_v2_scaffolds_repeatmasker_masked.fa results/mapping/without_duplicates/MRDR6_trim_Mbelari_mapped_rmdup_rg_realign_indels.bam | bcftools call -mA --output-type z -p 0.1 -o results/call_var/MRDR6_trim_Mbelari_mapped_rmdup_rg_realign_indels_A.vcf.gz &&\
+
