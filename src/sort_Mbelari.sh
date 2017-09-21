@@ -1,34 +1,13 @@
-#$ -S /bin/bash
-### nom du job:
-#$ -N sort_belari
-### file d'attente:
-#$ -q E5-2670deb128*
-### parallel environnement & nslots
-#$ -pe openmp16 16
-### charger l'environnement utilisateur pour SGE
-#$ -cwd
-### exporte les variables d'environnement sur les noeuds d'exécution
-#$ -V
-### change logs folder
-#$ -o /home/cburny/logs
-#$ -e /home/cburny/logs
+# Sort and index BAM files
+# Done locally due to problems with PSMN, using samtools 1.3
 
-# initialiser environnement Module
-source /usr/share/modules/init/bash
-module use /applis/PSMN/Modules
-module load Base/psmn
-module load SAMtools/1.3.1
-module list
+##### Args #####
+# $1: input BAM
+# $2: output BAM 
+# $3: output report with idxstat
 
-INPUT_BAM="/scratch/cburny/Output_Mbelari/2017_08_08_MRDR5_trim_Mbelari_SOFT_mapped_qual.bam"
-OUTPUT="/scratch/cburny/Output_Mbelari/2017_08_08_MRDR5_trim_Mbelari_SOFT_mapped_qual_sort"
-OUTPUT_BAM="/scratch/cburny/Output_Mbelari/2017_08_08_MRDR5_trim_Mbelari_SOFT_mapped_qual_sort.bam"
-REPORT_IDX="/scratch/cburny/Output_Mbelari/2017_08_08_MRDR5_trim_Mbelari_SOFT_mapped_qual_sort_idxstats.txt"
-
-samtools sort $INPUT_BAM $OUTPUT
-samtools index $OUTPUT_BAM
+samtools sort $1 -o $2 &&\ 
+samtools index $2 &&\
 
 ##### idxstats
-samtools idxstats $OUTPUT_BAM > $REPORT_IDX
-
-
+samtools idxstats $2 > $3
