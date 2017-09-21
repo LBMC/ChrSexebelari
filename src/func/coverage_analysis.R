@@ -70,4 +70,6 @@
   dev.off()
   
   
+
+# Plot coverage vs length ordered according to higher to lower difference 
   
