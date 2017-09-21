@@ -1,35 +1,15 @@
-#!/bin/bash
-### shell du job:
-#$ -S /bin/bash
-### nom du job:
-#$ -N GATK_create_intervals_realign
-### file d'attente:
-#$ -q E5-2670deb128* 
-### parallel environnement & nslots
-#$ -pe mpi16_debian 16 
-### charger l'environnement utilisateur pour SGE
-#$ -cwd
-### exporte les variables d'environnement sur les noeuds d'exécution
-#$ -V
-### change logs folder
-#$ -o /home/cburny/logs
-#$ -e /home/cburny/logs
+# GATK 3.8 
+# input bam must be indexed
 
-# initialiser environnement Module
-unset module
-source /usr/share/modules/init/bash
-module use /applis/PSMN/Modules
-module load Base/psmn
-module load GATK/3.6 
-module list
-umask 002
+# Create intervals
+java -jar bin/GenomeAnalysisTK.jar -T RealignerTargetCreator -R data/ReferenceGenomes/2017_09_08_combined_belari_coli.fasta -I results/mapping/without_duplicates/MRDR5_trim_Mbelari_mapped_rmdup_rg.bam -o results/mapping/without_duplicates/MRDR5_trim_Mbelari_mapped_rmdup_rg.intervals &&\
 
-GATKHOME="/applis/PSMN/generic/GATK/3.6"
-REF="/scratch/cburny/Ref_Mbelari/Mesorhabditis_belari_JU2817_v2_scaffolds_repeatmasker_masked.fa"
-OUTPUT="/scratch/cburny/Output_Mbelari/2017_09_18_MRDR5_Mbelari.realign.intervals"
-INDELS="/scratch/cburny/Output_Mbelari/2017_09_15_MRDR5_trim_Mbelari_mapped_sort_rmdup_indels.recode.vcf"
-INPUT="/scratch/cburny/Output_Mbelari/2017_09_18_MRDR5_trim_Mbelari_mapped_sort_rmdup.bam"
+java -jar bin/GenomeAnalysisTK.jar -T RealignerTargetCreator -R data/ReferenceGenomes/2017_09_08_combined_belari_coli.fasta -I results/mapping/without_duplicates/MRDR6_trim_Mbelari_mapped_rmdup_rg.bam -o results/mapping/without_duplicates/MRDR6_trim_Mbelari_mapped_rmdup_rg.intervals &&\
 
-java -jar $GATKHOME/GenomeAnalysisTK.jar -T RealignerTargetCreator -R $REF -known $INDELS -I $INPUT -o $OUTPUT
 
-echo "termine"
+# Do the realignment
+java -jar bin/GenomeAnalysisTK.jar -T IndelRealigner -I results/mapping/without_duplicates/MRDR5_trim_Mbelari_mapped_rmdup_rg.bam -R data/ReferenceGenomes/2017_09_08_combined_belari_coli.fasta -targetIntervals results/mapping/without_duplicates/MRDR5_trim_Mbelari_mapped_rmdup_rg.intervals -o results/mapping/without_duplicates/MRDR5_trim_Mbelari_mapped_rmdup_rg_realign_indels.bam &&\
+
+java -jar bin/GenomeAnalysisTK.jar -T IndelRealigner -I results/mapping/without_duplicates/MRDR6_trim_Mbelari_mapped_rmdup_rg.bam -R data/ReferenceGenomes/2017_09_08_combined_belari_coli.fasta -targetIntervals results/mapping/without_duplicates/MRDR6_trim_Mbelari_mapped_rmdup_rg.intervals -o results/mapping/without_duplicates/MRDR6_trim_Mbelari_mapped_rmdup_rg_realign_indels.bam
+
+
