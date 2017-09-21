@@ -287,6 +287,8 @@ Coverage values were first normalized  by dividing median coverage value in each
 %%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Variants calling}
 
+All the steps done are listed in order in the following subsections. \\
+
 I get vcftools on 14th sept from:
 \begin{verbatim}
 git clone https://github.com/vcftools/vcftools.git
@@ -302,7 +304,15 @@ I get rtg-tools on 15th sept from:
 \begin{verbatim}
  git clone https://github.com/RealTimeGenomics/rtg-tools.git
 \end{verbatim}
-and I followed the instruction on README.md to get a rtg executable. To get the version of rtg-tools, I type ./rtg (6.8.4).
+and I followed the instruction on README.md to get a rtg executable. To get the version of rtg-tools, I type ./rtg (6.8.4).\\
+
+For the others toolboxes sused, see in script the versions used.
+
+
+% --------------------------------------------
+\subsection{Sort BAM files to call variants on} 
+
+\textcolor{blue}{sort\_Mbelari.sh}\\
 
 
 % --------------------------------
@@ -319,28 +329,54 @@ female against belari / after rmdup &  male against belari / after rmdup & descr
 \end{tabular}
 
 
-% -----------------------------------------------------
-\subsection{Raw variants calling with samtools mpileup} 
+% -----------------------------
+\subsection{Add RG information} 
 
-\textcolor{blue}{remove\_duplicates.sh}\\
+\textcolor{blue}{picard\_add\_read\_groups.sh}\\
+More information on RG tag: \texttt{https://software.broadinstitute.org/gatk/documentation/article.php?id=6472}
 
-\begin{tabular}{c|c|c|c|c} 
- & male & female \\
- \hline
-SNPs & 648,864 & 815,270 \\
-Insertions & 54,445 & 80,454\\
-Deletions & 32,446 & 42,138\\
-MNPs & 0 & 0 \\
-het/hom ratio (total / SNPs / Insertions / Deletions) & 3.4 / 3.87 / 1.5 / 1.6 & 8.77 / 11.75 / 2.61 / 3.32 \\
-Insertions/Deletions ratio & 1.68 & 1.91 \\
-SNP Transitions/Transversions & 1.45 & 1.44 \\
-\end{tabular}
+% ------------------------------
+\subsection{Create dictionnary} 
+
+\textcolor{blue}{picard\_dictionnary.sh}\\
+
+This was done on the combined fasta to avoid reheader BAM files with removing contigs from coli. 
+
+
+% --------------------------
+\subsection{Index input BAM} 
+
+\textcolor{blue}{sort\_Mbelari.sh}\\
 
 
 % --------------------------------------------------
 \subsection{Realignment around INDELs using GATK}
 
+\textcolor{blue}{realign.sh}\\
 
+
+% -----------------------
+\subsection{Call variants} 
+
+\textcolor{blue}{call\_var\_Mbelari.sh}\\
+
+
+% -----------------------------------------------------
+\subsection{Variants summary} 
+
+Summaries were obtained from vcf.gz files with \textcolor{blue}{summary-vcf\_file.sh}.\\
+
+\begin{tabular}{c|c|c|c|c} 
+ & male & female \\
+ \hline
+SNPs & 653,292 & 943,379 \\
+Insertions & 55,379 & 81,318\\
+Deletions & 32,949 & 42,555\\
+MNPs & 0 & 0 \\
+het/hom ratio (total / SNPs / Insertions / Deletions) & 3.4 / 3.88 / 1.5 / 1.6 & 8.75 / 11.76 / 2.59 / 3.32 \\
+Insertions/Deletions ratio & 1.68 & 1.91 \\
+SNP Transitions/Transversions & 1.45 & 1.43 \\
+\end{tabular}
 
 
 
