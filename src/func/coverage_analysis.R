@@ -25,10 +25,10 @@
 	
   # Open bed file and keep Mbelari contigs (Eclo contigs have 0 read consistently to previous filter)
   cov.male.bed <- tbl_df(fread("results/coverage/2017_09_13_MRDR6_trim_Mbelari_mapped_sort.bed", h = F, sep = "\t", stringsAsFactors = F))
-  cov.male.bed <- filter(cov.male.bed, V1 %in% contigs.mbela$V1)
+#  cov.male.bed <- filter(cov.male.bed, V1 %in% contigs.mbela$V1)
 
   cov.female.bed <- tbl_df(fread("results/coverage/2017_09_13_MRDR5_trim_Mbelari_mapped_sort.bed", h = F, sep = "\t", stringsAsFactors = F))
-  cov.female.bed <- filter(cov.female.bed, V1 %in% longer_10contigs)
+#  cov.female.bed <- filter(cov.female.bed, V1 %in% longer_10contigs)
 
   pdf("results/coverage/raw_coverage_per_contig.pdf", w = 7, h = 4)
   par(mfrow = c(1, 2))
