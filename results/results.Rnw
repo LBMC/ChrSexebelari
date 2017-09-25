@@ -367,15 +367,18 @@ This was done on the combined fasta to avoid reheader BAM files with removing co
 Summaries were obtained from vcf.gz files with \textcolor{blue}{summary-vcf\_file.sh}.\\
 
 \begin{tabular}{c|c|c|c|c} 
- & male & female \\
+ & male & female & intersection after realignment &  in male but not in female after realignment \\
  \hline
-SNPs & 653,292 & 943,379 \\
-Insertions & 55,379 & 81,318\\
-Deletions & 32,949 & 42,555\\
-MNPs & 0 & 0 \\
-het/hom ratio (total / SNPs / Insertions / Deletions) & 3.4 / 3.88 / 1.5 / 1.6 & 8.75 / 11.76 / 2.59 / 3.32 \\
-Insertions/Deletions ratio & 1.68 & 1.91 \\
-SNP Transitions/Transversions & 1.45 & 1.43 \\
+  & raw / after realignment & raw / after realignment &  & \\
+\hline
+SNPs & 653,292 / 646,096 & 943,379 / 915,624 & 533,693 & 136,139 \\
+Insertions & 55,379 / 47,326 & 81,318 / 65,917 & 31,018 & 16,308\\
+Deletions & 32,949 / 33,200 & 42,555 / 41,879 & 25,784 & 7,416 \\
+MNPs & 0 & 0 & & \\
+het/hom ratio (total / SNPs / Insertions / Deletions) & 3.4 / 3.88 / 1.5 / 1.6 & 8.75 / 11.76 / 2.59 / 3.32 &  & \\
+& 3.47 / 3.85 / 1.72 / 1.71 & 9.49 / 11.83 / 3.33 / 3.62 & 3.21 / 3.47 / 1.78 / 1.63 & 5.09 / 7.21 / 1.63 / 2.02\\
+Insertions/Deletions ratio & 1.68 / 1.43 & 1.91 / 1.57 & 1.20 & 2.20 \\
+SNP Transitions/Transversions & 1.45 / 1.47 & 1.43 / 1.45 & 1.52 & 1.21\\
 \end{tabular}
 
 
