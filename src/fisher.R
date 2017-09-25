@@ -1,19 +1,18 @@
 require(data.table)
-require(qvalue)
+#require(qvalue)
 
 size.genome.mbelari <- read.table("data/ReferenceGenomes/2017_09_13_Mbelari.sizes.genome", h = F, sep = "\t", stringsAsFactors = F)
 do.computation.per.pool <- F
 
-# Unzip vcf files
-system("gunzip -c results/call_var/2017_09_21_MRDR6_trim_Mbelari_mapped_rmdup_rg_realign_indels.vcf.gz > results/call_var/2017_09_21_MRDR6_trim_Mbelari_mapped_rmdup_rg_realign_indels.vcf")
-system("gunzip -c results/call_var/2017_09_21_MRDR5_trim_Mbelari_mapped_rmdup_rg_realign_indels.vcf.gz > results/call_var/2017_09_21_MRDR5_trim_Mbelari_mapped_rmdup_rg_realign_indels.vcf")
-
 if (do.computation.per.pool) {
+  # Unzip vcf files
+  system("gunzip -c results/call_var/2017_09_21_MRDR6_trim_Mbelari_mapped_rmdup_rg_realign_indels.vcf.gz > results/call_var/2017_09_21_MRDR6_trim_Mbelari_mapped_rmdup_rg_realign_indels.vcf")
+  system("gunzip -c results/call_var/2017_09_21_MRDR5_trim_Mbelari_mapped_rmdup_rg_realign_indels.vcf.gz > results/call_var/2017_09_21_MRDR5_trim_Mbelari_mapped_rmdup_rg_realign_indels.vcf")
+  
   variants.female = fread("results/call_var/2017_09_21_MRDR5_trim_Mbelari_mapped_rmdup_rg_realign_indels.vcf", sep = "\t",  sep2 = ";", h = T, skip = 19286)
   variants.male = fread("results/call_var/2017_09_21_MRDR6_trim_Mbelari_mapped_rmdup_rg_realign_indels.vcf", sep = "\t",  sep2 = ";", h = T, skip = 19286)
 
   # Get nb of alleles per pool (AN), number of reads "equal" to ref/number of reads equal to alt at a given position (DP4 field)
-  
   info.female <- ExtractCountFromVCF(variants.female, "female")
   info.male <- ExtractCountFromVCF(variants.male, "male")
   
@@ -22,28 +21,28 @@ if (do.computation.per.pool) {
   colnames(variants.female)[1] <- "CHROM"
   colnames(variants.male)[1] <- "CHROM"
   
-  write.table(variants.female, "results/call_var/MRDR5_trim_Mbelari_mapped_rmdup_rg_realign_indels_counts.txt", sep = "\t",  quote = F)
-  write.table(variants.male, "results/call_var/MRDR6_trim_Mbelari_mapped_rmdup_rg_realign_indels_counts.txt", sep = "\t",  quote = F)
+  write.table(variants.female, "results/call_var/MRDR5_trim_Mbelari_mapped_rmdup_rg_realign_indels_counts.txt", sep = "\t",  quote = F, row.names = F)
+  write.table(variants.male, "results/call_var/MRDR6_trim_Mbelari_mapped_rmdup_rg_realign_indels_counts.txt", sep = "\t",  quote = F, row.names = F)
 }
 
-tab.variants.female <- fread("results/call_var/MRDR5_trim_Mbelari_mapped_rmdup_rg_realign_indels_counts.txt", sep = "\t", h = F, stringsAsFactors = F)
-tab.variants.male <- fread("results/call_var/MRDR6_trim_Mbelari_mapped_rmdup_rg_realign_indels_counts.txt", sep = "\t", h = F, stringsAsFactors = F)
-
-
-#Keep scaffold >1000bp
+tab.variants.female <- fread("results/call_var/MRDR5_trim_Mbelari_mapped_rmdup_rg_realign_indels_counts.txt", sep = "\t", h = T, stringsAsFactors = F)
+tab.variants.male <- fread("results/call_var/MRDR6_trim_Mbelari_mapped_rmdup_rg_realign_indels_counts.txt", sep = "\t", h = T, stringsAsFactors = F)
 
 # First work on biallelic common sites between pools
-merge.sexe <- merge(variants.male[, c("#CHROM", "POS", "ID", "REF", "ALT", "QUAL", "nb.alleles.male", "count.ref.male", "count.alt.male", "tot.male")], variants.female[, c("#CHROM", "POS", "ID", "REF", "ALT", "QUAL", "nb.alleles.female", "count.ref.female", "count.alt.female", "tot.female")], by = c("#CHROM",  "POS"))
-merge.sexe.filt <- as.data.frame(merge.sexe[which(merge.sexe$nb.alleles.male == 2 & merge.sexe$nb.alleles.female == 2 & merge.sexe$ALT.x == merge.sexe$ALT.y), ])
+merge.sexe <- merge(variants.male[, c("CHROM", "POS", "ID", "REF", "ALT", "QUAL", "nb.alleles", "count.ref.male", "count.alt.male", "tot.male")], variants.female[, c("CHROM", "POS", "ID", "REF", "ALT", "QUAL", "nb.alleles", "count.ref.female", "count.alt.female", "tot.female", "is.INDEL")], by = c("CHROM",  "POS", "REF", "ALT", "nb.alleles"))
 
-#> dim(merge.sexe)
-#[1] 602143     16
+size.contigs1000 <- size.genome.mbelari$V1[which(size.genome.mbelari$V2 >= 1000)]
+merge.sexe.filt <- merge.sexe[which(merge.sexe$CHROM %in% size.contigs1000), ]
+
 #> dim(merge.sexe.filt)
-#[1] 590484     16
+#[1] 586769     16
+#> dim(merge.sexe)
+#[1] 590459     16
 
 # Compute normalized counts by median number of counts and 1000 individuals at a given position (DP field) 
 median.tot.male <- median(merge.sexe.filt$tot.male)
 median.tot.female <- median(merge.sexe.filt$tot.female)
+
 merge.sexe.filt$count.norm.ref.male <- (merge.sexe.filt$count.ref.male/median.tot.male)
 merge.sexe.filt$count.norm.alt.male <- (merge.sexe.filt$count.alt.male/median.tot.male)
 p.ref.male <- merge.sexe.filt$count.norm.ref.male/(merge.sexe.filt$count.norm.ref.male+merge.sexe.filt$count.norm.alt.male)
@@ -85,11 +84,16 @@ merge.sexe.filt$pval.adjBH.fisher.norm.count <- p.adjust(merge.sexe.filt$pval.fi
 #qobj.norm.fisher <- qvalue(p = merge.sexe.filt$pval.fisher.norm.count)
 #merge.sexe.filt$qval.fisher.norm.count <- qobj.norm.fisher$qvalues
 
-# Summary of significative position by contig
-contig.tests <- unique(merge.sexe.filt[, "#CHROM"])
+
+# Compute average variants density as  the nb of variants per contigs divided by the number of bp in the contig with a DP !=0 
+
+# Annotate masked regions 
+
+# Summary of significative position by contig at a rough threshold of 0.05
+contig.tests <- unique(merge.sexe.filt[, "CHROM"])
 summary.tests <- t(sapply(seq_along(contig.tests), function(x) {c <- contig.tests[x];
 s <- size.genome.mbelari[which(size.genome.mbelari$V1 == c), ]$V2;  
-ind.contig <- which(merge.sexe.filt[, "#CHROM"] == c);
+ind.contig <- which(merge.sexe.filt[, "CHROM"] == c);
 c(c, s, length(ind.contig), length(which(merge.sexe.filt$pval.adjBH.fisher.raw.count[ind.contig] < 0.05)), length(which(merge.sexe.filt$pval.adjBH.fisher.norm.count[ind.contig] < 0.05)))
 }))
 summary.tests <- as.data.frame(summary.tests, stringsAsFactors = F)
