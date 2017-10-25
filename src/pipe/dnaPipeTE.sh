@@ -8,7 +8,7 @@ python3 src/dnaPipeTE/dnaPipeTE.py \
 -cpu 10 \
 -genome_size 162071050 \
 -genome_coverage 22.9 \
--sample_number 3 > results/female_JU2817_report.txt
+-sample_number 3 2> results/female_JU2817_report.txt
 
 # male_JU2817
 mkdir -p results/dnaPipeTE/male_JU2817
@@ -18,4 +18,4 @@ python3 src/dnaPipeTE/dnaPipeTE.py \
 -cpu 10 \
 -genome_size 162071050 \
 -genome_coverage 13.6 \
--sample_number 5 > results/male_JU2817_report.txt
+-sample_number 5 2> results/male_JU2817_report.txt
