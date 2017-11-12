@@ -1,6 +1,4 @@
 require(data.table)
-require(Sushi)
-#require(qvalue)
 require(dplyr)
 library(foreach)
 library(doParallel)
@@ -98,4 +96,3 @@ dev.off()
 pdf("results/call_var/2017_11_10_summary_filt3_variants.pdf", height=4, width=14)
 grid.table(f[, 13:18])
 dev.off()
-
