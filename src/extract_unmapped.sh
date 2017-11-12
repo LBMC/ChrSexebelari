@@ -27,5 +27,4 @@ REPORTbelari="/scratch/cburny/Output_Mbelari/2017_10_30_MRDR6_trim_Mbelari_Ecoli
 ##### Filter to keep unmapped reads paired or not
 samtools view $OPTION1 $INPUT_BAM -o $OUTPUT1 &&\
 
-##### Sort and index
 samtools flagstat $OUTPUT1 > $REPORTbelari
