@@ -101,3 +101,16 @@ s <- read.table("results/call_var/2017_11_09_summary_raw_variants.txt", sep = "\
 pdf("results/call_var/2017_11_09_summary_raw_variants.pdf", height=4, width=25)
 grid.table(s)
 dev.off()
+
+##### Summary of density of SNPs for raw variants per contig 
+nb.test.female <- sapply(size.genome.mbelari$V1, function(x) length(which(tab.variants.female$CHROM == x & tab.variants.female$is.INDEL == 0)))
+nb.test.male <- sapply(size.genome.mbelari$V1, function(x) length(which(tab.variants.male$CHROM == x & tab.variants.male$is.INDEL == 0)))
+density.tests.sexe <- data.frame(contig = size.genome.mbelari$V1, length = size.genome.mbelari$V2, nb.test.female= nb.test.female, nb.test.male = nb.test.male, stringsAsFactors = F)
+density.tests.sexe$den.male <- density.tests.sexe$nb.test.male/density.tests.sexe$length
+density.tests.sexe$den.female <- density.tests.sexe$nb.test.female/density.tests.sexe$length
+log2.den.var <- log2(density.tests.sexe$den.female/density.tests.sexe$den.male)
+pdf("results/call_var/2017_11_12_log2_density_ratio_raw_SNPs.pdf")
+hist(log2.den.var, main = "log2(density SNP female/density SNP male) on raw detected SNPs", xlab  = "log2(density SNP female/density SNP male)", breaks = 100)
+abline(v = 0, col = "black", lty = 2)
+dev.off()
+
