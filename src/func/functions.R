@@ -27,3 +27,16 @@ ComputePvalueFisher<- function(input.df = merge.sexe.filt[, c("count.ref.male", 
   })
   return(pval.fisher)
 }
+
+
+##### SummarizeSNPsINDELsWithinDataFrame #####
+SummarizeSNPsINDELsWithinDataFrame <- function(merge.df, suff = "shared position") {
+  ind.genic <- which(merge.df$genes != "")
+  df <- data.frame(condition = suff, nb.SNPs.all = table(merge.df$is.INDEL)["0"],
+  nb.INDELs.all =  table(merge.df$is.INDEL)["1"],
+  nb.SNPs.genic = table(merge.df[ind.genic]$is.INDEL)["0"],
+  nb.INDELs.genic = table(merge.df[ind.genic]$is.INDEL)["1"],
+  nb.ctg.SNPs.all = length(unique(merge.df$CHROM[which(merge.df$is.INDEL == 0)])),
+  nb.ctg.INDELs.all = length(unique(merge.df$CHROM[which(merge.df$is.INDEL == 1)])), stringsAsFactors = F)
+  return(df)
+}
