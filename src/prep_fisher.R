@@ -96,3 +96,12 @@ dev.off()
 pdf("results/call_var/2017_11_10_summary_filt3_variants.pdf", height=4, width=14)
 grid.table(f[, 13:18])
 dev.off()
+
+# Plot histogram of frequency of filtered variants 
+data.filt.SNPs <- read.csv("results/call_var/2017_11_09_merge.sexe.common.biallelic.filt.SNP.txt", sep = "\t", h = T, stringsAsFactors = F)
+
+pdf("results/call_var/2017_11_13_merge.sexe.common.biallelic.filt.SNP.frequency.male.female.pool.pdf")
+hist(data.filt.SNPs$count.alt.male/data.filt.SNPs$tot.male, col = adjustcolor("blue", 0.75), breaks = 100, xlim = c(0,1), xlab = "Variants frequency", main = "Histogram of filtered SNPs frequencies")
+hist(data.filt.SNPs$count.alt.female/data.filt.SNPs$tot.female, col = adjustcolor("red", 0.75), add = T, breaks = 100, xlim = c(0,1))
+legend("topleft", c("male variants frequency", "female variants frequency"), fill = c("blue", "red"))
+dev.off()
