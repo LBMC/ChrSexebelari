@@ -81,7 +81,7 @@ We source here useful functions and load necessary packages and tools.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Data pre-processing}
 
-% --------------------------------------
+% ---------------------------------------
 \subsection{Characterization of assembly}
 
 Informations as regards the assembly, from Duncan Berger (see data directory):\\
@@ -120,7 +120,7 @@ Data were sequenced on 1 lane on the same flowcell with an Illumina Hiseq platfo
 MRDR5 (14,082,768 reads after adapters removal were delivered) and MRDR6 (99,954,850 reads after adapters removal were delivered) paired files correspond respectively to pool sequencing of 1,000 females and 1,000 males. The encoding of quality values is Sanger / Illumina 1.9 format. 
 
 
-% -------------------------
+% -----------------------------
 \subsubsection{Quality control}
 
 \begin{itemize}
@@ -138,7 +138,7 @@ Male pool:\\
 \includegraphics{{./quality_control/2017_09_13_male_JU2817_fastqc_per_sequence_gc_content_plot}.png}
 
 
-% ------------------------
+% ---------------------------
 \subsubsection{Data cleaning}
 
 \textcolor{blue}{QC.sh}\\
@@ -155,14 +155,17 @@ MRDR6 (male) & 100,107,230 & 99,954,850 & 85.02 & 49,977,425 fwd - 49,977,425 re
 \end{small}
 
 
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Mapping to assembly}
 
 Manon Grosmaire told us that OP50 strain strain was used to feed the worms and it should be mapped against OP50 strain. \\
+Note that bowtie2 was run in default mode: "search for multiple alignments, report the best one".
+
+% ----------------
+\subsection{Steps}
 
 \begin{enumerate}
-  \item \textbf{make and hybrid reference of M. belari and E. coli 0P50 genomes}: I created an hybrid reference as a single fasta file, saved as \texttt{data/ReferenceGenomes/combined\_belari\_coli.fasta.gz}. I will map each pool against this reference.\\
+  \item \textbf{make an hybrid reference of M. belari and E. coli 0P50 genomes}: I created a reference as a single fasta file, saved as \texttt{data/ReferenceGenomes/combined\_belari\_coli.fasta.gz}. I will map each pool against this reference.\\
     \textcolor{blue}{concatenate\_belari\_coli.sh}
 
   \item \textbf{estimate fragments length distribution}: \\
@@ -171,22 +174,43 @@ Manon Grosmaire told us that OP50 strain strain was used to feed the worms and i
   \item \textbf{create index for reference}:\\
 \textcolor{blue}{create\_index.sh}
 
-  \item \textbf{do mapping}:
+  \item \textbf{do mapping}:\\
   \textcolor{blue}{mapping\_Mbelari\_Ecoli.sh}
 
-  \item \textbf{pick mapped reads for E.coli and M.belari separately}:
+  \item \textbf{pick mapped reads for E.coli and M.belari separately}:\\
     \textcolor{blue}{extract\_names\_from\_fasta.sh, generate\_split\_contig\_name.sh, filter\_Mbelari.sh}
-
-  \item \textbf{summary of mapping: quantification of E. coli contamination} \\
+    
+  \item \textbf{extract unmapped reads from BAM for E. coli and M.belari}:\\
+  \textcolor{blue}{bamtofq\_Mbelari.sh}\\
+  \textcolor{blue}{QC\_Mapped\_Mbelari\_fastq.sh}
   
-  \item \textbf{QC on mapped reads}
+  \item \textbf{remove PCR duplicates}:\\
+  \textcolor{blue}{remove\_duplicates.sh}
+  
+  \item \textbf{sort BAM files to call variants on}:\\
+\textcolor{blue}{sort\_Mbelari.sh}
+
+  \item \textbf{add RG information}:\\
+\textcolor{blue}{picard\_add\_read\_groups.sh}\\
+More information on RG tag: \texttt{https://software.broadinstitute.org/gatk/documentation/article.php?id=6472}
+
+  \item \textbf{create dictionnary} : \\
+\textcolor{blue}{picard\_dictionnary.sh}\\
+This was done on the combined fasta to avoid reheader BAM files with removing contigs from coli. 
+
+  \item \textbf{Index input BAM}: \\
+\textcolor{blue}{sort\_Mbelari.sh}
+
+  \item \textbf{Realignment around INDELs using GATK}:\\
+\textcolor{blue}{realign.sh}
+
 \end{enumerate}
 
 
-% ..............................
-\subsection{Summary of mapping}
+% -----------------------------------------------------
+\subsection{Summary of mapping against hybrid reference}
 
-For the moment, I kept all mapped reads. 
+\subsubsection*{Global summary of mapping}
 
 \begin{small}
 \begin{tabular}{c|c|c}
@@ -205,28 +229,30 @@ For the moment, I kept all mapped reads.
         9109859 (54.33\%) &  11709251 (65.89\%) & aligned 0 times \\
         6547201 (39.04\%) &  5183867 (29.17\%) & aligned exactly 1 time \\
         1111502 (6.63\%) & 876704 (4.93\%) & aligned >1 times \\
-92.66\%  & 88.29\% & overall alignment rate\\
+92.66\%  & 88.29\% & overall alignment rate
 \hline
 \end{tabular}
 \end{small}
 
+\subsubsection*{Summary of mapping against M. belari}
 
 \begin{small}
 \begin{tabular}{c|c|c|c|c}
-female against belari & female against coli & male against belari & male gainst coli & description\\
+female against belari / after rmdup & female against coli & male against belari / after rmdup & male against coli & description\\
 \hline
-37,074,990 & 77,897,919 & 22,004,523 & 66,241,076 & mapped \\
-34,427,332 (92.86\%) & 62,539,214 (80.28\%) & 20,238,012 (91.97\%) & 53,594,602 (80.91\%) & properly paired\\
+37,074,990 / 35,389,848 & 77,897,919 & 22,004,523 / 20,066,441 & 66,241,076 & mapped \\
+34,427,332 (92.86\%) / 32,744,676 (92.53\%) & 62,539,214 (80.28\%) & 20,238,012 (91.97\%) / 18,301,958 (91.21\%) & 53,594,602 (80.91\%) & properly paired\\
 \hline
 \end{tabular}
 \end{small}
 
-For each sample, result are presented after applying end-to-end mapping modes to avoid to deal with clipped regions. 
 
+% --------------------------------------------------------
+\subsection{FastQC on belari mapped rmudp realigned reads}
 
-% ....................................
-\subsection{FastQC on belari mapped reads}
+BAM were converted to fastq and saved in \texttt{results/mapping/without\_duplicates/}.
 
+\textcolor{blue}{bamtofq\_Mbelari.sh}\\
 \textcolor{blue}{QC\_Mapped\_Mbelari\_fastq.sh}\\
 
 \begin{itemize}
@@ -242,18 +268,25 @@ For each sample, result are presented after applying end-to-end mapping modes to
 \includegraphics{{./mapping/mapped/2017_09_14_male_JU2817_fastqc_per_sequence_gc_content_plot_mapped_belari}.png}
 
 
-% ----------------------------
-\subsection{Coverage analysis}
+% ------------------------------------------------------------
+\subsection{FastQC on unmapped (on E.coli and M.belari) reads}
 
-% ..........................
-\subsubsection{Raw coverage}
+\textcolor{blue}{extract\_unmapped.sh}\\
+\textcolor{blue}{bamtofq\_Mbelari.sh}\\
 
-I produced coverage indicators from filtered (on quality) mapped BAM files. 
-\begin{itemize}
- \item Produce bedpe files: \textcolor{red}{bamtobedpe\_Mbelari.sh}\\
-  \item Produce bed files with depth at each bp: \textcolor{red}{sort\_Mbelari.sh} \textcolor{red}{bamtobed\_Mbelari.sh}\\
- \item Open BAM with \texttt{tablet}: I open my sorted mapped BAM providing the soft masked reference with tablet. It provides a table with contig name, contig length and number of mapped reads.
-\end{itemize}
+\textcolor{blue}{Need to call FastQC on both unmapped reads, Laurent suggested to add all mapped samples in the mulktiQC output. Need to run also cdhit on PSMN.}
+Latest realease of cd-hit can be obtained from \texttt{https://github.com/weizhongli/cdhit/releases}.
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Coverage analysis}
+
+I converted the gff3 annotation in bed format using \textcolor{blue}{convertgff\_to\_bed.sh}.
+
+
+% -------------------------
+\subsection{Contig length}
 
 Contig length greatly varies:
 \begin{verbatim}
@@ -261,27 +294,48 @@ Contig length greatly varies:
   500     813    2362    9936   11173  501686 
 \end{verbatim}
 
+
+% ----------------------------------------
+\subsection{Genes identified within contig}
+
+Below, the number of genes within contigs.
+
+
+% -----------------------
+\subsection{Raw coverage}
+
+I produced coverage indicators from filtered (on quality) mapped BAM files. 
+\begin{itemize}
+ \item Produce bedpe files: \textcolor{red}{bamtobedpe\_Mbelari.sh}. Eventually, we did not work with these files. \\
+  \item Produce bed files with depth at each bp after having sorted and indexed BAM: \textcolor{red}{bamtobed\_Mbelari.sh}\\
+ \item Open BAM with \texttt{tablet}: I open my sorted mapped BAM providing the soft masked reference with tablet. It provides a table with contig name, contig length and number of mapped reads.
+\end{itemize}
+2 types of files BED and summary files obtained with tablet were generated before and after having removed PCR duplicates. 
+
 \begin{small}
 \begin{tabular}{l|l|l|l}
 sample & mean reads per contig  & median reads per contig & mean coverage (nb reads*size contig/size assembly)\\
 \hline
-MRDR5 (female) & 2,273 & 497 & 22.9 \\
+MRDR5 (female) & 2,273 / 2,170 & 497 / 478 & 22.9 / 21.8\\
  \hline 
-MRDR6 (male) & 1,349 & 295 & 13.6\\
+MRDR6 (male) & 1,349 / 1,230 & 295 / 284 & 13.6 / 12.4 \\
 \end{tabular}
 \end{small}
 
+############### to update
 
-% ..................................
-\subsubsection{Normalized coverage}
 
-\textcolor{blue}{coverage\_analysis.sh}\\
+% -----------------------
+\subsection{Count per gene}
 
-Coverage values were first normalized  by dividing median coverage value in each sample.
+\textcolor{blue}{get_counts_per_gene.sh}
 
-\includegraphics{{./coverage/2017_09_14_norm_by_med_coverage_per_contig}.pdf}
 
-\includegraphics{{./coverage/2017_09_14_pos_norm_coverage_contigMBELA.09799}.pdf}
+% ------------------------------
+\subsection{Normalized coverage}
+
+\textcolor{blue}{coverage\_analysis.sh}
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
@@ -306,53 +360,7 @@ I get rtg-tools on 15th sept from:
 \end{verbatim}
 and I followed the instruction on README.md to get a rtg executable. To get the version of rtg-tools, I type ./rtg (6.8.4).\\
 
-For the others toolboxes sused, see in script the versions used.
-
-
-% --------------------------------------------
-\subsection{Sort BAM files to call variants on} 
-
-\textcolor{blue}{sort\_Mbelari.sh}\\
-
-
-% --------------------------------
-\subsection{Remove PCR duplicates} 
-
-\textcolor{blue}{remove\_duplicates.sh}\\
-
-\begin{tabular}{c|c|c|c|c}
-female against belari / after rmdup &  male against belari / after rmdup & description\\
-\hline
-37,074,990 / 35,389,848 &  22,004,523 / 20,066,441 & mapped \\
-34,427,332 (92.86\%) / 32,744,676 (92.53\%) & 20,238,012 (91.97\%) / 18,301,958 (91.21\%) &  properly paired\\
-\hline
-\end{tabular}
-
-
-% -----------------------------
-\subsection{Add RG information} 
-
-\textcolor{blue}{picard\_add\_read\_groups.sh}\\
-More information on RG tag: \texttt{https://software.broadinstitute.org/gatk/documentation/article.php?id=6472}
-
-% ------------------------------
-\subsection{Create dictionnary} 
-
-\textcolor{blue}{picard\_dictionnary.sh}\\
-
-This was done on the combined fasta to avoid reheader BAM files with removing contigs from coli. 
-
-
-% --------------------------
-\subsection{Index input BAM} 
-
-\textcolor{blue}{sort\_Mbelari.sh}\\
-
-
-% --------------------------------------------------
-\subsection{Realignment around INDELs using GATK}
-
-\textcolor{blue}{realign.sh}\\
+For the others toolboxes used, see in script the versions used.
 
 
 % -----------------------
@@ -361,10 +369,11 @@ This was done on the combined fasta to avoid reheader BAM files with removing co
 \textcolor{blue}{call\_var\_Mbelari.sh}\\
 
 
-% -----------------------------------------------------
+% ---------------------------
 \subsection{Variants summary} 
 
 Summaries were obtained from vcf.gz files with \textcolor{blue}{summary-vcf\_file.sh}.\\
+Variants files intersection were obtained from vcf.gz files with \textcolor{blue}intersect-vcf\_file.sh}.\\
 
 \begin{tabular}{c|c|c|c|c} 
  & male & female & intersection after realignment &  in male but not in female after realignment \\
@@ -382,11 +391,13 @@ SNP Transitions/Transversions & 1.45 / 1.47 & 1.43 / 1.45 & 1.52 & 1.21\\
 \end{tabular}
 
 
+% -------------------------------------------
+\subsection{Prepare count tables for variants} 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Repeat mask for female and male}
- 
-
-
+\textcolor{blue}{extract\_info\_from\_VCF.R}.\\
+\textcolor{blue}{prep\_fisher.R}.\\
+\textcolor{blue}{fisher.R}\\
+\textcolor{blue}{analysis\_fisher.R}
 
 \end{document}
+
