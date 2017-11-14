@@ -28,6 +28,20 @@ ComputePvalueFisher<- function(input.df = merge.sexe.filt[, c("count.ref.male", 
   return(pval.fisher)
 }
 
+##### ComputeGstat #####
+ComputeGstat<- function(input.df = merge.sexe.filt[, c("count.ref.male", "count.alt.male", "count.ref.female", "count.alt.female")]) {
+  G.stat <- apply(input.df, 1, function(x) {
+    tab = matrix(c(x[1], x[2], x[3], x[4]), ncol = 2, byrow = T);
+    margin.row1 = x[1] + x[2];
+    margin.row2 = x[3] + x[4];
+    margin.col1 = x[1] + x[3];
+    margin.col2 = x[2] + x[4];
+    tot = margin.row1 + margin.row2;
+    tab.pred = matrix(c(margin.row1*margin.col1/tot, margin.row1*margin.col2/tot, margin.row2*margin.col1/tot, margin.row2*margin.col2/tot), ncol = 2, byrow = T);
+    G = 2*(tab[1,1]*log(tab[1,1]/tab.pred[1,1]) + tab[1,2]*log(tab[1,2]/tab.pred[1,2]) + tab[2,1]*log(tab[2,1]/tab.pred[2,1]) + tab[2,2]*log(tab[2,2]/tab.pred[2,2]));
+  })
+  return(G.stat)
+}
 
 ##### SummarizeSNPsINDELsWithinDataFrame #####
 SummarizeSNPsINDELsWithinDataFrame <- function(merge.df, suff = "shared position") {
