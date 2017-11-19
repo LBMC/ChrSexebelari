@@ -15,8 +15,27 @@ ExtractCountFromVCF <- function(vcf.without.header, sexe){
 }
 
 ##### ComputeNormalizedCount #####
-ComputeNormalizedCount <- function() {
-
+ComputeNormalizedCount <- function(counts.female, counts.male, level = "gene"){
+  if(level == "bp") {
+    counts.genes <- merge(counts.female[, paste("V", c(8, 1, 6,7,9,4), sep = "")], counts.male[, paste("V", c(4, 11), sep = "")], by = "V8")
+    colnames(counts.genes)[6] <- "counts.raw.female"; colnames(counts.genes)[7] <- "counts.raw.male"
+  }
+  if(level == "gene"){
+    counts.genes <- merge(counts.female[, paste("V", c(1:4, 6, 11), sep = "")], counts.male[, paste("V", c(4, 11), sep = "")], by = "V4")
+    colnames(counts.genes)[6] <- "counts.raw.female"; colnames(counts.genes)[7] <- "counts.raw.male"
+  }
+  if(level == "contig"){
+    counts.genes <- merge(counts.female[, c("Contig", "Length", "Reads")], counts.male[, c("Contig", "Reads")], by = "Contig")
+    colnames(counts.genes)[3] <- "counts.raw.female"; colnames(counts.genes)[4] <- "counts.raw.male"
+  }
+  counts.genes.to.norm <- matrix(c(counts.genes$counts.raw.female, counts.genes$counts.raw.male), byrow = F, ncol = 2) 
+  counts.genes.norm <- normalize.quantiles(counts.genes.to.norm)
+  counts.genes <- as.data.frame(counts.genes)
+  counts.genes$counts.norm.female <- counts.genes.norm[, 1]
+  counts.genes$counts.norm.male <- counts.genes.norm[, 2]
+  counts.genes$log2.raw.FC <- log2((counts.genes$counts.raw.female+1)/(counts.genes$counts.raw.male+1))
+  counts.genes$log2.norm.FC <- log2((counts.genes$counts.norm.female+1)/(counts.genes$counts.norm.male+1))
+  return(counts.genes)
 }
 
 ##### ComputePvalueFisher #####
