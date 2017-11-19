@@ -1,75 +1,82 @@
   require(data.table)  
   require(dplyr)
-  require(doParallel)
-  require(foreach)
-  require(parallel)
   require(ggplot2)
+  library(devtools)
+  library(Biobase)
+  library(preprocessCore)
   
-  ##### Compute average coverage per contig for both female and male pools
-  contigs.mbela <- read.table("data/ReferenceGenomes/2017_09_12_contigs_short_name_Mbelari.txt", h = F, sep = "\t", stringsAsFactors = F)
+  ##### Pick contig name and length
+  contigs.mbela <- fread("data/ReferenceGenomes/2017_09_13_Mbelari.sizes.genome", sep = "\t", h = F, stringsAsFactors = F)
+  print(summary(contigs.mbela$V2))
   
-  cov.female <- fread("results/coverage/2017_09_14_coverage_summary_tablet_female_JU2817_trim_Mbelari_mapped_sort.txt", sep = "\t", h = T, stringsAsFactors = F)
-  cov.male <- fread("results/coverage/2017_09_14_coverage_summary_tablet_male_JU2817_trim_Mbelari_mapped_sort.txt", sep = "\t", h = T,  stringsAsFactors = F)
+  ##### Pick annotation to get gene regions 
+  gff.mbela <- read.csv("data/ReferenceGenomes/Mesorhabditis_belari_JU2817_v2.gff3", sep = "\t", h = F, stringsAsFactors = F)
+  gff.genes.mbela <- gff.mbela[which(gff.mbela$V3 == "gene"), ]
+
+  ##### Summary nb genes per contig
+  write.table(gff.genes.mbela, "data/ReferenceGenomes/Mesorhabditis_belari_JU2817_v2_genes.gff3", sep = "\t", col.names = F, row.names = F, quote = F)
+  gff.genes.mbela$V10 <- sapply(gff.genes.mbela$V9, function(x) strsplit(x, "ID=")[[1]][2])
+  genes.contigs.mbela <- table(gff.mbela$V1, gff.mbela$V3)
+  pdf("results/coverage/number_genes_detected_in_contigs.pdf")
+  barplot(table(genes.contigs.mbela[, "gene"]), ylab = "Frequency", xlab = "nb genes per contig")
+  dev.off()
+
+  ##### Nb of reads per contig 
+  cov.female <- fread("results/coverage/2017_10_26_coverage_summary_tablet_female_JU2817_trim_Mbelari_mapped_rmdup_rg_realign_indels.txt", sep = "\t", h = T, stringsAsFactors = F)
+  cov.male <- fread("results/coverage/2017_10_26_coverage_summary_tablet_male_JU2817_trim_Mbelari_mapped_rmdup_rg_realign_indels.txt", sep = "\t", h = T,  stringsAsFactors = F)
   
+  ##### Summary number of reads on contigs per pool after having removed duplicates
   cov.female <- cov.female[which(cov.female$Contig %in% contigs.mbela$V1), ]
   cov.male <- cov.male[which(cov.male$Contig %in% contigs.mbela$V1), ]
   print(summary(cov.female$Reads))
+#   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+#      0     108     478    2170    2455  108520
   print(summary(cov.male$Reads))
+#   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+#      0      62     284    1230    1351  101118 
 
-  # Mean coverage value per sample
-  print(sum(cov.male$Reads*100)/sum(cov.male$Length))
-  print(sum(cov.female$Reads*100)/sum(cov.female$Length))
+  ##### Mean coverage value per sample
+  print(sum(cov.male$Reads*100*2)/sum(cov.male$Length)) #24.76252
+  print(sum(cov.female$Reads*100*2)/sum(cov.female$Length)) #43.67202
 
-  # Define 10 longest contigs  
-  longer_10contigs <- cov.female$Contig[rev(order(cov.female$Length))[1:10]]
-	
-  # Open bed file and keep Mbelari contigs (Eclo contigs have 0 read consistently to previous filter)
-  cov.male.bed <- tbl_df(fread("results/coverage/2017_09_13_MRDR6_trim_Mbelari_mapped_sort.bed", h = F, sep = "\t", stringsAsFactors = F))
-#  cov.male.bed <- filter(cov.male.bed, V1 %in% contigs.mbela$V1)
+  ##### Normalize genes counts at bp level
+  # Generate bed file for gene region coordinates
+  system("bash src/convertgff_to_bed.sh data/ReferenceGenomes/Mesorhabditis_belari_JU2817_v2_genes.gff3 data/ReferenceGenomes/Mesorhabditis_belari_JU2817_v2_genes.bed")
+  # Extract gene region in bed depth file at each bp with intersect_bed_genes.sh
+  system("bash src/intersect_gene_bed_genes.sh")
+ 
+  ##### Normalize genes counts at bp level within contig, within gene and at gene bp level
+  counts.contigs <- ComputeNormalizedCount(cov.female, cov.male, "contig")
 
-  cov.female.bed <- tbl_df(fread("results/coverage/2017_09_13_MRDR5_trim_Mbelari_mapped_sort.bed", h = F, sep = "\t", stringsAsFactors = F))
-#  cov.female.bed <- filter(cov.female.bed, V1 %in% longer_10contigs)
+  counts.genes.female <- fread("results/coverage/2017_11_12_MRDR5_trim_Mbelari_mapped_rmdup_rg_realign_indels_count_genes.txt", h = F, sep = "\t", stringsAsFactors = F)
+  counts.genes.male <- fread("results/coverage/2017_11_12_MRDR6_trim_Mbelari_mapped_rmdup_rg_realign_indels_count_genes.txt", h = F, sep = "\t", stringsAsFactors = F)
+  counts.genes <- ComputeNormalizedCount(counts.genes.female, counts.genes.male, "gene")
 
-  pdf("results/coverage/raw_coverage_per_contig.pdf", w = 7, h = 4)
-  par(mfrow = c(1, 2))
-  hist(cov.female$Reads, main = "female", xlab = "coverage per contig")	
-  hist(cov.male$Reads, main = "male", xlab = "coverage per contig")
+  counts.genes.female <- fread("results/coverage/2017_11_18_MRDR5_trim_Mbelari_mapped_rmdup_rg_realign_indels_sort_in_genes.bed", h = F, sep = "\t", stringsAsFactors = F)
+  counts.genes.male <- fread("results/coverage/2017_11_18_MRDR6_trim_Mbelari_mapped_rmdup_rg_realign_indels_sort_in_genes.bed", h = F, sep = "\t", stringsAsFactors = F)
+  counts.genes.bp <- ComputeNormalizedCount(counts.genes.female, counts.genes.male, "bp")
+
+  ##### Histogram of log2(FC)
+  pdf("results/coverage/2017_11_12_all_log2_FC.pdf")
+  hist(counts.genes$log2.raw.FC, main = "Histogram of log2(female/male))", xlab = "log2(FC)", breaks = 100)
+  hist(counts.genes$log2.norm.FC, main = "Histogram of log2(norm female/norm male)", xlab = "log2(norm FC)", breaks = 100, add = T, col = adjustcolor("gray", 0.75))
+  legend("toleft", c("log2(FC) on quantile normalized counts", "log2(FC) on raw counts"), fill = c("gray", "white"), cex = 0.75, bty = "n")
   dev.off()
 
- pdf("results/coverage/raw_coverage_per_bp_contig.pdf", w = 7, h = 4)
-  m <- sample(1:dim(cov.female.bed)[1], 100000)
-  par(mfrow = c(1, 2))
-  hist(cov.female.bed$V3[m], main = "female", xlab = "100,000 coverage per bp per contig")	
-  hist(cov.male.bed$V3[m], main = "male", xlab = "100,000 coverage per per bp contig")
+  ##### Zoom on genes with abs(log2(FC))>1
+  signift <- counts.genes[which(abs(counts.genes$log2.norm.FC)>1), ]
+  max.log2.norm.FC.per.ctg <- unique(signift$V1)[rev(order(sapply(unique(signift$V1), function(x) max(abs(signift[which(signift$V1 == x), ]$log2.norm.FC)))))]
+  tab <- table(signift$V1)
+  coord.max.log2.norm.FC.per.ctg <- matrix(seq_along(max.log2.norm.FC.per.ctg ), nrow = 1, dimnames = list(NULL, max.log2.norm.FC.per.ctg ))
+  n <- length(coord.max.log2.norm.FC.per.ctg)
+  col <- sample(rainbow(n))
+  col.max.log2.norm.FC.per.ctg <- matrix(col, nrow = 1, dimnames = list(NULL, max.log2.norm.FC.per.ctg))
+  pdf("results/coverage/abs_log2_norm_FC_higher_than_1.pdf", w = 16)
+  plot(coord.max.log2.norm.FC.per.ctg[1, as.character(signift$V1)], signift$log2.norm.FC, pch = as.numeric(signift$V1)%%4, col = col.max.log2.norm.FC.per.ctg[1, as.character(signift$V1)], xlab = "Ordered contig by max(gfold value per contig) for abs(log2.norm.FC)>1\n1 color = 1 contig", ylab = "log2.norm.FC", cex = 0.75)
+  abline(h=0, col = "gray")
+  text(20,1, paste( length(which(signift$log2.norm.FC>1)), " genes on ", length(unique(signift$V1[which(signift$log2.norm.FC>1)])), " contigs", sep = ""))
+  text(20,-1, paste( length(which(signift$log2.norm.FC< -1)), " genes on ", length(unique(signift$V1[which(signift$log2.norm.FC < -1)])), " contigs", sep = ""))
   dev.off()
 
-  # Ratio of normalized coverage per contig
-  cov <- merge(cov.female, cov.male, by = "Contig")
-  cov$ratio <- log2((cov$Reads.x/497)/(cov$Reads.y/295))
-  cov$contig.end <- cumsum(cov$Length.x)
-  cov$contig.start <- c(1, cov$contig.end[1:(dim(cov)[1]-1)] + 1)
-  #cov.circos <- cov[, c("Contig", "contig.start", "contig.end", "Contig", "ratio")]
-  #colnames(cov.circos) <- c("Chromosome", "ChromStart", "ChromEnd", "Band", "Stain")
-  #chr.exclude <- NULL;
-  #cyto.info <- cov.circos;
-  #tracks.inside <- 1;
-  #tracks.outside <- 0;
-  #RCircos.Set.Core.Components(cov.circos, chr.exclude, tracks.inside, tracks.outside);
-	
- pdf("results/coverage/norm_by_med_coverage_per_contig.pdf")
-  plot(cov$Length.x, cov$ratio, ylab = "log2( (nb reads female/median female) / (nb reads male/median male) )", xlab = "contig length")
-  dev.off()
-
-
-  test.male = filter(cov.male.bed, V1 == "MBELA.09799")
-  test.female = filter(cov.female.bed, V1 == "MBELA.09799")
- pdf("results/coverage/pos_norm_coverage_contigMBELA.09799.pdf")
-  plot(test.male$V2, test.female$V3/295, ylab = "(nb reads/median)", main = "test on MBELA.09799 with ratio=2.01", col = "red",type = "l")
-  points(test.male$V2, test.male$V3/497, col = "blue", type = "l")
-  legend("topright", c("male", "female"), lty = c(1,1), col = c(1,"red"))
-  dev.off()
-  
   
 
-# Plot coverage vs length ordered according to higher to lower difference 
-  
