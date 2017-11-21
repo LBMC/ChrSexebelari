@@ -1,6 +1,8 @@
 library(gridExtra)
 require(modeest)
+require(Sushi)
 require(qvalue)
+require(data.table)
 require(foreach)
 require(doParallel)
 source("src/func/functions.R")
@@ -85,7 +87,7 @@ if (do.fisher) {
 }
 
 
-##### Compute H0 distrib of count tables from Bastide et al, 2013. alpha != beta, alpha tested from 10 to 40
+##### Compute H0 distrib of count tables from Bastide et al, 2013. alpha != beta, alpha tested from 10 to 40. It concerns FISHER TESTS!!!
 
 do.H0 <- F
 if(do.H0){
@@ -185,12 +187,53 @@ if(do.simu.10x) {
 	        pvalH0_out$pval.fisher.H0 <- pval.fisher.H0
 
 		saveRDS(pvalH0_out, paste("results/fisher/2017_11_15_simulated_#", i, "_count_H0_alpha", alpha.choose, ".RData", sep = ""))	
-
-		# For the ith rank SNP, # nb simu SNP with pvalue < pvalue obs for Fisher
-		tmp <- data.frame(nb.simu.SNPs.lower.pval = sapply(pval.obs.ord, function(x) length(which(pvalH0_out$pval.fisher.H0<x))), stringsAsFactors = F)
-		saveRDS(tmp, paste("results/fisher/2017_11_15_simulated_compare_to_obs_#", i, "_count_H0_alpha", alpha.choose, ".RData", sep = ""))	
 	}
-}
 
+	pH0.simu <- NULL
+	for (i in 1:10) {
+		pvalH0_out <- readRDS(paste("results/fisher/2017_11_15_simulated_#", i, "_count_H0_alpha", alpha.choose, ".RData", sep = ""))$pval.fisher.H0
+		pH0.simu <- cbind(pH0.simu, pvalH0_out)
+	}
+	pH0.simu <- cbind(pH0.simu, data.frame(pval.obs.ord = pval.obs.ord))
+	# For the ith rank SNP, # nb simu SNP with pvalue <= pvalue obs for Fisher and compute fdr with rank
+	pemp <- apply(pH0.simu, 1, function(x) {y <- unlist(x); length(which(y[1:10] <= y[11]))})/10
+	fdr <- p.adjust(pemp, method = "BH")
+	data.tests.simu$FDR <- fdr
+	write.table(data.tests.simu, "results/call_var/2017_11_14_merge.sexe.common.biallelic.filt.SNP.same.alt.fisher.FDR.G.txt", sep = "\t", col.names = T, row.names = F)
+}	
 
+##### Plot FDR representation by contig with highest nb of significant SNPs to lowest number of significant SNPs
+tests <- read.csv("results/call_var/2017_11_14_merge.sexe.common.biallelic.filt.SNP.same.alt.fisher.FDR.G.txt", sep = "\t", h = T, stringsAsFactors = F)
+size.genome.mbelari <- fread("data/ReferenceGenomes/2017_09_13_Mbelari.sizes.genome", sep = "\t", h = F, stringsAsFactors = F)
+fisher <- tests[, c("CHROM", "POS", "POS", "REF", "pval.fisher.raw.count", "pval.adjBH.fisher.raw.count", "FDR")]
+tab <- table(tests$FDR<0.01, tests$CHROM)
+tab <- tab[, which(tab[2, ]>0)]
+length.tab <- sapply(colnames(tab), function(x) size.genome.mbelari[which(size.genome.mbelari$V1 == x), ]$V2)
+nb.per.bp <- tab[2, ]/length.tab[which(tab[2, ]>0)]
+nb.on.tot <- tab[2, ]/(tab[2,]+tab[1,])
 
+##### Ranking on contigs
+rank.signif.ctgs <- colnames(tab)[rev(order(tab[2, ]))]
+rank.signif.ctgs.per.bp <- colnames(tab)[rev(order(nb.per.bp))]
+rank.signif.ctgs.on.tot <- colnames(tab)[rev(order(nb.on.tot))]
+
+nb.signif <- 10
+to.plot <- rank.signif.ctgs[1:nb.signif]
+to.plot.per.bp <- rank.signif.ctgs.per.bp[1:nb.signif]
+to.plot.on.tot <- rank.signif.ctgs.on.tot[1:nb.signif]
+plot <- to.plot
+
+# Prepare input for Manhattan plot
+size.tmp <- size.genome.mbelari[sapply(plot, function(x) which(size.genome.mbelari$V1 == x)), ]
+size.tmp$V1 <- as.factor(size.tmp$V1)
+fisher.tmp <- fisher[unlist(sapply(plot, function(x) which(fisher$CHROM == x))), ]
+fisher.tmp$CHROM <- as.factor(paste("chr", fisher.tmp$CHROM, sep = ""))
+fisher.tmp$REF <- 1:dim(fisher.tmp)[1]
+
+plotManhattan(bedfile = fisher.tmp, pvalues = fisher.tmp$FDR,
+col = SushiColors(5),  genome = size.tmp, cex=0.75)
+labelgenome(genome = size.tmp, n = 5, edgeblankfraction = 0.20, cex.axis=.5)
+abline(h = -log10(0.01))
+axis(side=2,las=2,tcl=.2)
+mtext("-log10(P)",side=2,line=1.75,cex=1,font=2)
+mtext("contig",side=1,line=1.75,cex=1,font=2)
