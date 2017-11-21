@@ -4,6 +4,7 @@
   library(devtools)
   library(Biobase)
   library(preprocessCore)
+  source("src/func/functions.R")
   
   ##### Pick contig name and length
   contigs.mbela <- fread("data/ReferenceGenomes/2017_09_13_Mbelari.sizes.genome", sep = "\t", h = F, stringsAsFactors = F)
@@ -55,6 +56,7 @@
   counts.genes.female <- fread("results/coverage/2017_11_18_MRDR5_trim_Mbelari_mapped_rmdup_rg_realign_indels_sort_in_genes.bed", h = F, sep = "\t", stringsAsFactors = F)
   counts.genes.male <- fread("results/coverage/2017_11_18_MRDR6_trim_Mbelari_mapped_rmdup_rg_realign_indels_sort_in_genes.bed", h = F, sep = "\t", stringsAsFactors = F)
   counts.genes.bp <- ComputeNormalizedCount(counts.genes.female, counts.genes.male, "bp")
+  write.table(counts.genes.bp, "results/coverage/2017_11_18_FC_normalized_coverage_at_bp_within_genes.txt", sep= "\t", quote =F, col.names = T, row.names = F)
 
   ##### Histogram of log2(FC)
   pdf("results/coverage/2017_11_12_all_log2_FC.pdf")
