@@ -4,8 +4,24 @@
   library(devtools)
   library(Biobase)
   library(preprocessCore)
+  #require(foreach)
+  #require(doParallel)
+  #require(parallel)
   source("src/func/functions.R")
   
+compute.norm <- F
+if(compute.norm){
+  ##### Plot cluster size when comparing unmapped female and male reads
+  clus.size <- read.csv("results/mapping/mapped/2017_11_22_cdhit.fa.clstr.size", sep = "\t", h = T, stringsAsFactors = F)
+  #> dim(clus.size)
+  #[1] 9079667       2
+  #summary(clus.size$nb)
+  #  Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+  #0.000    0.000    0.000    0.713    0.000 4430.000 
+  pdf("results/mapping/mapped/2017_11_26_cluster_size.pdf")
+  hist(log10(clus.size$nb), breaks = 50, main = paste("log10(size of clusters) (n=", dim(clus.size)[1], ") obtained with CD-HIT\nto compare unmapped female and male reads", sep = ""), cex.main = 0.9)
+  dev.off()
+
   ##### Pick contig name and length
   contigs.mbela <- fread("data/ReferenceGenomes/2017_09_13_Mbelari.sizes.genome", sep = "\t", h = F, stringsAsFactors = F)
   print(summary(contigs.mbela$V2))
@@ -13,13 +29,22 @@
   ##### Pick annotation to get gene regions 
   gff.mbela <- read.csv("data/ReferenceGenomes/Mesorhabditis_belari_JU2817_v2.gff3", sep = "\t", h = F, stringsAsFactors = F)
   gff.genes.mbela <- gff.mbela[which(gff.mbela$V3 == "gene"), ]
+  write.table(gff.genes.mbela, "data/ReferenceGenomes/Mesorhabditis_belari_JU2817_v2_genes.gff3", sep = "\t", col.names = F, row.names = F, quote = F)
+
+  ##### Percentage of genic region:
+  tot.size <- sum(contigs.mbela$V2)
+  gene.size <- abs(gff.genes.mbela$V5 - gff.genes.mbela$V4)
+  perc.genic <- 100*sum(gene.size)/tot.size # 52.72679
+  perc.ctg <- sapply(1:dim(contigs.mbela)[1], function(x) {ctg = contigs.mbela[x]; tmp = gff.genes.mbela[which(gff.genes.mbela$V1 == ctg), ]; s = sum(abs(tmp$V5 - tmp$V4)); 100*s/contigs.mbela$V2[x]})
+  #> summary(perc.ctg)
+  #  Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+  #0.000000 0.000000 0.000000 0.000373 0.000000 6.082403
 
   ##### Summary nb genes per contig
-  write.table(gff.genes.mbela, "data/ReferenceGenomes/Mesorhabditis_belari_JU2817_v2_genes.gff3", sep = "\t", col.names = F, row.names = F, quote = F)
   gff.genes.mbela$V10 <- sapply(gff.genes.mbela$V9, function(x) strsplit(x, "ID=")[[1]][2])
   genes.contigs.mbela <- table(gff.mbela$V1, gff.mbela$V3)
   pdf("results/coverage/number_genes_detected_in_contigs.pdf")
-  barplot(table(genes.contigs.mbela[, "gene"]), ylab = "Frequency", xlab = "nb genes per contig")
+  barplot(table(genes.contigs.mbela[, "gene"]), main = paste("nb genes within contig (genic% = ", perc.genic, ")", sep = ""), ylab = "Frequency", xlab = "nb genes per contig")
   dev.off()
 
   ##### Nb of reads per contig 
@@ -48,36 +73,79 @@
  
   ##### Normalize genes counts at bp level within contig, within gene and at gene bp level
   counts.contigs <- ComputeNormalizedCount(cov.female, cov.male, "contig")
+  write.table(counts.contigs, "results/coverage/2017_11_26_FC_normalized_coverage_at_contig.txt", sep= "\t", quote =F, col.names = T, row.names = F)
 
   counts.genes.female <- fread("results/coverage/2017_11_12_MRDR5_trim_Mbelari_mapped_rmdup_rg_realign_indels_count_genes.txt", h = F, sep = "\t", stringsAsFactors = F)
   counts.genes.male <- fread("results/coverage/2017_11_12_MRDR6_trim_Mbelari_mapped_rmdup_rg_realign_indels_count_genes.txt", h = F, sep = "\t", stringsAsFactors = F)
   counts.genes <- ComputeNormalizedCount(counts.genes.female, counts.genes.male, "gene")
+  write.table(counts.genes, "results/coverage/2017_11_26_FC_normalized_coverage_at_gene.txt", sep= "\t", quote =F, col.names = T, row.names = F)
 
-  counts.genes.female <- fread("results/coverage/2017_11_18_MRDR5_trim_Mbelari_mapped_rmdup_rg_realign_indels_sort_in_genes.bed", h = F, sep = "\t", stringsAsFactors = F)
-  counts.genes.male <- fread("results/coverage/2017_11_18_MRDR6_trim_Mbelari_mapped_rmdup_rg_realign_indels_sort_in_genes.bed", h = F, sep = "\t", stringsAsFactors = F)
+  ##### Intersect genes and coverage at bp resolution
+  counts.genes.female <- tbl_df(fread("results/coverage/2017_11_18_MRDR5_trim_Mbelari_mapped_rmdup_rg_realign_indels_sort_in_genes.bed", h = F, sep = "\t", stringsAsFactors = F))
+  counts.genes.male <- tbl_df(fread("results/coverage/2017_11_18_MRDR6_trim_Mbelari_mapped_rmdup_rg_realign_indels_sort_in_genes.bed", h = F, sep = "\t", stringsAsFactors = F))
+  in_male <- setdiff(unique(counts.genes.male$V8), unique(counts.genes.female$V8))
+  in_female <- setdiff(unique(counts.genes.female$V8), unique(counts.genes.male$V8))
+  #> in_female #24211 genes
+  #[1] "MBELA.g12439" "MBELA.g12585" "MBELA.g14323" "MBELA.g14395" "MBELA.g14542"
+  #[6] "MBELA.g17943" "MBELA.g23060"
+  #> in_male #24209 genes
+  #[1] "MBELA.g11678" "MBELA.g15899" "MBELA.g17246" "MBELA.g17397" "MBELA.g20649"
+
+  ##### Compute subset of data to do merge
   counts.genes.bp <- ComputeNormalizedCount(counts.genes.female, counts.genes.male, "bp")
-  write.table(counts.genes.bp, "results/coverage/2017_11_18_FC_normalized_coverage_at_bp_within_genes.txt", sep= "\t", quote =F, col.names = T, row.names = F)
+  write.table(counts.genes.bp, "results/coverage/2017_11_26_FC_normalized_coverage_at_bp_within_genes.txt", sep= "\t", quote =F, col.names = T, row.names = F)
+}
 
+do.test.at.bp <- F
+if(do.test.at.bp ){
+  ##### In case of bp level, implement test per gene on estimated FC valeurs: if not gaussian, compute i) a glm based on NB to compare counts, ii) a median like based test on the log2(FC), iii) try the the ans comb transformation and perform a test on it.
+  counts.bp <- tbl_df(fread("results/coverage/2017_11_26_FC_normalized_coverage_at_bp_within_genes.txt", sep= "\t", stringsAsFactors = F))
+  genes <- counts.bp %>% distinct(V8); genes <- unique(genes$V8) 
+  res <- NULL
+  for (g in genes) {
+	tmp <- select(filter(counts.bp, V8 == g), c("log2.norm.FC", "counts.norm.female", "counts.norm.male"))
+	fc <- tmp$log2.norm.FC
+	f <- tmp$counts.norm.female
+	m <- tmp$counts.norm.male
+	me <- median(fc); mean <- mean(fc)
+	me.f <- median(f); mean.f <- mean(f); mf <- max(f)
+	me.m <- median(m); mean.m <- mean(m); mm <- max(m)
+	par(mfrow = c(1, 3))
+	hist(f, xlim = c(0, max(c(mm, mf))), main = "Normalized female coverage", breaks = 50)
+	hist(m, xlim = c(0, max(c(mm, mf))), main = "Normalized male coverage", breaks = 50)
+	hist(fc, main = "log2(FC) on normalized coverage", breaks = 50)
+	#g1, g10, g30
+	#ans comb transform
+ 
+	if (length(unique(fc)) == 1) {
+		med.test <- NA	
+		t.test <- NA
+	} else{
+		med.test <- prop.test(sum(fc > 0), length(fc), p = 0.5, "two.sided")$p.value	
+		t.test <- t.test(fc)$p.value	
+		t.test.both <- t.test(f,m)$p.value	
+		w.test.both <- wilcox.test(f,m)$p.value	
+	}
+	res <- rbind(res, data.frame(gene = g, median.log2.norm.FC = me, mean.log2.norm.FC = mean, pval.med = med.test, pval.ttest = t.test, stringsAsFactors = F))
+  }
+  write.table(res, "results/coverage/2017_11_26_FC_normalized_coverage_at_bp_within_genes.txt", sep= "\t", quote =F, col.names = T, row.names = F)
+}
+
+
+counts.contigs <- read.table("results/coverage/2017_11_26_FC_normalized_coverage_at_contig.txt", sep= "\t", h = T, stringsAsFactors =  F)
+counts.genes <- read.table("results/coverage/2017_11_26_FC_normalized_coverage_at_gene.txt", sep= "\t", h = T, stringsAsFactors =  F)
+ 
+# Plot on different scale of log2 fc and see effects of normalization
   ##### Histogram of log2(FC)
-  pdf("results/coverage/2017_11_12_all_log2_FC.pdf")
-  hist(counts.genes$log2.raw.FC, main = "Histogram of log2(female/male))", xlab = "log2(FC)", breaks = 100)
-  hist(counts.genes$log2.norm.FC, main = "Histogram of log2(norm female/norm male)", xlab = "log2(norm FC)", breaks = 100, add = T, col = adjustcolor("gray", 0.75))
-  legend("toleft", c("log2(FC) on quantile normalized counts", "log2(FC) on raw counts"), fill = c("gray", "white"), cex = 0.75, bty = "n")
-  dev.off()
+  pdf("results/coverage/2017_11_26_all_log2_FC.pdf", w = 10, h =5)
+  par(mfrow = c(1, 2))
+  hist(counts.contigs$log2.raw.FC, main = "Histogram of log2(female/male)) for contig", xlab = "log2(FC)", breaks = 100)
+  hist(counts.contigs$log2.norm.FC, breaks = 100, add = T, col = adjustcolor("red", 0.75))
+  legend("topleft", title = paste("at contig level (n=", dim(counts.contigs)[1], ")", sep = ""), legend = c("log2(FC) on quantile normalized counts", "log2(FC) on raw counts"), fill = c("red", "white"), cex = 0.75, bty = "n")
 
-  ##### Zoom on genes with abs(log2(FC))>1
-  signift <- counts.genes[which(abs(counts.genes$log2.norm.FC)>1), ]
-  max.log2.norm.FC.per.ctg <- unique(signift$V1)[rev(order(sapply(unique(signift$V1), function(x) max(abs(signift[which(signift$V1 == x), ]$log2.norm.FC)))))]
-  tab <- table(signift$V1)
-  coord.max.log2.norm.FC.per.ctg <- matrix(seq_along(max.log2.norm.FC.per.ctg ), nrow = 1, dimnames = list(NULL, max.log2.norm.FC.per.ctg ))
-  n <- length(coord.max.log2.norm.FC.per.ctg)
-  col <- sample(rainbow(n))
-  col.max.log2.norm.FC.per.ctg <- matrix(col, nrow = 1, dimnames = list(NULL, max.log2.norm.FC.per.ctg))
-  pdf("results/coverage/abs_log2_norm_FC_higher_than_1.pdf", w = 16)
-  plot(coord.max.log2.norm.FC.per.ctg[1, as.character(signift$V1)], signift$log2.norm.FC, pch = as.numeric(signift$V1)%%4, col = col.max.log2.norm.FC.per.ctg[1, as.character(signift$V1)], xlab = "Ordered contig by max(gfold value per contig) for abs(log2.norm.FC)>1\n1 color = 1 contig", ylab = "log2.norm.FC", cex = 0.75)
-  abline(h=0, col = "gray")
-  text(20,1, paste( length(which(signift$log2.norm.FC>1)), " genes on ", length(unique(signift$V1[which(signift$log2.norm.FC>1)])), " contigs", sep = ""))
-  text(20,-1, paste( length(which(signift$log2.norm.FC< -1)), " genes on ", length(unique(signift$V1[which(signift$log2.norm.FC < -1)])), " contigs", sep = ""))
+  hist(counts.genes$log2.raw.FC, main = "Histogram of log2(female/male)) for genes", xlab = "log2(FC)", breaks = 100)
+  hist(counts.genes$log2.norm.FC, breaks = 100, add = T, col = adjustcolor("red", 0.75))
+  legend("topleft", title = paste("at gene level (n=", dim(counts.genes)[1], ")", sep = ""), legend = c("log2(FC) on quantile normalized counts", "log2(FC) on raw counts"), fill = c("red", "white"), cex = 0.75, bty = "n")
   dev.off()
 
   
