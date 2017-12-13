@@ -110,14 +110,16 @@ x[["is.INDEL.x"]] == x[["is.INDEL.y"]]))
   tmp.all.INDEL.test.INDEL.filt <- rbind(tmp.all.INDEL.test.INDEL, add.INDEL.in.one.sexe)
   ##### Remove SNP at 1bp away from INDEL
   tmp.all.SNP.test.INDEL.filt <- tmp.all.SNP.test.INDEL[-which(tmp.all.SNP.test.INDEL$ID %in% remove.id), ]
-
   ##### Add same.ALT column if ALT allele differs between male and female
-  merge.sexe.all.filt$same.ALT <- 1
-  merge.sexe.all.filt$same.ALT[which((merge.sexe.all.filt$ALT.x == merge.sexe.all.filt$ALT.y) == F)] <- 0
+  tmp.all.SNP.test.INDEL.filt$same.ALT <- 1
+  tmp.all.SNP.test.INDEL.filt$same.ALT[which((tmp.all.SNP.test.INDEL.filt$ALT.x == tmp.all.SNP.test.INDEL.filt$ALT.y) == F)] <- 0
+  tmp.all.INDEL.test.INDEL.filt$same.ALT <- 1
+  tmp.all.INDEL.test.INDEL.filt$same.ALT[which((tmp.all.INDEL.test.INDEL.filt$ALT.x == tmp.all.INDEL.test.INDEL.filt$ALT.y) == F)] <- 0
 
   ##### Add contig length
   mat.size.ctg <- matrix(size.genome.mbelari$V2, nrow = 1, dimnames = list(NULL, size.genome.mbelari$V1))
-  merge.sexe.all.filt$contig_length <- mat.size.ctg[,  merge.sexe.all.filt$CHROM]
+  tmp.all.SNP.test.INDEL.filt$contig_length <- mat.size.ctg[,  tmp.all.SNP.test.INDEL.filt$CHROM]
+  tmp.all.INDEL.test.INDEL.filt$contig_length <- mat.size.ctg[, tmp.all.INDEL.test.INDEL.filt$CHROM]
 
   ##### Summary of filtered variants
   tab.snp <- table(merge.sexe.all.filt$same.ALT[which(merge.sexe.all.filt$is.INDEL == 0)])
