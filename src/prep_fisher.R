@@ -93,36 +93,23 @@ x[["is.INDEL.x"]] == x[["is.INDEL.y"]]))
   tmp.all.INDEL.test.INDEL <- rbind(tmp.all.INDEL, add.in.one.sexe.INDEL)
 
   ##### Compute distance to the nearest INDELs to remove SNP at 1bp away from INDEL and remove INDELs
-  cores=detectCores()
-  cl <- makeCluster(cores[1]-1) #not to overload your computer
-  registerDoParallel(cl)
-  remove.dist <- foreach(i=1:dim(tmp.all)[1], .combine=c) %dopar% {
-  	tmp2 <- tmp.all[i, ]
-  	if(tmp2$is.INDEL == 0) {
-		temp <- filter(tmp.all, CHROM == tmp2$CHROM & tmp.all$is.INDEL == 1 & tmp.all$ID != tmp2$ID)
-		if(dim(temp)[1]>0){
-			d <- temp$POS-tmp2$POS
-			dist <- min(abs(d))
-			if (dist <= 1){
-				remove <- tmp2$ID
-			}else{
-				remove <- NA
-			}
-		}else{
-			remove <- NA
+ contigs <- unique(tmp.all.SNP.test.INDEL$CHROM)
+  remove.id <- c()
+  for (j in seq_along(contigs)){
+	tmp.chr <- filter(tmp.all.SNP.test.INDEL, CHROM == contigs[j])
+	tmp.chr.indel <- filter(tmp.all.INDEL.test.INDEL, CHROM == contigs[j])
+	if(dim(tmp.chr.indel)[1]>0){
+		dist <- apply(tmp.chr, 1, function(x) min(abs(tmp.chr.indel$POS-as.numeric(x[["POS"]]))))
+		ind <- which(dist<=1)
+		if(length(ind)>0){
+		        remove.id <- c(remove.id, tmp.chr$ID[ind])
 		}
-	} else{
-		remove <- NA
 	}
-	remove
   }
-  stopCluster(cl)
 
+  tmp.all.INDEL.test.INDEL.filt <- rbind(tmp.all.INDEL.test.INDEL, add.INDEL.in.one.sexe)
   ##### Remove SNP at 1bp away from INDEL
-  ids.remove <- remove.dist[-which(is.na(remove.dist))]
-  merge.sexe.all.filt <- tmp.all[-which(tmp.all$ID %in% ids.remove), ]
-  summ3b <- SummarizeSNPsINDELsWithinDataFrame(merge.sexe.all.filt, suff = "all position, DP>1, dist.to.INDEL>1") 
-  summary.filt <- rbind(summ1, summ2, summ3, summ1b, summ2b, summ3b)
+  tmp.all.SNP.test.INDEL.filt <- tmp.all.SNP.test.INDEL[-which(tmp.all.SNP.test.INDEL$ID %in% remove.id), ]
 
   ##### Add same.ALT column if ALT allele differs between male and female
   merge.sexe.all.filt$same.ALT <- 1
