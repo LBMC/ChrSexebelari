@@ -140,26 +140,67 @@ x[["is.INDEL.x"]] == x[["is.INDEL.y"]]))
   system("bash src/date.sh results/call_var/merge.sexe.all.filt.SNP.txt")
 }
 
-f <- read.csv("results/call_var/2017_12_05_summary_filt_variants.txt", sep = "\t", h = T)
-pdf("results/call_var/summary_filt_variants.pdf", height=4, width=12)
-grid.table(f)
-dev.off()
-system("bash src/date.sh results/call_var/summary_filt_variants.pdf")
 
-##### Summary of density of SNPs for filtered variants per contig 
-tests  <- fread("results/call_var/2017_11_13_merge.sexe.all.filt.SNP.txt", sep = "\t", h = T)
-nb.test.female <- sapply(size.genome.mbelari$V1, function(x) length(which(tab.variants.female$CHROM == x & tab.variants.female$is.INDEL == 0)))
-nb.test.male <- sapply(size.genome.mbelari$V1, function(x) length(which(tab.variants.male$CHROM == x & tab.variants.male$is.INDEL == 0)))
-density.tests.sexe <- data.frame(contig = size.genome.mbelari$V1, length = size.genome.mbelari$V2, nb.test.female= nb.test.female, nb.test.male = nb.test.male, stringsAsFactors = F)
-density.tests.sexe$den.male <- density.tests.sexe$nb.test.male/density.tests.sexe$length
-density.tests.sexe$den.female <- density.tests.sexe$nb.test.female/density.tests.sexe$length
-log2.den.var <- log2(density.tests.sexe$den.female/density.tests.sexe$den.male)
-pdf("results/call_var/log2_density_ratio_raw_SNPs.pdf")
-hist(log2.den.var, main = "log2(density SNP female/density SNP male) on raw detected SNPs", xlab  = "log2(density SNP female/density SNP male)", breaks = 100)
-abline(v = 0, col = "black", lty = 2)
-dev.off()
-system("bash src/date.sh results/call_var/log2_density_ratio_raw_SNPs.pdf")
+##### Summary of density of SNPs for filtered SNPs per contig 
+tests  <- fread("results/call_var/2017_12_08_merge.sexe.all.filt.SNP.txt", sep = "\t", h = T)
 
+# At contig
+tmp.tests <- tests[which(tests$tot.female>0), ]
+nb.test.female <- table(tmp.tests$CHROM)
+tmp.tests <- tests[which(tests$tot.male>0), ]
+nb.test.male <- table(tmp.tests$CHROM)
+density.tests.sexe.ctg <- data.frame(contig = size.genome.mbelari$V1, nb.female= as.vector(unname(nb.test.female[size.genome.mbelari$V1])), nb.male = as.vector(unname(nb.test.male[size.genome.mbelari$V1])), stringsAsFactors = F)
+density.tests.sexe.ctg$log2.den.female.male <- log2(density.tests.sexe.ctg$nb.female/density.tests.sexe.ctg$nb.male)
+
+# At gene
+g <- unique(tests$genes)
+tmp.tests <- tests[which(tests$tot.female>0 & genes != ""), ]
+nb.test.female <- table(tmp.tests$genes)
+tmp.tests <- tests[which(tests$tot.male>0  & genes != ""), ]
+nb.test.male <- table(tmp.tests$genes)
+density.tests.sexe.g <- data.frame(gene = g, nb.female= as.vector(unname(nb.test.female[g])), nb.male = as.vector(unname(nb.test.male[g])), stringsAsFactors = F)
+density.tests.sexe.g$log2.den.female.male <- log2(density.tests.sexe.g$nb.female/density.tests.sexe.g$nb.male)
+
+# tab at ctg
+pos <- density.tests.sexe.ctg$log2.den.female.male[which(density.tests.sexe.ctg$log2.den.female.male>0 & is.na(density.tests.sexe.ctg$log2.den.female.male) == F)]
+neg <- density.tests.sexe.ctg$log2.den.female.male[which(density.tests.sexe.ctg$log2.den.female.male<0 & is.na(density.tests.sexe.ctg$log2.den.female.male) == F)]
+data.pos <- transform(pos, groupdata = cut(pos, breaks=c(0, 0.5, 1, 1.5, 2, 2.5),
+right=F, include.lowest = F))
+data.neg <- transform(neg, groupdata = cut(neg, breaks=rev(-c(0, 0.5, 1, 1.5, 2, 2.5)),
+right=T, include.lowest = F))
+data <- rbind(data.neg, data.pos)
+tab <- table(c(as.character(data$groupdata), rep("NA", length(which(is.na(density.tests.sexe.ctg$log2.den.female.male)))), rep("0", length(which(density.tests.sexe.ctg$log2.den.female.male == 0)))))
+names <- c("NA", "(-2.5,-2]", "(-2,-1.5]", "(-1.5,-1]", "(-1,-0.5]", "(-0.5,0]", "0", "[0,0.5)", "[0.5,1)", "[1,1.5)", "[1.5,2)" , "[2,2.5)")
+tab.ctg <- tab[names]
+ind.na <- which(is.na(tab.ctg))
+tab.ctg[ind.na] <- 0 
+names(tab.ctg)[ind.na] <- paste(names[ind.na], "\n0 count")
+names(tab.ctg)[which(names(tab.ctg) == "NA")] <- paste("0 in male\n(", tab.ctg["NA"], ")", sep = "")
+names(tab.ctg)[which(names(tab.ctg) == "0")] <- "male\n=fem"
+
+# tab at gene
+pos <- density.tests.sexe.g$log2.den.female.male[which(density.tests.sexe.g$log2.den.female.male>0 & is.na(density.tests.sexe.g$log2.den.female.male) == F)]
+neg <- density.tests.sexe.g$log2.den.female.male[which(density.tests.sexe.g$log2.den.female.male<0 & is.na(density.tests.sexe.g$log2.den.female.male) == F)]
+data.pos <- transform(pos, groupdata = cut(pos, breaks=c(0, 0.5, 1, 1.5, 2, 2.5),
+right=F, include.lowest = F))
+data.neg <- transform(neg, groupdata = cut(neg, breaks=rev(-c(0, 0.5, 1, 1.5, 2, 2.5)),
+right=T, include.lowest = F))
+data <- rbind(data.neg, data.pos)
+tab <- table(c(as.character(data$groupdata), rep("NA", length(which(is.na(density.tests.sexe.g$log2.den.female.male)))), rep("0", length(which(density.tests.sexe.g$log2.den.female.male == 0)))))
+names <- c("NA", "(-2.5,-2]", "(-2,-1.5]", "(-1.5,-1]", "(-1,-0.5]", "(-0.5,0]", "0", "[0,0.5)", "[0.5,1)", "[1,1.5)", "[1.5,2)" , "[2,2.5)")
+tab.g <- tab[names]
+ind.na <- which(is.na(tab.g))
+tab.g[ind.na] <- 0 
+names(tab.g)[ind.na] <- paste(names[ind.na], "\n0 count")
+names(tab.g)[which(names(tab.g) == "NA")] <- paste("0 in male\n(", tab.g["NA"], ")", sep = "")
+names(tab.g)[which(names(tab.g) == "0")] <- "male\n=fem"
+
+pdf("results/call_var/log2_density_ratio_SNPs.pdf", w = 13, h = 5)
+par(mfrow = c(1,2))
+barplot(tab.ctg, main = "log2(density SNP female/density SNP male)\non filtered detected SNPs on contig", xlab  = "log2(density SNP female/density SNP male)", cex.names = 0.4)
+barplot(tab.g, main = "log2(density SNP female/density SNP male)\non filtered detected SNPs on gene", xlab  = "log2(density SNP female/density SNP male)", cex.names = 0.4)
+dev.off()
+system("bash src/date.sh results/call_var/log2_density_ratio_SNPs.pdf")
 
 
 # Plot histogram of frequency of filtered variants 
