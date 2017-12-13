@@ -9,7 +9,7 @@ require(VGAM)
 source("src/func/functions.R")
 
 do.fisher <- F
-alpha <- 0.05
+alpha.threshold <- 0.05
 
 if (do.fisher) {
   data.filt.SNP <- read.csv("results/call_var/2017_12_08_merge.sexe.all.filt.SNP.txt", sep = "\t", h = T, stringsAsFactors = F)
@@ -52,7 +52,8 @@ if(do.H0){
 ##### Compute 10 datasets under H0 with alpha set to obtain above
 do.simu.10x <- F
 if(do.simu.10x) {
-	data.tests <- read.csv("results/call_var/2017_12_05_merge.sexe.common.all.filt.SNP.same.alt.fisher.txt", sep = "\t", h = T, stringsAsFactors = F)
+	data.tests <- read.csv("results/fisher/2017_12_08_merge.sexe.all.filt.SNP.same.alt.fisher.txt", sep = "\t", h = T, stringsAsFactors = F)
+  readRDS( "params_H0_beta.RData")
         ##### complete
 	alpha.choose <- alpha
 	beta.choose <- beta
@@ -86,7 +87,7 @@ if(do.simu.10x) {
 	        pvalH0_out$pval.fisher.H0 <- pval.fisher.H0
 		pH0.simu <- cbind(pH0.simu, pval.fisher.H0)
 
-		saveRDS(pvalH0_out, paste("results/fisher/simulated_#", i, "_count_H0.RData", sep = ""))	
+		saveRDS(pvalH0_out, paste("simulated_#", i, "_count_H0.RData", sep = ""))	
 		system(paste("bash src/date.sh results/fisher/simulated_#", i, "_count_H0.RData", sep = ""))	
 	}
 
@@ -95,7 +96,7 @@ if(do.simu.10x) {
 	pemp <- apply(pH0.simu, 1, function(x) {y <- unlist(x); length(which(y[1:10] <= y[11]))})/10
 	fdr <- p.adjust(pemp, method = "BH")
 	data.tests.simu$FDR <- fdr
-	write.table(data.tests.simu, "results/call_var/merge.sexe.common.all.filt.SNP.same.alt.fisher.FDR.txt", sep = "\t", col.names = T, row.names = F)
+	write.table(data.tests.simu, "results/fisher/merge.sexe.all.filt.SNP.same.alt.fisher.FDR.txt", sep = "\t", col.names = T, row.names = F)
 	system("bash src/date.sh results/call_var/merge.sexe.common.all.filt.SNP.same.alt.fisher.FDR.txt")
 }	
 
@@ -105,54 +106,46 @@ size.genome.mbelari <- fread("data/ReferenceGenomes/2017_09_13_Mbelari.sizes.gen
 gff.mbelari <- read.csv("data/ReferenceGenomes/Mesorhabditis_belari_JU2817_v2.gff3", h = F, sep = "\t", stringsAsFactors = F)
 # genes annotation
 gff.mbelari.genes <- gff.mbelari[which(gff.mbelari$V3 == "gene"), ]
-tests <- read.csv("results/call_var/2017_12_05_merge.sexe.common.all.filt.SNP.same.alt.fisher.FDR.txt", sep = "\t", h = T, stringsAsFactors = F)
+tests <- read.csv("results/fisher/2017_12_08_merge.sexe.all.filt.SNP.same.alt.fisher.FDR.txt", sep = "\t", h = T, stringsAsFactors = F)
 
 ##### Nb of significative SNP results at gene and contig level
-tab.ctg <- table(tests$FDR<alpha, tests$CHROM); tab.signif.ctg <- tab.ctg[, which(tab.ctg[2, ]>0)]
-tab.gene <- table(tests$FDR<alpha, tests$gene); tab.signif.gene <- tab.gene[, which(tab.gene[2, ]>0)]
-pdf("results/call_var/signif_Fisher_contig_gene_level.pdf")
-par(mfrow = c(1,2))
+tests.within.genes <- tests[which(tests$genes != ""), ]
+
+tab.ctg <- table(tests$FDR<alpha.threshold, tests$CHROM); tab.signif.ctg <- tab.ctg[, which(tab.ctg[2, ]>0)]
+tab.ctg.within.genes <- table(tests.within.genes$FDR<alpha.threshold, tests.within.genes$CHROM); tab.signif.ctg.within.genes <- tab.ctg.within.genes[, which(tab.ctg.within.genes[2, ]>0)]
+tab.gene <- table(tests.within.genes$FDR<alpha.threshold, tests.within.genes$gene); tab.signif.gene <- tab.gene[, which(tab.gene[2, ]>0)]
+pdf("results/fisher/signif_Fisher_contig_gene_level.pdf", h = 9, w = 12)
+par(mfrow = c(1,3))
 barplot(tab.signif.ctg[2, ], xlab = "At least 1 SNP signif. on this contig (FDR for fisher)", ylab = "#signif per contig", xaxt = "n",
-main = paste("Output of signif. fisher tests (", sum(tab.signif.ctg[2, ]), ") per\nSNP at a threshold of ", 100*alpha, "% per contig (", dim(tab.signif.ctg)[2], ")", sep = ""))
+main = paste("Signif. fisher tests (", sum(tab.signif.ctg[2, ]), ") per\nSNP at ", 100*alpha.threshold, "% per contig (", dim(tab.signif.ctg)[2], ")", sep = ""))
+barplot(tab.signif.ctg.within.genes[2, ], xlab = "At least 1 SNP signif. on this contig within gene\n(FDR for fisher)", ylab = "#signif per contig within gene", xaxt = "n",
+main = paste("Signif. fisher tests (", sum(tab.signif.ctg.within.genes[2, ]), ") per\nSNP at ", 100*alpha.threshold, "% per contig within gene (", dim(tab.signif.ctg.within.genes)[2], ")", sep = ""))
 barplot(tab.signif.gene[2, ], xlab = "At least 1 SNP signif. on this gene (FDR for fisher)", ylab = "#signif per gene", xaxt = "n",
-main = paste("Output of signif. fisher tests (", sum(tab.signif.gene[2, ]), ") per\nSNP at a threshold of ", 100*alpha, "% per gene (", dim(tab.signif.gene)[2], ")", sep = ""))
+main = paste("Signif. fisher tests (", sum(tab.signif.gene[2, ]), ") per\nSNP at ", 100*alpha.threshold, "% per gene (", dim(tab.signif.gene)[2], ")", sep = ""))
 dev.off()
-system("bash src/date.sh results/call_var/signif_Fisher.pdf")
+system("bash src/date.sh results/fisher/signif_Fisher_contig_gene_level.pdf")
 
-##### Plot FDR representation by contig with highest nb of significant SNPs to lowest number of significant SNPs
-fisher <- tests[, c("CHROM", "POS", "POS", "REF", "pval.fisher.raw.count", "pval.adjBH.fisher.raw.count", "FDR")]
-tab <- table(tests$FDR<alpha, tests$CHROM)
-tab <- tab[1:2, which(tab[2, ]>0)]
-length.tab <- sapply(colnames(tab), function(x) size.genome.mbelari[which(size.genome.mbelari$V1 == x), ]$V2)
-nb.per.bp <- tab[2, ]/length.tab[which(tab[2, ]>0)]
-nb.on.tot <-100*tab[2, ]/(tab[2,]+tab[1,])
-
-##### Ranking on contigs
-rank.signif.ctgs <- colnames(tab[1:2, rev(order(tab[2, ]))])
-rank.signif.ctgs.per.bp <- names(rev(order(nb.per.bp)))
-rank.signif.ctgs.on.tot <- names(rev(order(nb.on.tot)))
-
-nb.signif <- 10
-to.plot <- rank.signif.ctgs[1:nb.signif]
-to.plot.per.bp <- rank.signif.ctgs.per.bp[1:nb.signif]
-to.plot.on.tot <- rank.signif.ctgs.on.tot[1:nb.signif]
-plot <- to.plot
-
-# Prepare input for Manhattan plot
-size.tmp <- size.genome.mbelari[sapply(plot, function(x) which(size.genome.mbelari$V1 == x)), ]
-size.tmp$V1 <- factor(size.tmp$V1, levels =  plot)
-fisher.tmp <- fisher[unlist(sapply(plot, function(x) which(fisher$CHROM == x))), c("CHROM", "POS", "POS.1", "REF", "pval.adjBH.fisher.raw.count")]
+##### Plot FDR representation by contig with highest nb of significant SNPs per gene
+rank.signif.gene <-  colnames(tab.signif.gene)[rev(order(tab.signif.gene[2, ]))]
+plot <- rank.signif.gene[1:5]
+fisher.tmp <- tests.within.genes[unlist(sapply(plot, function(x) which(tests.within.genes$genes == x))), c("CHROM", "POS", "REF", "pval.adjBH.fisher.raw.count", "genes", "FDR")]
+fisher.tmp$FDR[which(fisher.tmp$FDR == 0)] <- 0.000001
+fisher.tmp$POS.1 <- fisher.tmp$POS
+fisher.tmp <- fisher.tmp[, c("CHROM", "POS", "POS.1", "REF", "FDR")]
+chr.tmp <- unique(fisher.tmp$CHROM)
+size.tmp <- size.genome.mbelari[sapply(chr.tmp, function(x) which(size.genome.mbelari$V1 == x)), ]
+size.tmp$V1 <- factor(size.tmp$V1, levels =  chr.tmp)
 fisher.tmp$CHROM <- paste("chr", fisher.tmp$CHROM, sep = "")
-fisher.tmp$CHROM <- factor(fisher.tmp$CHROM, levels = paste("chr", plot, sep = ""))
+fisher.tmp$CHROM <- factor(fisher.tmp$CHROM, levels = paste("chr", chr.tmp, sep = ""))
 fisher.tmp$REF <- 1:dim(fisher.tmp)[1]
-#levels(fisher.tmp$CHROM) <- plot
 
-pdf("results/call_var/2017_11_26_example_Manhattan.pdf")
+
 plotManhattan(bedfile = fisher.tmp, pvalues = fisher.tmp$FDR,
 col = SushiColors(5),  genome = size.tmp, cex=0.75)
+size.tmp$V1 <- factor(size.tmp$V1, levels =  chr.tmp)
 labelgenome(genome = size.tmp, n = 5, edgeblankfraction = 0.20, cex.axis=.5)
 abline(h = -log10(0.05))
 axis(side=2,las=2,tcl=.2)
 mtext("-log10(P)",side=2,line=1.75,cex=1,font=2)
 mtext("contig",side=1,line=1.75,cex=1,font=2)
-dev.off()
+
