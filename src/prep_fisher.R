@@ -202,12 +202,14 @@ barplot(tab.g, main = "log2(density SNP female/density SNP male)\non filtered de
 dev.off()
 system("bash src/date.sh results/call_var/log2_density_ratio_SNPs.pdf")
 
-
-# Plot histogram of frequency of filtered variants 
-data.filt.SNPs <- read.csv("results/call_var/2017_11_09_merge.sexe.all.filt.SNP.txt", sep = "\t", h = T, stringsAsFactors = F)
-
-pdf("results/call_var/2017_11_13_merge.sexe.common.biallelic.filt.SNP.frequency.male.female.pool.pdf")
-hist(data.filt.SNPs$count.alt.male/data.filt.SNPs$tot.male, col = adjustcolor("blue", 0.75), breaks = 20, xlim = c(0,1), xlab = "Variants frequency", main = "Histogram of filtered SNPs frequencies")
-hist(data.filt.SNPs$count.alt.female/data.filt.SNPs$tot.female, col = adjustcolor("red", 0.75), add = T, breaks = 20, xlim = c(0,1))
-legend("topleft", c("male variants frequency", "female variants frequency"), fill = c("blue", "red"))
+##### Plot histogram of frequency of filtered variants 
+pdf("results/call_var/frequency_SNPs_sexes.pdf")
+mean.m <- mean(na.omit(tests$count.alt.male/tests$tot.male))
+mean.f <-mean(na.omit(tests$count.alt.female/tests$tot.female))
+hist(tests$count.alt.male/tests$tot.male, col = adjustcolor("blue", 0.5), breaks = 20, xlim = c(0,1), xlab = "Variants frequency", main = "Histogram of SNPs frequencies\nbetween sexes")
+hist(tests$count.alt.female/tests$tot.female, col = adjustcolor("red", 0.5), add = T, breaks = 20, xlim = c(0,1))
+abline(v = mean.f, col = "red", lty = 2, lwd = 2)
+abline(v = mean.m, col = "blue", lty = 2, lwd = 2)
+legend("topleft", c("male frequency", "female frequency"), fill = c("blue", "red"))
 dev.off()
+system("bash src/date.sh results/call_var/frequency_SNPs_sexes.pdf")
