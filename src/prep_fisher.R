@@ -122,23 +122,21 @@ x[["is.INDEL.x"]] == x[["is.INDEL.y"]]))
   tmp.all.INDEL.test.INDEL.filt$contig_length <- mat.size.ctg[, tmp.all.INDEL.test.INDEL.filt$CHROM]
 
   ##### Summary of filtered variants
-  tab.snp <- table(merge.sexe.all.filt$same.ALT[which(merge.sexe.all.filt$is.INDEL == 0)])
-  tab.indel <- table(merge.sexe.all.filt$same.ALT[which(merge.sexe.all.filt$is.INDEL == 1)])
+  tab.snp <- table(tmp.all.SNP.test.INDEL.filt$same.ALT)
+  tab.indel <- table(tmp.all.INDEL.test.INDEL.filt$same.ALT)
   pdf("results/call_var/summary_alleles_ALT_between_pools.pdf", height=4, width=10)
   par(mfrow = c(1, 2))
-  bb.snp <- barplot(tab.snp, names.arg = c("different ALT allele", "same ALT allele"), main = "SNP identity between both pools", cex.arg = 0.75)
+  bb.snp <- barplot(tab.snp, names.arg = c("different ALT allele", "same ALT allele"), main = "SNP identity between both pools", cex.main = 0.75)
   text(bb.snp, max(tab.snp)/2,labels=tab.snp) 
-  bb.indel <- barplot(tab.indel, names.arg = c("different ALT allele", "same ALT allele"), main = "INDELs identity between both pools", cex.arg = 0.75) 
+  bb.indel <- barplot(tab.indel, names.arg = c("different ALT allele", "same ALT allele"), main = "INDELs identity between both pools", cex.main = 0.75) 
   text(bb.indel, max(tab.indel)/2,labels=tab.indel) 
   dev.off()
   system("bash src/date.sh results/call_var/summary_alleles_ALT_between_pools.pdf")
 
-  write.table(summary.filt, "results/call_var/summary_filt_variants.txt", sep = "\t",  quote = F, row.names = F)
-  write.table(merge.sexe.all.filt, "results/call_var/merge.sexe.all.filt.txt", sep = "\t", row.names = F, col.names = T, quote = F)
-  write.table(merge.sexe.all.filt[which(merge.sexe.all.filt$is.INDEL == 0),], "results/call_var/merge.sexe.all.filt.SNP.txt", sep = "\t", row.names = F, col.names = T, quote = F)
+  write.table(tmp.all.INDEL.test.INDEL.filt, "results/call_var/merge.sexe.all.filt.INDEL.txt", sep = "\t", row.names = F, col.names = T, quote = F)
+  write.table(tmp.all.SNP.test.INDEL.filt, "results/call_var/merge.sexe.all.filt.SNP.txt", sep = "\t", row.names = F, col.names = T, quote = F)
 
-  system("bash src/date.sh results/call_var/summary_filt_variants.txt")
-  system("bash src/date.sh results/call_var/merge.sexe.all.filt.txt")
+  system("bash src/date.sh results/call_var/merge.sexe.all.filt.INDEL.txt")
   system("bash src/date.sh results/call_var/merge.sexe.all.filt.SNP.txt")
 }
 
