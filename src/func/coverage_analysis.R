@@ -11,11 +11,8 @@
   source("src/func/functions.R")
   
 ##### Data file 
-contigs.mbela <- fread("data/ReferenceGenomes/2017_09_13_Mbelari.sizes.genome", sep = "\t", h = F, stringsAsFactors = F)
 gff3.file.all.genome <- "data/ReferenceGenomes/Mesorhabditis_belari_JU2817_v2.gff3"
-gff.mbela <- read.csv(gff3.file.all.genome, sep = "\t", h = F, stringsAsFactors = F)
-gff.genes.mbela <- gff.mbela[which(gff.mbela$V3 == "gene"), ]
-write.table(gff.genes.mbela, "data/ReferenceGenomes/Mesorhabditis_belari_JU2817_v2_genes.gff3", quote = F, sep = "\t", row.names = F, col.names = F)
+contigs.mbela <- fread("data/ReferenceGenomes/2017_09_13_Mbelari.sizes.genome", sep = "\t", h = F, stringsAsFactors = F)
 
 compute.norm <- F
 if(compute.norm){
@@ -26,12 +23,17 @@ if(compute.norm){
   #summary(clus.size$nb)
   #  Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
   #0.000    0.000    0.000    0.713    0.000 4430.000 
-  pdf("results/mapping/mapped/2017_11_26_cluster_size.pdf")
+  pdf("results/mapping/mapped/cluster_size.pdf")
   hist(log10(clus.size$nb), breaks = 50, main = paste("log10(size of clusters) (n=", dim(clus.size)[1], ") obtained with CD-HIT\nto compare unmapped female and male reads", sep = ""), cex.main = 0.9)
   dev.off()
+  system("bash src/date.sh results/mapping/mapped/cluster_size.pdf")
 
   ##### Pick contig name and length
   print(summary(contigs.mbela$V2))
+
+  ##### Pick annotation to get gene regions 
+  gff.mbela <- read.csv(gff3.file.all.genome, sep = "\t", h = F, stringsAsFactors = F)
+  gff.genes.mbela <- gff.mbela[which(gff.mbela$V3 == "gene"), ]
 
   ##### Percentage of genic region:
   tot.size <- sum(contigs.mbela$V2)
@@ -70,8 +72,6 @@ if(compute.norm){
   ##### Normalize genes counts 
   # Generate bed file for gene region coordinates
   system("bash src/convertgff_to_bed.sh data/ReferenceGenomes/Mesorhabditis_belari_JU2817_v2_genes.gff3 data/ReferenceGenomes/Mesorhabditis_belari_JU2817_v2_genes.bed")
-  # Call format_bed.R to change coordinates
-  source("src/format_bed.R")
   # Extract gene region in bed depth file at each bp with intersect_bed_genes.sh
   system("bash src/intersect_gene_bed_genes.sh")
  
@@ -99,7 +99,8 @@ if(compute.norm){
 
   ##### Compute subset of data to do merge
   counts.genes.bp <- ComputeNormalizedCount(counts.genes.female, counts.genes.male, "bp")
-  write.table(counts.genes.bp, "results/coverage/2017_11_30_FC_normalized_coverage_at_bp_within_genes.txt", sep= "\t", quote =F, col.names = T, row.names = F)
+  write.table(counts.genes.bp, "results/coverage/FC_normalized_coverage_at_bp_within_genes.txt", sep= "\t", quote =F, col.names = T, row.names = F)
+  system("bash src/date.sh results/coverage/FC_normalized_coverage_at_bp_within_genes.txt")
 }
 
 do.test.at.bp <- F
@@ -108,11 +109,9 @@ if(do.test.at.bp ){
   counts.bp <- tbl_df(fread("results/coverage/2017_11_30_FC_normalized_coverage_at_bp_within_genes.txt", sep= "\t", stringsAsFactors = F))
   genes <- counts.bp %>% distinct(V8); genes <- unique(genes$V8) 
 
-  cores=detectCores()
-  cl <- makeCluster(cores[1]-1) #not to overload your computer
-  registerDoParallel(cl)
-  res <- foreach(g=genes, .combine=rbind) %dopar% {
-        tmp <- as.data.frame(filter(counts.bp, V8 == g))[, c("counts.norm.female", "counts.norm.male", "log2.norm.FC")]
+  res <- NULL
+  for(g in genes) {
+        tmp <- filter(counts.bp, V8 == g)[, c("counts.norm.female", "counts.norm.male", "log2.norm.FC")]
 	fc <- tmp$log2.norm.FC
 	f <- tmp$counts.norm.female; f.a <- 2*sqrt(f+3/8)
 	m <- tmp$counts.norm.male; m.a <- 2*sqrt(m+3/8)
@@ -145,14 +144,13 @@ if(do.test.at.bp ){
 		#m0.n <- glm(count~1, data = dat, family = "gaussian")	
 		#pm.anova <- anova(m0, m1)[["Pr(Chi)"]][2]
 	}
-	data.frame(gene = g, median.log2.norm.FC = me, mean.log2.norm.FC = mean, median.female = me.f, median.male = me.m, mean.female = mean.f, mean.male = mean.m, pval.med = med.test, pval.med.a = med.test.a, pval.ttest = t.test, pval.ttest.a = t.test.a, pval.ttest.both = t.test.both, pval.ttest.both.a = t.test.both.a, stringsAsFactors = F)
+	res <- rbind(res, data.frame(gene = g, median.log2.norm.FC = me, mean.log2.norm.FC = mean, median.female = me.f, median.male = me.m, mean.female = mean.f, mean.male = mean.m, pval.med = med.test, pval.med.a = med.test.a, pval.ttest = t.test, pval.ttest.a = t.test.a, pval.ttest.both = t.test.both, pval.ttest.both.a = t.test.both.a, stringsAsFactors = F))
   }
-  stopCluster(cl)
-
-  write.table(res, "results/fisher/2017_11_30_tests_FC_normalized_coverage_at_bp_within_genes.txt", sep= "\t", quote =F, col.names = T, row.names = F)
+  write.table(res, "tests_FC_normalized_coverage_at_bp_within_genes.txt", sep= "\t", quote =F, col.names = T, row.names = F)
+  system("bash src/date.sh results/coverage/tests_FC_normalized_coverage_at_bp_within_genes.txt")
 }
 
-
+##### Need to check to rerun
 counts.contigs <- read.csv("results/coverage/2017_11_26_FC_normalized_coverage_at_contig.txt", sep= "\t", h = T, stringsAsFactors =  F)
 counts.genes <- read.csv("results/coverage/2017_11_26_FC_normalized_coverage_at_gene.txt", sep= "\t", h = T, stringsAsFactors =  F)
  
