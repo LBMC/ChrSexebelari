@@ -33,20 +33,20 @@ if (do.fisher) {
   # Adjust Fisher pvalue with BH
   data.filt.SNP.same.alt$pval.adjBH.fisher.raw.count <- p.adjust(data.filt.SNP.same.alt$pval.fisher.raw.count, method = "BH")
 
-  write.table(data.filt.SNP.same.alt, "results/call_var/merge.sexe.all.filt.SNP.same.alt.fisher.txt", sep = "\t",  quote = F, row.names = F)
-  system("bash src/date.sh results/call_var/merge.sexe.all.filt.SNP.same.alt.fisher.txt")
+  write.table(data.filt.SNP.same.alt, "results/fisher/merge.sexe.all.filt.SNP.same.alt.fisher.txt", sep = "\t",  quote = F, row.names = F)
+  system("bash src/date.sh results/fisher/merge.sexe.all.filt.SNP.same.alt.fisher.txt")
 }
 
 do.H0 <- F
 if(do.H0){
-	##### Compute H0 distribution of count tables: UPDATE: instead using Bastide et al Methods to choose the best alpha value, I use instead a vglm fit on betabinomial to get alpha and beta parameters.
-	data.tests <- read.csv("results/call_var/2017_12_05_merge.sexe.common.biallelic.filt.SNP.same.alt.fisher.txt", sep = "\t", h = T, stringsAsFactors = F)
+	##### Compute H0 distribution of count tables: UPDATE: instead using Bastide et al Methods to choose the best alpha value, I use instead a vglm fit on betabinomial to get alpha and beta parameters. Version 1.02 of VGAM was used on bioinfo space computer
+	data.tests <- read.csv("results/fisher/2017_12_08_merge.sexe.all.filt.SNP.same.alt.fisher.txt", sep = "\t", h = T, stringsAsFactors = F)
 	fit <- vglm(cbind(c(data.tests$count.ref.female, data.tests$count.alt.female), c(data.tests$count.ref.male, data.tests$count.alt.male)) ~ 1, betabinomial, trace = T)
 	coeff <- Coef(fit)
 	alpha <- (1-coeff["rho"])/(coeff["rho"]*(1+(1-coeff["mu"])/coeff["mu"]))
 	beta <- alpha*(1-coeff["mu"])/coeff["mu"]
-	saveRDS(fit, "results/call_var/params_H0_beta.RData")
-	system("bash src/date.sh results/call_var/params_H0_beta.RData")
+	saveRDS(fit, "results/fisher/params_H0_beta.RData")
+	system("bash src/date.sh results/fisher/params_H0_beta.RData")
 }
 
 ##### Compute 10 datasets under H0 with alpha set to obtain above
