@@ -4,11 +4,19 @@
   library(devtools)
   library(Biobase)
   library(preprocessCore)
-  #require(foreach)
-  #require(doParallel)
-  #require(parallel)
+  require(MASS)
+  require(foreach)
+  require(doParallel)
+  require(parallel)
   source("src/func/functions.R")
   
+##### Data file 
+contigs.mbela <- fread("data/ReferenceGenomes/2017_09_13_Mbelari.sizes.genome", sep = "\t", h = F, stringsAsFactors = F)
+gff3.file.all.genome <- "data/ReferenceGenomes/Mesorhabditis_belari_JU2817_v2.gff3"
+gff.mbela <- read.csv(gff3.file.all.genome, sep = "\t", h = F, stringsAsFactors = F)
+gff.genes.mbela <- gff.mbela[which(gff.mbela$V3 == "gene"), ]
+write.table(gff.genes.mbela, "data/ReferenceGenomes/Mesorhabditis_belari_JU2817_v2_genes.gff3", quote = F, sep = "\t", row.names = F, col.names = F)
+
 compute.norm <- F
 if(compute.norm){
   ##### Plot cluster size when comparing unmapped female and male reads
@@ -23,13 +31,7 @@ if(compute.norm){
   dev.off()
 
   ##### Pick contig name and length
-  contigs.mbela <- fread("data/ReferenceGenomes/2017_09_13_Mbelari.sizes.genome", sep = "\t", h = F, stringsAsFactors = F)
   print(summary(contigs.mbela$V2))
-  
-  ##### Pick annotation to get gene regions 
-  gff.mbela <- read.csv("data/ReferenceGenomes/Mesorhabditis_belari_JU2817_v2.gff3", sep = "\t", h = F, stringsAsFactors = F)
-  gff.genes.mbela <- gff.mbela[which(gff.mbela$V3 == "gene"), ]
-  write.table(gff.genes.mbela, "data/ReferenceGenomes/Mesorhabditis_belari_JU2817_v2_genes.gff3", sep = "\t", col.names = F, row.names = F, quote = F)
 
   ##### Percentage of genic region:
   tot.size <- sum(contigs.mbela$V2)
@@ -65,26 +67,30 @@ if(compute.norm){
   print(sum(cov.male$Reads*100*2)/sum(cov.male$Length)) #24.76252
   print(sum(cov.female$Reads*100*2)/sum(cov.female$Length)) #43.67202
 
-  ##### Normalize genes counts at bp level
+  ##### Normalize genes counts 
   # Generate bed file for gene region coordinates
   system("bash src/convertgff_to_bed.sh data/ReferenceGenomes/Mesorhabditis_belari_JU2817_v2_genes.gff3 data/ReferenceGenomes/Mesorhabditis_belari_JU2817_v2_genes.bed")
+  # Call format_bed.R to change coordinates
+  source("src/format_bed.R")
   # Extract gene region in bed depth file at each bp with intersect_bed_genes.sh
   system("bash src/intersect_gene_bed_genes.sh")
  
-  ##### Normalize genes counts at bp level within contig, within gene and at gene bp level
+  ##### Normalize counts at contig level, gene level and at gene bp level
   counts.contigs <- ComputeNormalizedCount(cov.female, cov.male, "contig")
-  write.table(counts.contigs, "results/coverage/2017_11_26_FC_normalized_coverage_at_contig.txt", sep= "\t", quote =F, col.names = T, row.names = F)
+  write.table(counts.contigs, "results/coverage/FC_normalized_coverage_at_contig.txt", sep= "\t", quote =F, col.names = T, row.names = F)
+  system("bash src/date.sh results/coverage/FC_normalized_coverage_at_contig.txt") 
 
-  counts.genes.female <- fread("results/coverage/2017_11_12_MRDR5_trim_Mbelari_mapped_rmdup_rg_realign_indels_count_genes.txt", h = F, sep = "\t", stringsAsFactors = F)
-  counts.genes.male <- fread("results/coverage/2017_11_12_MRDR6_trim_Mbelari_mapped_rmdup_rg_realign_indels_count_genes.txt", h = F, sep = "\t", stringsAsFactors = F)
+  counts.genes.female <- fread("results/coverage/2017_12_06_MRDR5_trim_Mbelari_mapped_rmdup_rg_realign_indels_count_genes.txt", h = F, sep = "\t", stringsAsFactors = F)
+  counts.genes.male <- fread("results/coverage/2017_12_06_MRDR6_trim_Mbelari_mapped_rmdup_rg_realign_indels_count_genes.txt", h = F, sep = "\t", stringsAsFactors = F)
   counts.genes <- ComputeNormalizedCount(counts.genes.female, counts.genes.male, "gene")
-  write.table(counts.genes, "results/coverage/2017_11_26_FC_normalized_coverage_at_gene.txt", sep= "\t", quote =F, col.names = T, row.names = F)
+  write.table(counts.genes, "results/coverage/FC_normalized_coverage_at_gene.txt", sep= "\t", quote =F, col.names = T, row.names = F)
+  system("bash src/date.sh results/coverage/FC_normalized_coverage_at_gene.txt") 
 
   ##### Intersect genes and coverage at bp resolution
-  counts.genes.female <- tbl_df(fread("results/coverage/2017_11_18_MRDR5_trim_Mbelari_mapped_rmdup_rg_realign_indels_sort_in_genes.bed", h = F, sep = "\t", stringsAsFactors = F))
-  counts.genes.male <- tbl_df(fread("results/coverage/2017_11_18_MRDR6_trim_Mbelari_mapped_rmdup_rg_realign_indels_sort_in_genes.bed", h = F, sep = "\t", stringsAsFactors = F))
-  in_male <- setdiff(unique(counts.genes.male$V8), unique(counts.genes.female$V8))
-  in_female <- setdiff(unique(counts.genes.female$V8), unique(counts.genes.male$V8))
+  counts.genes.female <- tbl_df(fread("results/coverage/2017_12_06_MRDR5_trim_Mbelari_mapped_rmdup_rg_realign_indels_sort_in_genes.bed", h = F, sep = "\t", stringsAsFactors = F))
+  counts.genes.male <- tbl_df(fread("results/coverage/2017_12_06_MRDR6_trim_Mbelari_mapped_rmdup_rg_realign_indels_sort_in_genes.bed", h = F, sep = "\t", stringsAsFactors = F))
+  #in_male <- setdiff(unique(counts.genes.male$V8), unique(counts.genes.female$V8))
+  #in_female <- setdiff(unique(counts.genes.female$V8), unique(counts.genes.male$V8))
   #> in_female #24211 genes
   #[1] "MBELA.g12439" "MBELA.g12585" "MBELA.g14323" "MBELA.g14395" "MBELA.g14542"
   #[6] "MBELA.g17943" "MBELA.g23060"
@@ -93,52 +99,69 @@ if(compute.norm){
 
   ##### Compute subset of data to do merge
   counts.genes.bp <- ComputeNormalizedCount(counts.genes.female, counts.genes.male, "bp")
-  write.table(counts.genes.bp, "results/coverage/2017_11_26_FC_normalized_coverage_at_bp_within_genes.txt", sep= "\t", quote =F, col.names = T, row.names = F)
+  write.table(counts.genes.bp, "results/coverage/2017_11_30_FC_normalized_coverage_at_bp_within_genes.txt", sep= "\t", quote =F, col.names = T, row.names = F)
 }
 
 do.test.at.bp <- F
 if(do.test.at.bp ){
   ##### In case of bp level, implement test per gene on estimated FC valeurs: if not gaussian, compute i) a glm based on NB to compare counts, ii) a median like based test on the log2(FC), iii) try the the ans comb transformation and perform a test on it.
-  counts.bp <- tbl_df(fread("results/coverage/2017_11_26_FC_normalized_coverage_at_bp_within_genes.txt", sep= "\t", stringsAsFactors = F))
+  counts.bp <- tbl_df(fread("results/coverage/2017_11_30_FC_normalized_coverage_at_bp_within_genes.txt", sep= "\t", stringsAsFactors = F))
   genes <- counts.bp %>% distinct(V8); genes <- unique(genes$V8) 
-  res <- NULL
-  for (g in genes) {
-	tmp <- select(filter(counts.bp, V8 == g), c("log2.norm.FC", "counts.norm.female", "counts.norm.male"))
+
+  cores=detectCores()
+  cl <- makeCluster(cores[1]-1) #not to overload your computer
+  registerDoParallel(cl)
+  res <- foreach(g=genes, .combine=rbind) %dopar% {
+        tmp <- as.data.frame(filter(counts.bp, V8 == g))[, c("counts.norm.female", "counts.norm.male", "log2.norm.FC")]
 	fc <- tmp$log2.norm.FC
-	f <- tmp$counts.norm.female
-	m <- tmp$counts.norm.male
+	f <- tmp$counts.norm.female; f.a <- 2*sqrt(f+3/8)
+	m <- tmp$counts.norm.male; m.a <- 2*sqrt(m+3/8)
+	fc.a <- log2(f.a/m.a)
 	me <- median(fc); mean <- mean(fc)
-	me.f <- median(f); mean.f <- mean(f); mf <- max(f)
-	me.m <- median(m); mean.m <- mean(m); mm <- max(m)
-	par(mfrow = c(1, 3))
-	hist(f, xlim = c(0, max(c(mm, mf))), main = "Normalized female coverage", breaks = 50)
-	hist(m, xlim = c(0, max(c(mm, mf))), main = "Normalized male coverage", breaks = 50)
-	hist(fc, main = "log2(FC) on normalized coverage", breaks = 50)
-	#g1, g10, g30
-	#ans comb transform
+	me.f <- median(f); mean.f <- mean(f); 
+	me.m <- median(m); mean.m <- mean(m);
  
 	if (length(unique(fc)) == 1) {
 		med.test <- NA	
 		t.test <- NA
+		t.test.a <- NA
+		t.test.both <- NA
+		t.test.both.a <- NA
 	} else{
-		med.test <- prop.test(sum(fc > 0), length(fc), p = 0.5, "two.sided")$p.value	
-		t.test <- t.test(fc)$p.value	
-		t.test.both <- t.test(f,m)$p.value	
-		w.test.both <- wilcox.test(f,m)$p.value	
+		med.test <- prop.test(sum(fc > 0), length(fc), p = 0.5, "two.sided")$p.value
+		med.test.a <- prop.test(sum(fc.a > 0), length(fc.a), p = 0.5, "two.sided")$p.value		
+		t.test <- t.test(fc)$p.value
+		t.test.a <- t.test(fc.a)$p.value		
+		t.test.both <- t.test(f, m)$p.value	
+		t.test.both.a <- t.test(f.a, m.a)$p.value
+		#dat <- data.frame(count = round(c(m, f)), sexe = c(rep("male", length(m)), rep("female", length(f))))
+		#m1 <- MASS::glm.nb(count~sexe, data = dat, control = glm.control(maxit=200))	
+		#m1.g <- glm(count~sexe, data = dat, family = "poisson")	
+		#m1.q <- glm(count~sexe, data = dat, family = "quasipoisson")	
+		#m1.n <- glm(count~sexe, data = dat, family = "gaussian")	
+		#m0 <- MASS::glm.nb(count~1, data = dat,control = glm.control(trace = 10,maxit=200))	
+		#m0.g <- glm(count~1, data = dat, family = "poisson")	
+		#m0.q <- glm( count~1, data = dat, family = "quasipoisson")	
+		#m0.n <- glm(count~1, data = dat, family = "gaussian")	
+		#pm.anova <- anova(m0, m1)[["Pr(Chi)"]][2]
 	}
-	res <- rbind(res, data.frame(gene = g, median.log2.norm.FC = me, mean.log2.norm.FC = mean, pval.med = med.test, pval.ttest = t.test, stringsAsFactors = F))
+	data.frame(gene = g, median.log2.norm.FC = me, mean.log2.norm.FC = mean, median.female = me.f, median.male = me.m, mean.female = mean.f, mean.male = mean.m, pval.med = med.test, pval.med.a = med.test.a, pval.ttest = t.test, pval.ttest.a = t.test.a, pval.ttest.both = t.test.both, pval.ttest.both.a = t.test.both.a, stringsAsFactors = F)
   }
-  write.table(res, "results/coverage/2017_11_26_FC_normalized_coverage_at_bp_within_genes.txt", sep= "\t", quote =F, col.names = T, row.names = F)
+  stopCluster(cl)
+
+  write.table(res, "results/fisher/2017_11_30_tests_FC_normalized_coverage_at_bp_within_genes.txt", sep= "\t", quote =F, col.names = T, row.names = F)
 }
 
 
-counts.contigs <- read.table("results/coverage/2017_11_26_FC_normalized_coverage_at_contig.txt", sep= "\t", h = T, stringsAsFactors =  F)
-counts.genes <- read.table("results/coverage/2017_11_26_FC_normalized_coverage_at_gene.txt", sep= "\t", h = T, stringsAsFactors =  F)
+counts.contigs <- read.csv("results/coverage/2017_11_26_FC_normalized_coverage_at_contig.txt", sep= "\t", h = T, stringsAsFactors =  F)
+counts.genes <- read.csv("results/coverage/2017_11_26_FC_normalized_coverage_at_gene.txt", sep= "\t", h = T, stringsAsFactors =  F)
  
+tests.counts.genes.bp <- read.csv("results/fisher/2017_11_30_tests_FC_normalized_coverage_at_bp_within_genes.txt", sep= "\t", h = T, stringsAsFactors = T)
+
 # Plot on different scale of log2 fc and see effects of normalization
-  ##### Histogram of log2(FC)
-  pdf("results/coverage/2017_11_26_all_log2_FC.pdf", w = 10, h =5)
-  par(mfrow = c(1, 2))
+  ##### Histogram of log2(FC) at contig, gene and estimated at gene bp level
+  pdf("results/coverage/2017_12_04_all_log2_FC.pdf", w = 10, h =5)
+  par(mfrow = c(1, 3))
   hist(counts.contigs$log2.raw.FC, main = "Histogram of log2(female/male)) for contig", xlab = "log2(FC)", breaks = 100)
   hist(counts.contigs$log2.norm.FC, breaks = 100, add = T, col = adjustcolor("red", 0.75))
   legend("topleft", title = paste("at contig level (n=", dim(counts.contigs)[1], ")", sep = ""), legend = c("log2(FC) on quantile normalized counts", "log2(FC) on raw counts"), fill = c("red", "white"), cex = 0.75, bty = "n")
@@ -146,6 +169,8 @@ counts.genes <- read.table("results/coverage/2017_11_26_FC_normalized_coverage_a
   hist(counts.genes$log2.raw.FC, main = "Histogram of log2(female/male)) for genes", xlab = "log2(FC)", breaks = 100)
   hist(counts.genes$log2.norm.FC, breaks = 100, add = T, col = adjustcolor("red", 0.75))
   legend("topleft", title = paste("at gene level (n=", dim(counts.genes)[1], ")", sep = ""), legend = c("log2(FC) on quantile normalized counts", "log2(FC) on raw counts"), fill = c("red", "white"), cex = 0.75, bty = "n")
+
+  hist(tests.counts.genes.bp$mean.log2.norm.FC, main = "Histogram of log2(female/male)) for\ngenes from bp resolution", xlab = "log2(FC)", breaks = 100,  col = adjustcolor("red", 0.75))
   dev.off()
 
   
