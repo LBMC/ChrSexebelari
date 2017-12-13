@@ -6,7 +6,6 @@ library(gridExtra)
 
 ##### Select contigs with size >= 1,000 bp
 size.genome.mbelari <- read.table("data/ReferenceGenomes/2017_09_13_Mbelari.sizes.genome", h = F, sep = "\t", stringsAsFactors = F)
-size.contigs1000 <- size.genome.mbelari$V1[which(size.genome.mbelari$V2 >= 1000)]
 
 do.prep.fisher <- F
 
@@ -33,6 +32,65 @@ if (do.prep.fisher) {
   # for all variants in both pools
   tmp.all <- merge.sexe.all[which(merge.sexe.all$tot.male>1 | merge.sexe.all$tot.female>1), ]
   tmp.all$ID <- 1:dim(tmp.all)[1]
+
+  # Manage is.INDEL when variants is found only once (NA) or found in both but with different type (FALSE)
+  test <- apply(tmp.all[, paste("is.INDEL.", c("x", "y"), sep = "")], 1, function(x) ifelse(is.na(x[["is.INDEL.x"]]) | is.na(x[["is.INDEL.y"]]), NA, 
+x[["is.INDEL.x"]] == x[["is.INDEL.y"]]))
+
+  tab.test <- table(test, useNA = "always") 
+  tmp.all$same_class_variant <- test
+
+  tmp.all.SNP <- tmp.all[which(tmp.all$is.INDEL.x == 0 & tmp.all$is.INDEL.y == 0), ]
+  tmp.all.INDEL <- tmp.all[which(tmp.all$is.INDEL.x == 1 & tmp.all$is.INDEL.y == 1), ] 
+  tmp.all.SNP.in.one.sexe <- tmp.all[which(tmp.all$same_class_variant == F), ] 
+  tmp.all.in.one.sexe <- tmp.all[which(is.na(tmp.all$same_class_variant)), ] 
+
+  # Add supplementary SNP for variants that are both SNP and INDEL
+  add.SNP.in.one.sexe <- NULL
+  for(i in 1:dim(tmp.all.SNP.in.one.sexe)[1]){
+	temp <- as.data.frame(tmp.all.SNP.in.one.sexe[i, ])
+        sex.indel <- c("x", "y")[which(temp[, c("is.INDEL.x", "is.INDEL.y")] == 1)]
+	sex <- ifelse(sex.indel == "x", "male", "female")
+	change <- paste(c("is.INDEL.", "ALT.", "QUAL.", "is.INDEL.", "nb.alleles."), sex.indel, sep = "")
+	for (c in change) {temp[1, c]<- NA}
+	change <- paste(c("count.ref.", "count.alt.", "tot."), sex, sep = "")
+	for (c in change) {temp[1, c]<- 0}
+	add.SNP.in.one.sexe <- rbind(add.SNP.in.one.sexe, temp)
+  }
+
+  # Add supplementary INDEL for variants that are both SNP and INDEL
+  add.INDEL.in.one.sexe <- NULL
+  for(i in 1:dim(tmp.all.SNP.in.one.sexe)[1]){
+	temp <- as.data.frame(tmp.all.SNP.in.one.sexe[i, ])
+        sex.indel <- c("x", "y")[which(temp[, c("is.INDEL.x", "is.INDEL.y")] == 0)]
+	sex <- ifelse(sex.indel == "x", "male", "female")
+	change <- paste(c("is.INDEL.", "ALT.", "QUAL.", "is.INDEL.", "nb.alleles."), sex.indel, sep = "")
+	for (c in change) {temp[1, c]<- NA}
+	change <- paste(c("count.ref.", "count.alt.", "tot."), sex, sep = "")
+	for (c in change) {temp[1, c]<- 0}
+	add.INDEL.in.one.sexe <- rbind(add.INDEL.in.one.sexe, temp)
+  }
+
+  # Complete counts to 0 for variants that are found in one sexe
+  add.in.one.sexe <- NULL
+  for(i in 1:dim(tmp.all.SNP.in.one.sexe)[1]){
+	temp <- as.data.frame(tmp.all.in.one.sexe[i, ])
+        sex.no <- c("x", "y")[which(is.na(temp[, c("is.INDEL.x", "is.INDEL.y")]))]
+	sex <- ifelse(sex.no == "x", "male", "female")
+	change <- paste(c("count.ref.", "count.alt.", "tot."), sex, sep = "")
+	for (c in change) {temp[1, c]<- 0}
+	add.in.one.sexe <- rbind(add.in.one.sexe, temp)
+  }
+  # From these pick variants that are SNP
+  ind.keep <- which(add.in.one.sexe$is.INDEL.x == 0 | add.in.one.sexe$is.INDEL.y == 0)
+  add.in.one.sexe.SNP <- add.in.one.sexe[ind.keep, ]
+  # From these pick variants that are INDEL
+  ind.remove <- setdiff(1:dim(add.in.one.sexe)[1], ind.keep)
+  add.in.one.sexe.INDEL <- add.in.one.sexe[ind.remove, ]
+
+  ##### Final event of SNP to test for INDEL presence
+  tmp.all.SNP.test.INDEL <- rbind(tmp.all.SNP, add.SNP.in.one.sexe, add.in.one.sexe.SNP)
+  tmp.all.INDEL.test.INDEL <- rbind(tmp.all.INDEL, add.in.one.sexe.INDEL)
 
   ##### Compute distance to the nearest INDELs to remove SNP at 1bp away from INDEL and remove INDELs
   cores=detectCores()
