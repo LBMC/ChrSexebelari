@@ -26,20 +26,22 @@ ComputeNormalizedCount <- function(counts.female, counts.male, level = "gene"){
     all_gene <- unique(intersect(distinct_gene_male, distinct_gene_female) )
     
     # genes in common
-    tmp_male <- select(filter(counts.male, V8 %in% all_gene), "V4")
-    tmp_female <- select(filter(counts.female, V8 %in% all_gene), paste("V", c(1, 8, 10, 6,7,2,4), sep = ""))	
+    #tmp_male <- select(filter(counts.male, V8 %in% all_gene), "V4")
+    #tmp_female <- select(filter(counts.female, V8 %in% all_gene), paste("V", c(1, 8, 10, 6,7,2,4), sep = ""))	
+    tmp_male <- filter(counts.male, V8 %in% all_gene)[, "V4"]
+    tmp_female <- filter(counts.female, V8 %in% all_gene)[, paste("V", c(1, 8, 10, 6,7,2,4), sep = "")]
     counts.g <- cbind(tmp_female, tmp_male)	
     colnames(counts.g)[7] <- "counts.raw.female"; colnames(counts.g)[8] <- "counts.raw.male"
 
     # genes in female
     in_female <- setdiff(unique(counts.female$V8), unique(counts.male$V8))
-    tmp_female <- select(filter(counts.female, V8 %in% in_female), paste("V", c(1, 8, 10, 6,7,2,4), sep = ""))	
+    tmp_female <- filter(counts.female, V8 %in% in_female)[, paste("V", c(1, 8, 10, 6,7,2,4), sep = "")]
     colnames(tmp_female)[7] <- "counts.raw.female"; 
     counts.g <- rbind(counts.g, cbind(tmp_female, data.frame(counts.raw.male = rep(0, dim(tmp_female)[1]), stringsAsFactors = F)))
 
     # genes in male
     in_male <- setdiff(unique(counts.male$V8), unique(counts.female$V8))
-    tmp_male <- select(filter(counts.male, V8 %in% in_male), paste("V", c(1, 8, 10, 6,7,2,4), sep = ""))
+    tmp_male <- filter(counts.male, V8 %in% in_male)[, paste("V", c(1, 8, 10, 6,7,2,4), sep = "")]
     keep <- tmp_male[,7]
     tmp_male[, 7] <- 0	
     colnames(tmp_male)[7] <- "counts.raw.female"; 
