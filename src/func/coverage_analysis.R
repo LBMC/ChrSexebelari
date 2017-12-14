@@ -146,29 +146,46 @@ if(do.test.at.bp ){
 	}
 	res <- rbind(res, data.frame(gene = g, median.log2.norm.FC = me, mean.log2.norm.FC = mean, median.female = me.f, median.male = me.m, mean.female = mean.f, mean.male = mean.m, pval.med = med.test, pval.med.a = med.test.a, pval.ttest = t.test, pval.ttest.a = t.test.a, pval.ttest.both = t.test.both, pval.ttest.both.a = t.test.both.a, stringsAsFactors = F))
   }
-  write.table(res, "tests_FC_normalized_coverage_at_bp_within_genes.txt", sep= "\t", quote =F, col.names = T, row.names = F)
+  write.table(res, "results/coverage/tests_FC_normalized_coverage_at_bp_within_genes.txt", sep= "\t", quote =F, col.names = T, row.names = F)
   system("bash src/date.sh results/coverage/tests_FC_normalized_coverage_at_bp_within_genes.txt")
 }
 
+##### Histogram of log2(FC) at contig, gene and estimated at gene bp level
 counts.contigs <- read.csv("results/coverage/2017_12_06_FC_normalized_coverage_at_contig.txt", sep= "\t", h = T, stringsAsFactors =  F)
 counts.genes <- read.csv("results/coverage/2017_12_06_FC_normalized_coverage_at_gene.txt", sep= "\t", h = T, stringsAsFactors =  F)
 counts.genes.bp <- read.csv("results/coverage/2017_11_30_tests_FC_normalized_coverage_at_bp_within_genes.txt", sep= "\t", h = T, stringsAsFactors = T)
 
-# Plot on different scale of log2 fc and see effects of normalization
-##### Histogram of log2(FC) at contig, gene and estimated at gene bp level
 pdf("results/coverage/all_log2_FC.pdf", w = 10, h =5)
 par(mfrow = c(1, 3))
 hist(counts.contigs$log2.raw.FC, main = "Histogram of log2(female/male)) for contig", xlab = "log2(FC)", breaks = 100)
 hist(counts.contigs$log2.norm.FC, breaks = 100, add = T, col = adjustcolor("red", 0.75))
 legend("topleft", title = paste("at contig level (n=", dim(counts.contigs)[1], ")", sep = ""), legend = c("log2(FC) on quantile normalized counts", "log2(FC) on raw counts"), fill = c("red", "white"), cex = 0.75, bty = "n")
-
 hist(counts.genes$log2.raw.FC, main = "Histogram of log2(female/male)) for genes", xlab = "log2(FC)", breaks = 100)
 hist(counts.genes$log2.norm.FC, breaks = 100, add = T, col = adjustcolor("red", 0.75))
 legend("topleft", title = paste("at gene level (n=", dim(counts.genes)[1], ")", sep = ""), legend = c("log2(FC) on quantile normalized counts", "log2(FC) on raw counts"), fill = c("red", "white"), cex = 0.75, bty = "n")
-
 hist(counts.genes.bp$mean.log2.norm.FC, main = "Histogram of log2(female/male)) for\ngenes from bp resolution", xlab = "log2(FC)", breaks = 100,  col = adjustcolor("red", 0.75))
 dev.off()
-
 system("bash src/date.sh results/coverage/all_log2_FC.pdf")
   
+
+##### Histogram of pvalue for FC tests at bp level
+tests <- read.csv("results/coverage/2017_11_30_tests_FC_normalized_coverage_at_bp_within_genes.txt", sep= "\t", h = T)
+
+pdf("results/coverage/pval_output_tests_genes_log2_FC.pdf", w = 11, h =5)
+par(mfrow = c(2, 3))
+hist(p.adjust(tests$pval.ttest.both.a, "BH"), main = "t-test on female vs male Anscombe\ntransformed normalized counts on genes", xlab = "Adjusted p-value with BH", breaks = 20, xaxt = "n")
+axis(side=1, at=seq(0,1, by = 0.05), labels=seq(0,1, by = 0.05))
+hist(p.adjust(tests$pval.med.a, "BH"), main = "median test on log2(female/male) Anscombe\ntransformed normalized counts on genes", xlab = "Adjusted p-value with BH", breaks = 20, xaxt = "n")
+axis(side=1, at=seq(0,1, by = 0.05), labels=seq(0,1, by = 0.05))
+hist(p.adjust(tests$pval.ttest.a, "BH"), main = "t-test on log2(female/male) Anscombe\ntransformed normalized counts on genes", xlab = "Adjusted p-value with BH", breaks = 20, xaxt = "n")
+axis(side=1, at=seq(0,1, by = 0.05), labels=seq(0,1, by = 0.05))
+
+hist(p.adjust(tests$pval.ttest.both.a, "BY"), main = "t-test on female vs male Anscombe\ntransformed normalized counts on genes", xlab = "Adjusted p-value with BY", breaks = 20, xaxt = "n")
+axis(side=1, at=seq(0,1, by = 0.05), labels=seq(0,1, by = 0.05))
+hist(p.adjust(tests$pval.med.a, "BY"), main = "median test on log2(female/male) Anscombe\ntransformed normalized counts on genes", xlab = "Adjusted p-value with BY", breaks = 20, xaxt = "n")
+axis(side=1, at=seq(0,1, by = 0.05), labels=seq(0,1, by = 0.05))
+hist(p.adjust(tests$pval.ttest.a, "BY"), main = "t-test on log2(female/male) Anscombe\ntransformed normalized counts on genes", xlab = "Adjusted p-value with BY", breaks = 20, xaxt = "n")
+axis(side=1, at=seq(0,1, by = 0.05), labels=seq(0,1, by = 0.05))
+dev.off()
+system("bash src/date.sh results/coverage/pval_output_tests_genes_log2_FC.pdf")
 
