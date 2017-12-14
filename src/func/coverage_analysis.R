@@ -151,25 +151,25 @@ if(do.test.at.bp ){
 }
 
 ##### Need to check to rerun
-counts.contigs <- read.csv("results/coverage/2017_11_26_FC_normalized_coverage_at_contig.txt", sep= "\t", h = T, stringsAsFactors =  F)
-counts.genes <- read.csv("results/coverage/2017_11_26_FC_normalized_coverage_at_gene.txt", sep= "\t", h = T, stringsAsFactors =  F)
- 
-tests.counts.genes.bp <- read.csv("results/fisher/2017_11_30_tests_FC_normalized_coverage_at_bp_within_genes.txt", sep= "\t", h = T, stringsAsFactors = T)
+counts.contigs <- read.csv("results/coverage/2017_12_06_FC_normalized_coverage_at_contig.txt", sep= "\t", h = T, stringsAsFactors =  F)
+counts.genes <- read.csv("results/coverage/2017_12_06_FC_normalized_coverage_at_gene.txt", sep= "\t", h = T, stringsAsFactors =  F)
+counts.genes.bp <- read.csv("results/coverage/2017_11_30_tests_FC_normalized_coverage_at_bp_within_genes.txt", sep= "\t", h = T, stringsAsFactors = T)
 
 # Plot on different scale of log2 fc and see effects of normalization
-  ##### Histogram of log2(FC) at contig, gene and estimated at gene bp level
-  pdf("results/coverage/2017_12_04_all_log2_FC.pdf", w = 10, h =5)
-  par(mfrow = c(1, 3))
-  hist(counts.contigs$log2.raw.FC, main = "Histogram of log2(female/male)) for contig", xlab = "log2(FC)", breaks = 100)
-  hist(counts.contigs$log2.norm.FC, breaks = 100, add = T, col = adjustcolor("red", 0.75))
-  legend("topleft", title = paste("at contig level (n=", dim(counts.contigs)[1], ")", sep = ""), legend = c("log2(FC) on quantile normalized counts", "log2(FC) on raw counts"), fill = c("red", "white"), cex = 0.75, bty = "n")
+##### Histogram of log2(FC) at contig, gene and estimated at gene bp level
+pdf("results/coverage/all_log2_FC.pdf", w = 10, h =5)
+par(mfrow = c(1, 3))
+hist(counts.contigs$log2.raw.FC, main = "Histogram of log2(female/male)) for contig", xlab = "log2(FC)", breaks = 100)
+hist(counts.contigs$log2.norm.FC, breaks = 100, add = T, col = adjustcolor("red", 0.75))
+legend("topleft", title = paste("at contig level (n=", dim(counts.contigs)[1], ")", sep = ""), legend = c("log2(FC) on quantile normalized counts", "log2(FC) on raw counts"), fill = c("red", "white"), cex = 0.75, bty = "n")
 
-  hist(counts.genes$log2.raw.FC, main = "Histogram of log2(female/male)) for genes", xlab = "log2(FC)", breaks = 100)
-  hist(counts.genes$log2.norm.FC, breaks = 100, add = T, col = adjustcolor("red", 0.75))
-  legend("topleft", title = paste("at gene level (n=", dim(counts.genes)[1], ")", sep = ""), legend = c("log2(FC) on quantile normalized counts", "log2(FC) on raw counts"), fill = c("red", "white"), cex = 0.75, bty = "n")
+hist(counts.genes$log2.raw.FC, main = "Histogram of log2(female/male)) for genes", xlab = "log2(FC)", breaks = 100)
+hist(counts.genes$log2.norm.FC, breaks = 100, add = T, col = adjustcolor("red", 0.75))
+legend("topleft", title = paste("at gene level (n=", dim(counts.genes)[1], ")", sep = ""), legend = c("log2(FC) on quantile normalized counts", "log2(FC) on raw counts"), fill = c("red", "white"), cex = 0.75, bty = "n")
 
-  hist(tests.counts.genes.bp$mean.log2.norm.FC, main = "Histogram of log2(female/male)) for\ngenes from bp resolution", xlab = "log2(FC)", breaks = 100,  col = adjustcolor("red", 0.75))
-  dev.off()
+hist(counts.genes.bp$mean.log2.norm.FC, main = "Histogram of log2(female/male)) for\ngenes from bp resolution", xlab = "log2(FC)", breaks = 100,  col = adjustcolor("red", 0.75))
+dev.off()
 
+system("bash src/date.sh results/coverage/all_log2_FC.pdf")
   
 
