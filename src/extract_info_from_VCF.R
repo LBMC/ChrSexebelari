@@ -4,8 +4,11 @@ library(foreach)
 library(doParallel)
 library(gridExtra)
 
+# size of contigs
 size.genome.mbelari <- read.table("data/ReferenceGenomes/2017_09_13_Mbelari.sizes.genome", h = F, sep = "\t", stringsAsFactors = F)
+# annotation
 gff.mbelari <- read.csv("data/ReferenceGenomes/Mesorhabditis_belari_JU2817_v2.gff3", h = F, sep = "\t", stringsAsFactors = F)
+# genes annotation
 gff.mbelari.genes <- gff.mbelari[which(gff.mbelari$V3 == "gene"), ]
 
 do.computation.per.pool <- F
@@ -29,8 +32,11 @@ if (do.computation.per.pool) {
   colnames(variants.female)[1] <- "CHROM"
   colnames(variants.male)[1] <- "CHROM"
   
-  write.table(variants.female, "results/call_var/2017_09_25_MRDR5_trim_Mbelari_mapped_rmdup_rg_realign_indels_counts.txt", sep = "\t",  quote = F, row.names = F)
-  write.table(variants.male, "results/call_var/2017_09_25_MRDR6_trim_Mbelari_mapped_rmdup_rg_realign_indels_counts.txt", sep = "\t",  quote = F, row.names = F)
+  write.table(variants.female, "results/call_var/MRDR5_trim_Mbelari_mapped_rmdup_rg_realign_indels_counts.txt", sep = "\t",  quote = F, row.names = F)
+  system("bash src/date.sh MRDR5_trim_Mbelari_mapped_rmdup_rg_realign_indels_counts.txt")
+  write.table(variants.male, "results/call_var/MRDR6_trim_Mbelari_mapped_rmdup_rg_realign_indels_counts.txt", sep = "\t",  quote = F, row.names = F)
+  system("bash src/date.sh results/call_var/MRDR6_trim_Mbelari_mapped_rmdup_rg_realign_indels_counts.txt")
+  system("bash src/date.sh results/call_var/MRDR5_trim_Mbelari_mapped_rmdup_rg_realign_indels_counts.txt")
 }
 
 tab.variants.female <- fread("results/call_var/2017_09_25_MRDR5_trim_Mbelari_mapped_rmdup_rg_realign_indels_counts.txt", sep = "\t", h = T, stringsAsFactors = F)
@@ -61,7 +67,8 @@ if(do.summary.raw) {
 			final
 		}
 		stopCluster(cl)
-		write.table(all, paste("results/call_var/2017_11_09_", sexe, "_trim_Mbelari_mapped_rmdup_rg_realign_indels_counts_genic_information.txt", sep = ""), sep = "\t",  quote = F, row.names = F)
+		write.table(all, paste("results/call_var/", sexe, "_trim_Mbelari_mapped_rmdup_rg_realign_indels_counts_genic_information.txt", sep = ""), sep = "\t",  quote = F, row.names = F)
+		system(paste("bash src/date.sh results/call_var/", sexe, "_trim_Mbelari_mapped_rmdup_rg_realign_indels_counts_genic_information.txt", sep = ""))
 
 		all.genic <- all[-which(all$genes == ""), ]
 		tmp.tab<- table(all.genic$is.INDEL)
@@ -91,16 +98,20 @@ if(do.summary.raw) {
 		pdf(paste("results/call_var/distance_from_INDEL_to_nearest_variant_", sexe, ".pdf", sep = ""))
 		hist(na.omit(min.dist), breaks = 40000, xlim = c(-20,20), main = paste("distance_from_INDEL_to_nearest_variant ", sexe, sep = ""), xlab = "distance in bp")
 		dev.off()	
+		system(paste("bash src/date.sh results/call_var/distance_from_INDEL_to_nearest_variant_", sexe, ".pdf", sep = ""))
 
 		summary.raw.variants <- rbind(summary.raw.variants, data.frame(sexe = sexe, nb.SNPs.all = nb.SNPs.all, nb.INDELs.all = nb.INDELs.all, nb.pluriallelic.sites = nb.pluriallelic.sites, nb.median.depth.all = nb.median.depth.all, nb.mean.depth.all = nb.mean.depth.all, median.freq.all = nb.median.freq.all, mean.freq.all = nb.mean.freq.all, nb.SNPs.genic = nb.SNPs.genic, nb.INDELs.genic = nb.INDELs.genic, nb.median.depth.genic = nb.median.depth.genic, nb.mean.depth.genic = nb.mean.depth.genic, median.freq.genic = nb.median.freq.genic, mean.freq.genic = nb.mean.freq.genic, stringsAsFactors = F))	
 	}
-	write.table(summary.raw.variants, "results/call_var/2017_11_09_summary_raw_variants.txt", sep = "\t",  quote = F, row.names = F)
+	write.table(summary.raw.variants, "results/call_var/summary_raw_variants.txt", sep = "\t",  quote = F, row.names = F)
+	system("bash src/date.sh results/call_var/summary_raw_variants.txt")
 }
 
-s <- read.table("results/call_var/2017_11_09_summary_raw_variants.txt", sep = "\t", h = T)
-pdf("results/call_var/2017_11_09_summary_raw_variants.pdf", height=4, width=25)
+s <- read.table("results/call_var/summary_raw_variants.txt", sep = "\t", h = T)
+pdf("results/call_var/summary_raw_variants.pdf", height=4, width=25)
 grid.table(s)
 dev.off()
+system("bash src/date.sh results/call_var/summary_raw_variants.pdf")
+
 
 ##### Summary of density of SNPs for raw variants per contig 
 nb.test.female <- sapply(size.genome.mbelari$V1, function(x) length(which(tab.variants.female$CHROM == x & tab.variants.female$is.INDEL == 0)))
@@ -109,8 +120,9 @@ density.tests.sexe <- data.frame(contig = size.genome.mbelari$V1, length = size.
 density.tests.sexe$den.male <- density.tests.sexe$nb.test.male/density.tests.sexe$length
 density.tests.sexe$den.female <- density.tests.sexe$nb.test.female/density.tests.sexe$length
 log2.den.var <- log2(density.tests.sexe$den.female/density.tests.sexe$den.male)
-pdf("results/call_var/2017_11_12_log2_density_ratio_raw_SNPs.pdf")
+pdf("results/call_var/log2_density_ratio_raw_SNPs.pdf")
 hist(log2.den.var, main = "log2(density SNP female/density SNP male) on raw detected SNPs", xlab  = "log2(density SNP female/density SNP male)", breaks = 100)
 abline(v = 0, col = "black", lty = 2)
 dev.off()
+system("bash src/date.sh results/call_var/log2_density_ratio_raw_SNPs.pdf")
 
