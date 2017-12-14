@@ -150,7 +150,6 @@ if(do.test.at.bp ){
   system("bash src/date.sh results/coverage/tests_FC_normalized_coverage_at_bp_within_genes.txt")
 }
 
-##### Need to check to rerun
 counts.contigs <- read.csv("results/coverage/2017_12_06_FC_normalized_coverage_at_contig.txt", sep= "\t", h = T, stringsAsFactors =  F)
 counts.genes <- read.csv("results/coverage/2017_12_06_FC_normalized_coverage_at_gene.txt", sep= "\t", h = T, stringsAsFactors =  F)
 counts.genes.bp <- read.csv("results/coverage/2017_11_30_tests_FC_normalized_coverage_at_bp_within_genes.txt", sep= "\t", h = T, stringsAsFactors = T)
