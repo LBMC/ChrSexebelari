@@ -229,7 +229,7 @@ This was done on the combined fasta to avoid reheader BAM files with removing co
         9109859 (54.33\%) &  11709251 (65.89\%) & aligned 0 times \\
         6547201 (39.04\%) &  5183867 (29.17\%) & aligned exactly 1 time \\
         1111502 (6.63\%) & 876704 (4.93\%) & aligned >1 times \\
-92.66\%  & 88.29\% & overall alignment rate
+92.66\%  & 88.29\% & overall alignment rate\\
 \hline
 \end{tabular}
 \end{small}
@@ -274,15 +274,22 @@ BAM were converted to fastq and saved in \texttt{results/mapping/without\_duplic
 \textcolor{blue}{extract\_unmapped.sh}\\
 \textcolor{blue}{bamtofq\_Mbelari.sh}\\
 
-\textcolor{blue}{Need to call FastQC on both unmapped reads, Laurent suggested to add all mapped samples in the mulktiQC output. Need to run also cdhit on PSMN.}
-Latest realease of cd-hit can be obtained from \texttt{https://github.com/weizhongli/cdhit/releases}.
+\textcolor{blue}{Need to call FastQC on both unmapped reads, Laurent suggested to add all mapped samples in the multiQC output.}
+
+
+% ------------------------------------------------------------
+\subsection{cdhit on unmapped (on E.coli and M.belari) reads}
+
+\textcolor{blue}{run\_cdhit.sh}\\
+Latest realease of cd-hit can be obtained from \texttt{https://github.com/weizhongli/cdhit/releases}. This was done on PSMN.
 
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Coverage analysis}
 
-I converted the gff3 annotation in bed format using \textcolor{blue}{convertgff\_to\_bed.sh}.
+I converted the gff3 annotation in bed format using \textcolor{blue}{convertgff\_to\_bed.sh}. \\
+\textcolor{red}{Be careful because it converts 1-based, closed [a, b] GFF3 input into 0-based, half-  open [a-1, b) six-column extended BED so it converts the first coordinate to 0 if it was 1, or 6,037 if it was 6,038.} To correct the coordinates for the genes, I changed the bed with \textcolor{blue}{format\_bed.R}.
 
 
 % -------------------------
@@ -298,9 +305,9 @@ Contig length greatly varies:
 % ----------------------------------------
 \subsection{Genes identified within contig}
 
-Below, the number of genes within contigs.
+\includegraphics{{results/coverage/number_genes_detected_in_contigs}.pdf}
 
-
+  
 % -----------------------
 \subsection{Raw coverage}
 
@@ -322,13 +329,13 @@ MRDR6 (male) & 1,349 / 1,230 & 295 / 284 & 13.6 / 12.4 \\
 \end{tabular}
 \end{small}
 
-############### to update
-
+To update.
 
 % -----------------------
 \subsection{Count per gene}
 
-\textcolor{blue}{get_counts_per_gene.sh}
+\textcolor{blue}{get\_counts\_per\_gene.sh} and \textcolor{blue}{format\_bed.R}\\
+It allows to subset bed to genes areas only.
 
 
 % ------------------------------
@@ -373,10 +380,19 @@ For the others toolboxes used, see in script the versions used.
 \subsection{Variants summary} 
 
 Summaries were obtained from vcf.gz files with \textcolor{blue}{summary-vcf\_file.sh}.\\
-Variants files intersection were obtained from vcf.gz files with \textcolor{blue}intersect-vcf\_file.sh}.\\
+Variants files intersection were obtained from vcf.gz files with \textcolor{blue}{intersect-vcf\_file.sh}.
 
+% .........................
+\subsubsection{Raw variants}
+
+Summaries are in \texttt{results/call\_var/2017\_09\_15\_summary\_raw\_var\_female\_JU2917.txt} and \texttt{results/call\_var/2017\_09\_21\_summary\_realign\_indels\_var\_male\_JU2917.txt} like files.\\
+Summaries on intersected files are saved in \texttt{results/call\_var/inter\_female\_male\_realign\_indels/summary\_in\_both\_0002.txt} and \texttt{results/call\_var/inter\_female\_male\_realign\_indels/summary\_in\_MRDR6\_not\_in\_MRDR5\_0000.txt}.
+
+\small
 \begin{tabular}{c|c|c|c|c} 
- & male & female & intersection after realignment &  in male but not in female after realignment \\
+ & male & female & intersection &  in male, not in female  \\
+  &  &  & after realign &   after realign \\
+
  \hline
   & raw / after realignment & raw / after realignment &  & \\
 \hline
@@ -384,10 +400,10 @@ SNPs & 653,292 / 646,096 & 943,379 / 915,624 & 533,693 & 136,139 \\
 Insertions & 55,379 / 47,326 & 81,318 / 65,917 & 31,018 & 16,308\\
 Deletions & 32,949 / 33,200 & 42,555 / 41,879 & 25,784 & 7,416 \\
 MNPs & 0 & 0 & & \\
-het/hom ratio (total / SNPs / Insertions / Deletions) & 3.4 / 3.88 / 1.5 / 1.6 & 8.75 / 11.76 / 2.59 / 3.32 &  & \\
-& 3.47 / 3.85 / 1.72 / 1.71 & 9.49 / 11.83 / 3.33 / 3.62 & 3.21 / 3.47 / 1.78 / 1.63 & 5.09 / 7.21 / 1.63 / 2.02\\
-Insertions/Deletions ratio & 1.68 / 1.43 & 1.91 / 1.57 & 1.20 & 2.20 \\
-SNP Transitions/Transversions & 1.45 / 1.47 & 1.43 / 1.45 & 1.52 & 1.21\\
+het/hom ratio  & 3.4 / 3.88 / 1.5 / 1.6 & 8.75 / 11.76 / 2.59 / 3.32 &  & \\
+(total/SNPs/Ins/Del) & 3.47 / 3.85 / 1.72 / 1.71 & 9.49 / 11.83 / 3.33 / 3.62 & 3.21 / 3.47 / 1.78 / 1.63 & 5.09 / 7.21 / 1.63 / 2.02\\
+Ins/Del ratio & 1.68 / 1.43 & 1.91 / 1.57 & 1.20 & 2.20 \\
+SNP Transit/Transv & 1.45 / 1.47 & 1.43 / 1.45 & 1.52 & 1.21\\
 \end{tabular}
 
 
@@ -398,6 +414,10 @@ SNP Transitions/Transversions & 1.45 / 1.47 & 1.43 / 1.45 & 1.52 & 1.21\\
 \textcolor{blue}{prep\_fisher.R}.\\
 \textcolor{blue}{fisher.R}\\
 \textcolor{blue}{analysis\_fisher.R}
+
+% ..............................
+\subsubsection{Filtered variants}
+
 
 \end{document}
 
