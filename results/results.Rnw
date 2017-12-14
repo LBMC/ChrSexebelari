@@ -304,7 +304,7 @@ Contig length greatly varies:
 % ----------------------------------------
 \subsection{Genes identified within contig}
 
-\includegraphics{{results/coverage/number_genes_detected_in_contigs}.pdf}
+\includegraphics{{./coverage/number_genes_detected_in_contigs}.pdf}
 
   
 % -----------------------
@@ -340,8 +340,8 @@ It allows to subset bed to genes areas only.
 
 \textcolor{blue}{coverage\_analysis.sh}
 
-\includegraphics{{results/coverage/2017_12_14_all_log2_FC}.pdf}\\
-\includegraphics{{results/coverage/2017_12_14_pval_output_tests_genes_log2_FC}.pdf}
+\includegraphics{{./coverage/2017_12_14_all_log2_FC}.pdf}\\
+\includegraphics{{./coverage/2017_12_14_pval_output_tests_genes_log2_FC}.pdf}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
@@ -411,10 +411,10 @@ SNP Transit/Transv & 1.45 / 1.47 & 1.43 / 1.45 & 1.52 & 1.21\\
 
 \textcolor{blue}{extract\_info\_from\_VCF.R}\\
 
-\includegraphics{{results/call_var/2017_11_09_distance_from_INDEL_to_nearest_variant_female}.pdf}
-\includegraphics{{results/call_var/2017_11_09_distance_from_INDEL_to_nearest_variant_male}.pdf}\\
-\includegraphics{{results/call_var/2017_11_09_summary_raw_variants}.pdf}
-\includegraphics{{results/call_var/2017_11_12_log2_density_ratio_raw_SNPs}.pdf}
+\includegraphics{{./call_var/2017_11_09_distance_from_INDEL_to_nearest_variant_female}.pdf}
+\includegraphics{{./call_var/2017_11_09_distance_from_INDEL_to_nearest_variant_male}.pdf}\\
+\includegraphics{{./call_var/2017_11_09_summary_raw_variants}.pdf}
+\includegraphics{{./call_var/2017_11_12_log2_density_ratio_raw_SNPs}.pdf}
 
 
 % --------------------------------------------------
@@ -422,18 +422,18 @@ SNP Transit/Transv & 1.45 / 1.47 & 1.43 / 1.45 & 1.52 & 1.21\\
 
 \textcolor{blue}{prep\_fisher.R}.\\
 
-\includegraphics{{results/call_var/2017_12_08_summary_alleles_ALT_between_pools}.pdf}
+\includegraphics{{./call_var/2017_12_08_summary_alleles_ALT_between_pools}.pdf}
 knowing that only variants sharing the same alt allele will be used for the analysis.\\
 
-\includegraphics{{results/call_var/2017_12_13_frequency_SNPs_sexes}.pdf}\\
-\includegraphics{{results/call_var/2017_12_13_log2_density_ratio_SNPs}.pdf}
+\includegraphics{{./call_var/2017_12_13_frequency_SNPs_sexes}.pdf}\\
+\includegraphics{{./call_var/2017_12_13_log2_density_ratio_SNPs}.pdf}
 
 % --------------------------------------------------------
 \subsection{Make fisher tests and data simulation under H0} 
 
 \textcolor{blue}{fisher.R}\\
 
-\includegraphics{{results/fisher/2017_12_13_signif_Fisher_contig_gene_level}.pdf}
+\includegraphics{{./fisher/2017_12_13_signif_Fisher_contig_gene_level}.pdf}
 
 
 \end{document}
