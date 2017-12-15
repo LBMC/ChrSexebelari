@@ -259,12 +259,12 @@ BAM were converted to fastq and saved in \texttt{results/mapping/without\_duplic
 \end{itemize}
 
 \textbf{Female reads}:\\
-\includegraphics{{./mapping/mapped/2017_09_14_female_JU2817_fastqc_per_base_sequence_content_plot_mapped_belari}.png}
-\includegraphics{{./mapping/mapped/2017_09_14_female_JU2817_fastqc_per_sequence_gc_content_plot_mapped_belari}.png}\\
+\includegraphics{{../results/mapping/mapped/2017_09_14_female_JU2817_fastqc_per_base_sequence_content_plot_mapped_belari}.png}
+\includegraphics{{../results/mapping/mapped/2017_09_14_female_JU2817_fastqc_per_sequence_gc_content_plot_mapped_belari}.png}\\
 
 \textbf{Male reads}:\\
-\includegraphics{{./mapping/mapped/2017_09_14_male_JU2817_fastqc_per_base_sequence_content_plot_mapped_belari}.png}
-\includegraphics{{./mapping/mapped/2017_09_14_male_JU2817_fastqc_per_sequence_gc_content_plot_mapped_belari}.png}
+\includegraphics{{../results/mapping/mapped/2017_09_14_male_JU2817_fastqc_per_base_sequence_content_plot_mapped_belari}.png}
+\includegraphics{{../results/mapping/mapped/2017_09_14_male_JU2817_fastqc_per_sequence_gc_content_plot_mapped_belari}.png}
 
 
 % ------------------------------------------------------------
