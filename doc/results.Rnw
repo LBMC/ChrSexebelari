@@ -193,7 +193,7 @@ Manon Grosmaire told us that OP50 E. coli strain was used to feed the worms. Not
 \textcolor{blue}{picard\_add\_read\_groups.sh}\\
 More information on RG tag: \texttt{https://software.broadinstitute.org/gatk/documentation/article.php?id=6472}
 
-  \item \textbf{create dictionnary} : \\
+  \item \textbf{create dictionnary for GATK} : \\
 \textcolor{blue}{picard\_dictionnary.sh}\\
 This was done on the combined fasta to avoid reheader BAM files with removing contigs from coli.
 
