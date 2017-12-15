@@ -64,7 +64,7 @@ We source here useful functions and load necessary packages and tools.
 ##### Packages #####
 @
 
-\setkeys{Gin}{width = 0.5\textwidth}  
+\setkeys{Gin}{width = 0.5\textwidth}
 
 %%%%%%%%%%%%%%%%%%%%%%%
 \section{Software used}
@@ -108,24 +108,24 @@ Duncan
 \end{verbatim}
 
 \begin{verbatim}
-Assembly was downloaded on 7th september 2017 from 
+Assembly was downloaded on 7th september 2017 from
 https://www.ncbi.nlm.nih.gov/assembly?LinkName=bioproject_assembly_all&from_uid=41499
 following https://www.ncbi.nlm.nih.gov/genome/doc/ftpfaq/ instructions.
  \end{verbatim}
- 
+
 % --------------------------
 \subsection{Pool sequencing}
 
-Data were sequenced on 1 lane on the same flowcell with an Illumina Hiseq platform 100-read length paired-end in IGBMC (S17140 project). 
-MRDR5 (14,082,768 reads after adapters removal were delivered) and MRDR6 (99,954,850 reads after adapters removal were delivered) paired files correspond respectively to pool sequencing of 1,000 females and 1,000 males. The encoding of quality values is Sanger / Illumina 1.9 format. 
+Data were sequenced on 1 lane on the same flowcell with an Illumina Hiseq platform 100-read length paired-end in IGBMC (S17140 project).
+MRDR5 (14,082,768 reads after adapters removal were delivered) and MRDR6 (99,954,850 reads after adapters removal were delivered) paired files correspond respectively to pool sequencing of 1,000 females and 1,000 males. The encoding of quality values is Sanger / Illumina 1.9 format.
 
 
 % -----------------------------
 \subsubsection{Quality control}
 
 \begin{itemize}
-  \item adapter trimming. This was performed by IGBMC and not done, indeed there is no contamination in adapter as regards FASTQC reports. 
-  \item quality of sequencing. It is good quality data as regards mean(QPhred)>30 wathever the position within the read on both ends. There is a slightly decrease of quality at the end of the reads and near the middle of the read but this is not a major issue and we keep all reads whathever the position on the flowcell. Reverse reads have lower quality.  
+  \item adapter trimming. This was performed by IGBMC and not done, indeed there is no contamination in adapter as regards FASTQC reports.
+  \item quality of sequencing. It is good quality data as regards mean(QPhred)>30 wathever the position within the read on both ends. There is a slightly decrease of quality at the end of the reads and near the middle of the read but this is not a major issue and we keep all reads whathever the position on the flowcell. Reverse reads have lower quality.
   \item bp content. First 6 bp are biased in bp content probably due to experimental protocol (random hexamer fixation on DNA fragments), this does not required trimming. However, there are 2 modes as regards the GC content and IGBMC reports previously noted a contamination in E. coli (= worms food) at an extend of 30\% (this seems quite underestimated as regards the histogram of GC \% within reads). This suggest to map against E. coli which contains 50.8\% GC to at least quantify this contamination. There is also a bias between male and female bp content apparently.
 \end{itemize}
 
@@ -178,14 +178,14 @@ Manon Grosmaire told us that OP50 E. coli strain was used to feed the worms. Not
 
   \item \textbf{pick mapped reads for E.coli and M.belari separately}:\\
     \textcolor{blue}{extract\_names\_from\_fasta.sh, generate\_split\_contig\_name.sh, filter\_Mbelari.sh} (last step on PSMN)
-    
+
   \item \textbf{extract unmapped reads from BAM for E. coli and M.belari}:\\
   \textcolor{blue}{bamtofq\_Mbelari.sh} (PSMN)\\
-  \textcolor{blue}{QC\_Mapped\_Mbelari\_fastq.sh}
-  
+  \textcolor{blue}{QC_unmapped.sh}
+
   \item \textbf{remove PCR duplicates}:\\
   \textcolor{blue}{remove\_duplicates.sh}
-  
+
   \item \textbf{sort BAM files to call variants on}:\\
 \textcolor{blue}{sort\_Mbelari.sh}
 
@@ -195,7 +195,7 @@ More information on RG tag: \texttt{https://software.broadinstitute.org/gatk/doc
 
   \item \textbf{create dictionnary} : \\
 \textcolor{blue}{picard\_dictionnary.sh}\\
-This was done on the combined fasta to avoid reheader BAM files with removing contigs from coli. 
+This was done on the combined fasta to avoid reheader BAM files with removing contigs from coli.
 
   \item \textbf{Index input BAM}: \\
 \textcolor{blue}{sort\_Mbelari.sh}
@@ -280,7 +280,7 @@ BAM were converted to fastq and saved in \texttt{results/mapping/without\_duplic
 \subsection{cdhit on unmapped (on E.coli and M.belari) reads}
 
 \textcolor{blue}{run\_cdhit.sh} (PSMN)\\
-Latest realease of cd-hit can be obtained from \texttt{https://github.com/weizhongli/cdhit/releases}. 
+Latest realease of cd-hit can be obtained from \texttt{https://github.com/weizhongli/cdhit/releases}.
 
 
 
@@ -296,8 +296,8 @@ I subsetted the gff3 for gene regions and converted it in bed format using \text
 
 Contig length greatly varies:
 \begin{verbatim}
-  Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-  500     813    2362    9936   11173  501686 
+  Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
+  500     813    2362    9936   11173  501686
 \end{verbatim}
 
 
@@ -306,11 +306,11 @@ Contig length greatly varies:
 
 \includegraphics{{./coverage/number_genes_detected_in_contigs}.pdf}
 
-  
+
 % -----------------------
 \subsection{Raw coverage}
 
-I produced coverage indicators from filtered (on quality) mapped BAM files. 
+I produced coverage indicators from filtered (on quality) mapped BAM files.
 \begin{itemize}
  \item Produce bedpe files: \textcolor{red}{bamtobedpe\_Mbelari.sh}. Eventually, we did not work with these files. (PSMN)\\
   \item Produce bed files with depth at each bp after having sorted and indexed BAM: \textcolor{red}{bamtobed\_Mbelari.sh} (PSMN)\\
@@ -323,7 +323,7 @@ After rmdup and realignment around INDELs:
 sample & mean reads per contig  & median reads per contig \\
 \hline
 MRDR5 (female) & 1,838.3 & 275 \\
- \hline 
+ \hline
 MRDR6 (male) & 1,042.4 & 165  \\
 \end{tabular}
 \end{small}
@@ -370,13 +370,13 @@ For the others toolboxes used, see in script the versions used.
 
 
 % -----------------------
-\subsection{Call variants} 
+\subsection{Call variants}
 
 \textcolor{blue}{call\_var\_Mbelari.sh}\\
 
 
 % ---------------------------
-\subsection{Variants summary} 
+\subsection{Variants summary}
 
 Summaries were obtained from vcf.gz files with \textcolor{blue}{summary-vcf\_file.sh}.\\
 Variants files intersection were obtained from vcf.gz files with \textcolor{blue}{intersect-vcf\_file.sh}.
@@ -388,7 +388,7 @@ Summaries are in \texttt{results/call\_var/2017\_09\_15\_summary\_raw\_var\_fema
 Summaries on intersected files are saved in \texttt{results/call\_var/inter\_female\_male\_realign\_indels/summary\_in\_both\_0002.txt} and \texttt{results/call\_var/inter\_female\_male\_realign\_indels/summary\_in\_MRDR6\_not\_in\_MRDR5\_0000.txt}.
 
 \small
-\begin{tabular}{c|c|c|c|c} 
+\begin{tabular}{c|c|c|c|c}
  & male & female & intersection &  in male, not in female  \\
   &  &  & after realign &   after realign \\
 
@@ -407,7 +407,7 @@ SNP Transit/Transv & 1.45 / 1.47 & 1.43 / 1.45 & 1.52 & 1.21\\
 
 
 % -------------------------------------------
-\subsection{Prepare count tables for variants} 
+\subsection{Prepare count tables for variants}
 
 \textcolor{blue}{extract\_info\_from\_VCF.R}\\
 
@@ -418,7 +418,7 @@ SNP Transit/Transv & 1.45 / 1.47 & 1.43 / 1.45 & 1.52 & 1.21\\
 
 
 % --------------------------------------------------
-\subsection{Filter variants to perform fisher tests} 
+\subsection{Filter variants to perform fisher tests}
 
 \textcolor{blue}{prep\_fisher.R}.\\
 
@@ -429,7 +429,7 @@ knowing that only variants sharing the same alt allele will be used for the anal
 \includegraphics{{./call_var/2017_12_13_log2_density_ratio_SNPs}.pdf}
 
 % --------------------------------------------------------
-\subsection{Make fisher tests and data simulation under H0} 
+\subsection{Make fisher tests and data simulation under H0}
 
 \textcolor{blue}{fisher.R}\\
 
@@ -437,4 +437,3 @@ knowing that only variants sharing the same alt allele will be used for the anal
 
 
 \end{document}
-
