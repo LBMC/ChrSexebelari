@@ -183,7 +183,7 @@ Manon Grosmaire told us that OP50 E. coli strain was used to feed the worms. Not
   \textcolor{blue}{bamtofq\_Mbelari.sh} (PSMN)\\
   \textcolor{blue}{QC_unmapped.sh}
 
-  \item \textbf{remove PCR duplicates}:\\
+  \item \textbf{remove PCR duplicates for mapped reads on Mbelari}:\\
   \textcolor{blue}{remove\_duplicates.sh}
 
   \item \textbf{sort BAM files to call variants on}:\\
