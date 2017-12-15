@@ -197,7 +197,7 @@ More information on RG tag: \texttt{https://software.broadinstitute.org/gatk/doc
 \textcolor{blue}{picard\_dictionnary.sh}\\
 This was done on the combined fasta to avoid reheader BAM files with removing contigs from coli.
 
-  \item \textbf{Index input BAM}: \\
+  \item \textbf{Index input BAM: we sort again after adding RG infos}: \\
 \textcolor{blue}{sort\_Mbelari.sh}
 
   \item \textbf{Realignment around INDELs using GATK}:\\
