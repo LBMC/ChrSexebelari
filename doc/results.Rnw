@@ -189,7 +189,7 @@ Manon Grosmaire told us that OP50 E. coli strain was used to feed the worms. Not
   \item \textbf{sort BAM files to call variants on}:\\
 \textcolor{blue}{sort\_Mbelari.sh}
 
-  \item \textbf{add RG information}:\\
+  \item \textbf{add RG (read groups) information}:\\
 \textcolor{blue}{picard\_add\_read\_groups.sh}\\
 More information on RG tag: \texttt{https://software.broadinstitute.org/gatk/documentation/article.php?id=6472}
 
