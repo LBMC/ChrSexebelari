@@ -42,8 +42,10 @@ samtools index $OUTPUT1sortbam &&\
 contigs_coli=`awk '{print $0}' /scratch/cburny/Ref_Mbelari/2017_09_12_contigs_short_name_Ecoli.txt` &&\
 contigs_belari=`awk '{print $0}' /scratch/cburny/Ref_Mbelari/2017_09_12_contigs_short_name_Mbelari.txt` &&\
 
+# make bam files
 samtools view -b $OUTPUT1sortbam $contigs_coli > $OUTPUTcoli &&\
 samtools view -b $OUTPUT1sortbam $contigs_belari > $OUTPUTbelari &&\
 
+# summary of the bams
 samtools flagstat $OUTPUTcoli > $REPORTcoli &&\
 samtools flagstat $OUTPUTbelari > $REPORTbelari
