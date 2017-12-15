@@ -304,7 +304,7 @@ Contig length greatly varies:
 % ----------------------------------------
 \subsection{Genes identified within contig}
 
-\includegraphics{{./coverage/number_genes_detected_in_contigs}.pdf}
+\includegraphics{{../results/coverage/number_genes_detected_in_contigs}.pdf}
 
 
 % -----------------------
@@ -317,7 +317,7 @@ I produced coverage indicators from filtered (on quality) mapped BAM files.
  \item Open BAM with \texttt{tablet}: it provides a table with contig name, contig length and number of mapped reads.
 \end{itemize}
 
-After rmdup and realignment around INDELs:
+After rmdup and realignment around INDELs (From \texttt{tablet}):
 \begin{small}
 \begin{tabular}{l|l|l}
 sample & mean reads per contig  & median reads per contig \\
