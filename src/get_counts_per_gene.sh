@@ -1,3 +1,6 @@
+# Obtain raw counts per gene region: this require to transform BAM to BED and to intersect the BED with the annotation of the genic regions in BED format
+# Run on local computer
+
 # Transform each BAM on classic BED (no use of -b)
 bedtools bamtobed -i results/mapping/without_duplicates/2017_09_20_MRDR5_trim_Mbelari_mapped_rmdup_rg_realign_indels.bam > results/mapping/without_duplicates/MRDR5_trim_Mbelari_mapped_rmdup_rg_realign_indels_bam_to_bed.bed &&\
 bash src/date.sh results/mapping/without_duplicates/MRDR5_trim_Mbelari_mapped_rmdup_rg_realign_indels_bam_to_bed.bed &&\ 
