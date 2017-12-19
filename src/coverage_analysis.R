@@ -1,39 +1,40 @@
-  require(data.table)  
-  require(dplyr)
-  require(ggplot2)
-  library(devtools)
-  library(Biobase)
-  library(preprocessCore)
-  require(MASS)
-  require(foreach)
-  require(doParallel)
-  require(parallel)
-  source("src/func/functions.R")
+require(data.table)
+require(dplyr)
+require(ggplot2)
+library(devtools)
+library(Biobase)
+library(preprocessCore)
+require(MASS)
+require(foreach)
+require(doParallel)
+require(parallel)
+source("src/func/functions.R")
   
-##### Data file 
-gff3.file.all.genome <- "data/ReferenceGenomes/Mesorhabditis_belari_JU2817_v2.gff3"
-contigs.mbela <- fread("data/ReferenceGenomes/2017_09_13_Mbelari.sizes.genome", sep = "\t", h = F, stringsAsFactors = F)
+# Generate gff3 containing gene only
+gff.mbela <- read.csv("data/ReferenceGenomes/Mesorhabditis_belari_JU2817_v2.gff3", sep = "\t", h = F, stringsAsFactors = F)
+gff.genes.mbela <- gff.mbela[which(gff.mbela$V3 == "gene"), ]
+write.table(gff.genes.mbela, "data/ReferenceGenomes/Mesorhabditis_belari_JU2817_v2_genes.gff3", col.names = F, row.names = F, quote = F, sep = "\t")
+
+contigs.mbela <- fread("data/ReferenceGenomes/2017_09_13_Mbelari.sizes.genome", sep = "\t", 
+  h = F, stringsAsFactors = F)
 
 compute.norm <- F
+
 if(compute.norm){
   ##### Plot cluster size when comparing unmapped female and male reads
-  clus.size <- read.csv("results/mapping/mapped/2017_11_22_cdhit.fa.clstr.size", sep = "\t", h = T, stringsAsFactors = F)
+  clus.size <- read.csv("results/mapping/unmapped/2017_11_22_cdhit.fa.clstr.size", sep = "\t", h = T, stringsAsFactors = F)
   #> dim(clus.size)
   #[1] 9079667       2
   #summary(clus.size$nb)
   #  Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
   #0.000    0.000    0.000    0.713    0.000 4430.000 
-  pdf("results/mapping/mapped/cluster_size.pdf")
+  pdf("results/mapping/unmapped/cluster_size.pdf")
   hist(log10(clus.size$nb), breaks = 50, main = paste("log10(size of clusters) (n=", dim(clus.size)[1], ") obtained with CD-HIT\nto compare unmapped female and male reads", sep = ""), cex.main = 0.9)
   dev.off()
   system("bash src/date.sh results/mapping/mapped/cluster_size.pdf")
 
   ##### Pick contig name and length
   print(summary(contigs.mbela$V2))
-
-  ##### Pick annotation to get gene regions 
-  gff.mbela <- read.csv(gff3.file.all.genome, sep = "\t", h = F, stringsAsFactors = F)
-  gff.genes.mbela <- gff.mbela[which(gff.mbela$V3 == "gene"), ]
 
   ##### Percentage of genic region:
   tot.size <- sum(contigs.mbela$V2)
@@ -72,6 +73,7 @@ if(compute.norm){
   ##### Normalize genes counts 
   # Generate bed file for gene region coordinates
   system("bash src/convertgff_to_bed.sh data/ReferenceGenomes/Mesorhabditis_belari_JU2817_v2_genes.gff3 data/ReferenceGenomes/Mesorhabditis_belari_JU2817_v2_genes.bed")
+  source("src/format_bed.R")
   # Extract gene region in bed depth file at each bp with intersect_bed_genes.sh
   system("bash src/intersect_gene_bed_genes.sh")
  
@@ -105,7 +107,7 @@ if(compute.norm){
 
 do.test.at.bp <- F
 if(do.test.at.bp ){
-  ##### In case of bp level, implement test per gene on estimated FC valeurs: if not gaussian, compute i) a glm based on NB to compare counts, ii) a median like based test on the log2(FC), iii) try the the ans comb transformation and perform a test on it.
+  ##### In case of bp level, implement test per gene on estimated FC values: if not gaussian, compute i) a median like based test on the log2(FC), ii) try the the ans comb transformation and perform a test on it.
   counts.bp <- tbl_df(fread("results/coverage/2017_11_30_FC_normalized_coverage_at_bp_within_genes.txt", sep= "\t", stringsAsFactors = F))
 
   pdf("results/coverage/count_distribution_before_after_cov_at_gene_bp.pdf", w = 12, h =8)
@@ -214,9 +216,10 @@ tab.male <- table(fc.at.bp.male$contig); ind.male <- which(tab.male == 1); tab.m
 names(tab.male.tmp) <- sapply(names(tab.male.tmp), function(x) paste(x, " (", tab.genes.per.contig[x], ")", sep = ""))
 pdf("results/coverage/barplot_FC_threshold1_per_sexe.pdf", w = 12, h =8)
 par(mfrow = c(2,1))
-barplot(tab.female.tmp, las = 2, cex.names = 0.6)
-barplot(tab.male.tmp, las = 2, cex.names = 0.6)
+barplot(tab.female.tmp, las = 2, cex.names = 0.6, main = "#log2(FC)>=1 per contig - female enrichment\nContig (nb tot genes)", xlab ="")
+barplot(tab.male.tmp, las = 2, cex.names = 0.6, main = "#log2(FC)<=-1 per contig - male enrichment\nContig (nb tot genes)", xlab = "")
 dev.off()
+system("bash src/date.sh results/coverage/barplot_FC_threshold1_per_sexe.pdf")
 
 ##### Histogram of pvalue for FC tests at bp level
 tests <- read.csv("results/coverage/2017_11_30_tests_FC_normalized_coverage_at_bp_within_genes.txt", sep= "\t", h = T)
