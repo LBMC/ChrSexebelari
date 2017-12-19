@@ -1,4 +1,5 @@
 # Parser to extract cluster sizes from CDHIT output
+# done on local computer
 
 TotalClusters="$(grep -c '>Cluster' results/mapping/unmapped/2017_11_21_cdhit.fa.clstr)"
 
