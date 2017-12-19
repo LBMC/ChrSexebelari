@@ -1,4 +1,4 @@
-##### Convert gff to bed 
+##### Convert gff to bed : run locally
 # $1: input gff
 # $2: output bed
 
