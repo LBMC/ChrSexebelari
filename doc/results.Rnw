@@ -62,20 +62,36 @@ We source here useful functions and load necessary packages and tools.
 
 <<load-pack-scripts>>=
 ##### Packages #####
+require(formatR) # clean R code
 @
+
+All results and data within the project are saved in \texttt{PoolSeq} directory project, otherwise, the parent directory is specified. 
 
 \setkeys{Gin}{width = 0.5\textwidth}
 
 %%%%%%%%%%%%%%%%%%%%%%%
-\section{Software used}
+\section{Softwares used}
 
+For scripts ran on local computer:
 \begin{enumerate}
   \item Fastqc version 0.11.5
+  \item kallisto version 0.43.1
   \item bowtie2 version 2.24
-  \item samtools version 1.3.1
+  \item samtools version 1.3
   \item tablet version 1.16.09.06
   \item picard 2.3.0
   \item vcftools 0.1.15
+  \item pigz 2.3
+  \item CDHIT 4.6.8
+\end{enumerate}
+
+For scripts on PSMN:
+\begin{enumerate}
+  \item bowtie2 version 2.2.4
+  \item SAMtools version 1.3.1
+  \item BEDtools version 2.24.0
+  \item picard 2.12.1
+  \item GATK 3.8
 \end{enumerate}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -84,44 +100,50 @@ We source here useful functions and load necessary packages and tools.
 % ---------------------------------------
 \subsection{Characterization of assembly}
 
-Informations as regards the assembly, from Duncan Berger (see data directory):\\
+Summarized informations as regards the assembly from Duncan Berger (in \texttt{Request/Masked\_genomes/repeatcontentJU2817-1.ods}):\\
 
 \begin{tabular}{l|l}
 Total Repeat Content (bp; \% of Genome) &	53,367,850 bp (32.93\%)\\
 Number of Scaffolds	& 16,312\\
 Total assembly length (bp) exclusing Ns &	160,921,675 bp\\
 Total assembly length (bp) &	162,071,050 bp (obtained from 2017\_09\_13\_Mbelari.sizes.genome)\\
-GC content (\%)	& \textcolor{red}{36.96\%} \\
+GC content (\%)	& 36.96\% \\
 \end{tabular}
 
-In an updated mail (5th sept 2017) from Duncan Berger, Lewis Stevens put data on lab Ensembl site:
+In an updated mail (5th sept 2017) from Duncan Berger, Lewis Stevens put the data (genome and annotation) on lab Ensembl site:
 \begin{verbatim}
 Hi Claire,
-That gff3 should be the latest version. Just to be sure I've uploaded the latest version of the GFF3 (should be identical but if not use this one):
+That gff3 should be the latest version. Just to be sure I've uploaded the latest version of the GFF3
+(should be identical but if not use this one):
 ftp://ftp.ed.ac.uk/edupload/MBELA.mesorhabditis_belari.BLAXTERLAB.protein.fa.gff3
 Lewis Stevens has also uploaded all the Mesorhabditis belari sequence data to a lab Ensembl site:
 http://download.caenorhabditis.org/v1/
-You can download various data. I believe that in the process of uploading these data he renamed the scaffolds - so if you do use the Ensembl files just be careful of that.
+You can download various data. I believe that in the process of uploading these data he renamed the
+scaffolds - so if you do use the Ensembl files just be careful of that.
 Happy to help with any questions or concerns.
 Regards,
 Duncan
 \end{verbatim}
 
-\begin{verbatim}
-Assembly was downloaded on 7th september 2017 from
-https://www.ncbi.nlm.nih.gov/assembly?LinkName=bioproject_assembly_all&from_uid=41499
-following https://www.ncbi.nlm.nih.gov/genome/doc/ftpfaq/ instructions.
- \end{verbatim}
+Assembly and annotation were downloaded on 7th sept 2017 from:\\
+\texttt{https://www.ncbi.nlm.nih.gov/assembly?LinkName=bioproject\_assembly\_all\&from\_uid=41499}\\
+following \texttt{https://www.ncbi.nlm.nih.gov/genome/doc/ftpfaq/} instructions.
+
 
 % --------------------------
 \subsection{Pool sequencing}
 
+Raw data: \textcolor{red}{data/fastq}\\
+
+Reports on data acquisition could be found in \texttt{doc/reports}.\\
 Data were sequenced on 1 lane on the same flowcell with an Illumina Hiseq platform 100-read length paired-end in IGBMC (S17140 project).
-MRDR5 (14,082,768 reads after adapters removal were delivered) and MRDR6 (99,954,850 reads after adapters removal were delivered) paired files correspond respectively to pool sequencing of 1,000 females and 1,000 males. The encoding of quality values is Sanger / Illumina 1.9 format.
+MRDR5 (14,082,768 reads after adapters removal were delivered) and MRDR6 (99,954,850 reads after adapters removal were delivered) paired files correspond respectively to pool sequencing of 1,000 females and 1,000 males from M. belari. I worked on these samples. The encoding of quality values is Sanger / Illumina 1.9 format.
 
-
-% -----------------------------
+% ............................
 \subsubsection{Quality control}
+
+Filtered data: \textcolor{red}{results/quality\_control: subdirectories adaptor, trimming, fastqc, multiqc}\\
+\textcolor{blue}{src/QC.sh}
 
 \begin{itemize}
   \item adapter trimming. This was performed by IGBMC and not done, indeed there is no contamination in adapter as regards FASTQC reports.
@@ -130,27 +152,22 @@ MRDR5 (14,082,768 reads after adapters removal were delivered) and MRDR6 (99,954
 \end{itemize}
 
 Female pool:\\
-\includegraphics{{./quality_control/2017_09_13_female_JU2817_fastqc_per_base_sequence_content_plot}.pdf}
-\includegraphics{{./quality_control/2017_09_13_female_JU2817_fastqc_per_sequence_gc_content_plot}.png}\\
+\includegraphics{{../results/quality_control/2017_09_13_female_JU2817_fastqc_per_base_sequence_content_plot}.pdf}
+\includegraphics{{../results/quality_control/2017_09_13_female_JU2817_fastqc_per_sequence_gc_content_plot}.png}\\
 
 Male pool:\\
-\includegraphics{{./quality_control/2017_09_13_male_JU2817_fastqc_per_base_sequence_content_plot}.pdf}
-\includegraphics{{./quality_control/2017_09_13_male_JU2817_fastqc_per_sequence_gc_content_plot}.png}
+\includegraphics{{../results/quality_control/2017_09_13_male_JU2817_fastqc_per_base_sequence_content_plot}.pdf}
+\includegraphics{{../results/quality_control/2017_09_13_male_JU2817_fastqc_per_sequence_gc_content_plot}.png}\\
 
-
-% ---------------------------
-\subsubsection{Data cleaning}
-
-\textcolor{blue}{QC.sh}\\
-
-We used cutadapt to trim tails with quality lower than 20. No other filter was applied. Follow up of number of reads:\\
+I used cutadapt to trim tails with quality lower than 20. No other filter was applied. Follow up of number of reads obtained from \texttt{results/quality\_control/fastqc}:\\
 
 \begin{small}
 \begin{tabular}{l|l|l|l|l|l}
-sample & initial & after adapter removal by IGBMC & \% bases over 30 & after cleaning & \% GC\\
+sample & initial & after adapter removal & \% bases over 30 & after cleaning  & \% GC\\
+ &  R1+R2 & by IGBMC R1+R2 &  & (R1+R2) & \\
 \hline
-MRDR5 (female) & 124,102,194 & 124,082,768 & 89.67 & 62,041,384 fwd - 62,041,384 rev & 46-46\\
-MRDR6 (male) & 100,107,230 & 99,954,850 & 85.02 & 49,977,425 fwd - 49,977,425 rev & 48-48\\
+MRDR5 (female) & 124,102,194  & 124,082,768 & 89.67 & 62,041,384 fwd - 62,041,384 rev (124,082,768) & 46-46\\
+MRDR6 (male) & 100,107,230 & 99,954,850 & 85.02 & 49,977,425 fwd - 49,977,425 rev (99,954,850) & 48-48\\
 \end{tabular}
 \end{small}
 
@@ -158,282 +175,77 @@ MRDR6 (male) & 100,107,230 & 99,954,850 & 85.02 & 49,977,425 fwd - 49,977,425 re
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Mapping to assembly}
 
-Manon Grosmaire told us that OP50 E. coli strain was used to feed the worms. Note that bowtie2 was run in default mode: "search for multiple alignments, report the best one".
+Manon Grosmaire told us that OP50 E. coli strain was used to feed the worms.\\
+Note that bowtie2 was run in default mode: "search for multiple alignments, report the best one".
 
 % ----------------
 \subsection{Steps}
 
 \begin{enumerate}
-  \item \textbf{make an hybrid reference of M. belari and E. coli 0P50 genomes}: I created a reference as a single fasta file, saved as \texttt{data/ReferenceGenomes/combined\_belari\_coli.fasta.gz}. I will map each pool against this reference.\\
-    \textcolor{blue}{concatenate\_belari\_coli.sh}
+\item \textbf{make an hybrid reference of M. belari and E. coli 0P50 genomes}: \\
+I picked the OP50 E. coli genome from *** downloaded on ***. From OP50 E. coli genome and our assembly, I created a single reference, saved as \textcolor{red}{data/ReferenceGenomes/2017\_09\_08\_combined\_belari\_coli.fasta.gz}. \\
+\textcolor{blue}{src/concatenate\_belari\_coli.sh}
 
-  \item \textbf{estimate fragments length distribution}: \\
-  \textcolor{blue}{run\_kallisto\_fragment\_length.sh} and \textcolor{blue}{read\_h5.R}
+\item \textbf{estimate fragments length distribution}: \\
+This is required for input parameters of bowtie2 during mapping step. This was done early in the project on \texttt{data/ReferenceGenomes/mesorhabditis\_belari\_assembly.2.0.SOFTMASKED.fa} reference (not supposed to change) and on trimmed reads from 2017\_08\_08 (not supposed to change as well). h5, tsv, json and output plot files are saved in \textcolor{red}{results/kallisto\_fragmentlength}. Information is stored in the meta field of the h5, fld, and extracted with the R script. I used min value of 100 bp and max value of 900 bp. Index is saved in \textcolor{red}{data/ReferenceGenomes/m\_belari\_kall\_index}.
+\textcolor{blue}{src/run\_kallisto\_fragment\_length.sh} and \textcolor{blue}{src/read\_h5.R}
 
-  \item \textbf{create index for reference (need to gunzip the fasta before)}:\\
-\textcolor{blue}{create\_index.sh} (PSMN)
+\item \textbf{create index for reference after having gunzip data/ReferenceGenomes/2017\_09\_08\_combined\_belari\_coli.fasta.gz}:\\
+\textcolor{blue}{src/create\_index.sh} (PSMN)
 
-  \item \textbf{do mapping (file by file)}:\\
-  \textcolor{blue}{mapping\_Mbelari\_Ecoli.sh} (PSMN)
+\item \textbf{do mapping (call the script by file)}:\\
+Mapping on the hybrid reference was done with bowtie2 software, -q --very-sensitive -I 100 -X 900 options on the trimmed paired-end fastq files (-1 and -2 to specify each forward and reverse file). Raw outputs piped to be saved in BAM format and I also reported summaries of mapping (from flagstat and bowtie2) in txt in \textcolor{red}{results/mapping/raw} with suffix \texttt{\_trim\_Mbelari\_Ecoli} as we have mapped/unmapped reads from E. coli and M. belari.
+\textcolor{blue}{src/mapping\_Mbelari\_Ecoli.sh} (PSMN)
 
-  \item \textbf{pick mapped reads for E.coli and M.belari separately}:\\
-    \textcolor{blue}{extract\_names\_from\_fasta.sh, generate\_split\_contig\_name.sh, filter\_Mbelari.sh} (last step on PSMN)
+\item \textbf{pick mapped reads for E.coli and M.belari separately}:\\
+From the raw BAM files, I will extract mapped reads separately on the both organisms. \\
+\textcolor{blue}{src/extract\_names\_from\_fasta.sh} (call the script by file): called on \texttt{data/ReferenceGenomes/GCA\_000176815.1\_ASM17681v1\_genomic.fna} and \texttt{data/ReferenceGenomes/Mesorhabditis\_belari\_JU2817\_v2.scaffolds.fa.repeatmasker.masked} to extract sequences names from fasta. This  produced \texttt{data/ReferenceGenomes/2017\_09\_12\_contigs\_name\_Ecoli.txt} and \texttt{data/ReferenceGenomes/2017\_09\_12\_contigs\_name\_Mbelari.txt} as below: 
+\begin{verbatim}
+>ADBT01002939.1 Escherichia coli OP50 OP50_2939, whole genome shotgun sequence
+>ADBT01002938.1 Escherichia coli OP50 OP50_2938, whole genome shotgun sequence
+>ADBT01002937.1 Escherichia coli OP50 OP50_2937, whole genome shotgun sequence
+\end{verbatim}
+\textcolor{blue}{src/generate\_split\_contig\_name.sh}: called on the previous files, this generated 2 cutted names of contig names called \texttt{data/ReferenceGenomes/2017\_09\_12\_contigs\_short\_name\_Ecoli.txt} and \texttt{data/ReferenceGenomes/2017\_09\_12\_contigs\_short\_name\_Mbelari.txt} as below: 
+\begin{verbatim}
+ADBT01002939.1 
+ADBT01002938.1 
+ADBT01002937.1
+\end{verbatim}
+\textcolor{blue}{src/filter\_Mbelari.sh} (call the script by file) (PSMN): this filtered the raw reads \textcolor{red}{results/mapping/mapped} to keep mapped reads paired or not, to sort and index the resulted BAM and to filter reads on either organisms. The final useable files are \texttt{2017\_09\_14\_MRDR6\_trim\_Mbelari\_mapped\_sort.bam} and \texttt{2017\_09\_14\_MRDR5\_trim\_Mbelari\_mapped\_sort.bam}.
 
-  \item \textbf{extract unmapped reads from BAM for E. coli and M.belari}:\\
-  \textcolor{blue}{bamtofq\_Mbelari.sh} (PSMN)\\
-  \textcolor{blue}{QC_unmapped.sh}
+\item \textbf{extract unmapped reads from BAM for E. coli and M.belari}:\\
+\textcolor{blue}{extract\_unmapped.sh} (call the script by file) (PSMN): extract reads unmapped to E. coli or M. belari genomes and saved it in \textcolor{red}{results/mapping/unmapped}. \\
+\textcolor{blue}{bamtofq\_Mbelari.sh} (call the script by file) (PSMN): convert unmapped BAM to fastq and saved it in \textcolor{red}{results/mapping/unmapped}. \\
+\textcolor{blue}{QC\_unmapped.sh}: make one FASTQC run per unmapped fastq as well as a multiqc in \textcolor{red}{results/quality\_control/unmapped/}. Note that you can also use this script to generate QC for mapped fastq, this is saved in \textcolor{red}{results/quality\_control/mapped/}. I also made a multiqc output on both mapped and unmapped fastq  in \textcolor{red}{results/quality\_control/multiqc\_mapped\_unmapped/}.
 
-  \item \textbf{remove PCR duplicates for mapped reads on Mbelari}:\\
-  \textcolor{blue}{remove\_duplicates.sh}
+\item \textbf{assess the presence of clutering of unmapped reads}:\\
+\textcolor{blue}{fastq\_to\_fasta.sh}: I converted the unmapped fastq to fasta file for CDHIT input. They were saved in \textcolor{red}{results/mapping/unmapped/}.\\
+\textcolor{blue}{run\_cdhit.sh} (PSMN): CDHIT was untractable on a local computer. I had to install a LBMC submodule on PSMN to run it. The code to do the installation is in the README.
+\textcolor{blue}{compute\_nb\_seq\_cluster\_CDHIT.sh}: this script generated \textcolor{red}{results/mapping/unmapped/2017\_11\_22\_cdhit.fa.clstr.size} which indicate the number of sequences per cluster. 
+\begin{verbatim}
+cluster	nb
+1	43
+2	93
+3	126
+4	1
+5	139
+6	154
+\end{verbatim}
 
-  \item \textbf{sort BAM files to call variants on}:\\
-\textcolor{blue}{sort\_Mbelari.sh}
+\item \textbf{remove PCR duplicates for mapped reads on M. belari} (call the script by file):\\
+\textcolor{blue}{remove\_duplicates.sh}: this aimed at removing PCR duplicates (defined by same begin and end mapping coordinates). Output BAM are saved in \textcolor{red}{results/mapping/without\_duplicates/}. These are \texttt{2017\_09\_20\_MRDR6\_trim\_Mbelari\_mapped\_rmdup.bam} and \texttt{2017\_09\_20\_MRDR5\_trim\_Mbelari\_mapped\_rmdup.bam} files. This generates one flagstat as well.
 
-  \item \textbf{add RG (read groups) information}:\\
-\textcolor{blue}{picard\_add\_read\_groups.sh}\\
-More information on RG tag: \texttt{https://software.broadinstitute.org/gatk/documentation/article.php?id=6472}
+\item \textbf{add RG (read groups) information}:\\
+\textcolor{blue}{src/picard\_add\_read\_groups.sh}: on the previous PCR duplicates free, I needed to add read groups information. Output BAM are saved in \textcolor{red}{results/mapping/without\_duplicates/} as \texttt{2017\_09\_20\_MRDR6\_trim\_Mbelari\_mapped\_rmdup\_rg.bam} and \texttt{2017\_09\_20\_MRDR5\_trim\_Mbelari\_mapped\_rmdup\_rg.bam} files. I also indexed these files via the picard option CREATE\_INDEX=true. 
+More information on RG tag: \texttt{https://software.broadinstitute.org/gatk/documentation/article.php?id=6472}\\
+Note that the dictionnary must be created on the hybrid reference to avoid reheader of the BAM files. 
 
-  \item \textbf{create dictionnary for GATK} : \\
-\textcolor{blue}{picard\_dictionnary.sh}\\
-This was done on the combined fasta to avoid reheader BAM files with removing contigs from coli.
+\item \textbf{create dictionnary with picard for GATK} : \\
+\textcolor{blue}{src/picard\_dictionnary.sh}: this creates a dictionnary from the hybrid \texttt{data/ReferenceGenomes/2017\_09\_08\_combined\_belari\_coli.fasta} previously gunzip. The dictionnary is saved in \texttt{data/ReferenceGenomes/2017\_09\_08\_combined\_belari\_coli.dict}.
 
-  \item \textbf{Index input BAM: we sort again after adding RG infos}: \\
-\textcolor{blue}{sort\_Mbelari.sh}
-
-  \item \textbf{Realignment around INDELs using GATK}:\\
-\textcolor{blue}{realign.sh}
-
+\item \textbf{realign around INDELs using GATK}:\\
+\textcolor{blue}{src/realign.sh}: the realignment around INDELs is performed in 2 steps: firstly the detection of the intervals to be realigned and secondly the realignement in itself. This generated one intervals file such as \texttt{results/mapping/without\_duplicates/2017\_09\_20\_RDR6\_trim\_Mbelari\_mapped\_rmdup\_rg.intervals} and the final files are \texttt{2017\_09\_20\_MRDR6\_trim\_Mbelari\_mapped\_rmdup\_rg\_realign\_indels.bam} and \texttt{2017\_09\_20\_MRDR5\_trim\_Mbelari\_mapped\_rmdup\_rg\_realign\_indels.bam}.
+You need to index these outputs. 
 \end{enumerate}
-
-
-% -----------------------------------------------------
-\subsection{Summary of mapping against hybrid reference}
-
-\subsubsection*{Global summary of mapping}
-
-\begin{small}
-\begin{tabular}{c|c|c}
- female against hybrid ref & male against hybrid ref & description \\
- \hline
- 62,041,384 (100.00\%) paired; & 49,977,425 (100.00\%) paired; & of these: \\
-    13558111 (21.85\%)  &  13061118 (26.13\%) & aligned concordantly 0 times\\
-    45187409 (72.83\%) & 33918039 (67.87\%) & aligned concordantly exactly 1 time \\
-    3295864 (5.31\%) &  2998268 (6.00\%) & aligned concordantly >1 times \\
-\hline
-    13558111 pairs; & 13061118 pairs; & aligned concordantly 0 times; of these: \\
-      5173830 (38.16\%) & 4176207 (31.97\%) & aligned discordantly 1 time \\
-\hline
-    8384281 pairs; & 8884911 pairs & aligned 0 times concordantly or discordantly; of these: \\
-      16768562 mates; & 17769822 mates; & make up the pairs; of these: \\
-        9109859 (54.33\%) &  11709251 (65.89\%) & aligned 0 times \\
-        6547201 (39.04\%) &  5183867 (29.17\%) & aligned exactly 1 time \\
-        1111502 (6.63\%) & 876704 (4.93\%) & aligned >1 times \\
-92.66\%  & 88.29\% & overall alignment rate\\
-\hline
-\end{tabular}
-\end{small}
-
-\subsubsection*{Summary of mapping against M. belari}
-
-\begin{small}
-\begin{tabular}{c|c|c|c|c}
-female against belari / after rmdup & female against coli & male against belari / after rmdup & male against coli & description\\
-\hline
-37,074,990 / 35,389,848 & 77,897,919 & 22,004,523 / 20,066,441 & 66,241,076 & mapped \\
-34,427,332 (92.86\%) / 32,744,676 (92.53\%) & 62,539,214 (80.28\%) & 20,238,012 (91.97\%) / 18,301,958 (91.21\%) & 53,594,602 (80.91\%) & properly paired\\
-\hline
-\end{tabular}
-\end{small}
-
-
-% --------------------------------------------------------
-\subsection{FastQC on belari mapped rmudp realigned reads}
-
-BAM were converted to fastq and saved in \texttt{results/mapping/without\_duplicates/}.
-
-\textcolor{blue}{bamtofq\_Mbelari.sh}\\
-\textcolor{blue}{QC\_Mapped\_Mbelari\_fastq.sh}\\
-
-\begin{itemize}
-  \item bp content. First 6 bp are really less biased in bp content probably than after QC on whole set of reads. However, there is no more 2 modes on GC content and expected GC\% of 36 for female and 37 for male.
-\end{itemize}
-
-\textbf{Female reads}:\\
-\includegraphics{{../results/mapping/mapped/2017_09_14_female_JU2817_fastqc_per_base_sequence_content_plot_mapped_belari}.png}
-\includegraphics{{../results/mapping/mapped/2017_09_14_female_JU2817_fastqc_per_sequence_gc_content_plot_mapped_belari}.png}\\
-
-\textbf{Male reads}:\\
-\includegraphics{{../results/mapping/mapped/2017_09_14_male_JU2817_fastqc_per_base_sequence_content_plot_mapped_belari}.png}
-\includegraphics{{../results/mapping/mapped/2017_09_14_male_JU2817_fastqc_per_sequence_gc_content_plot_mapped_belari}.png}
-
-
-% ------------------------------------------------------------
-\subsection{FastQC on unmapped (on E.coli and M.belari) reads}
-
-\textcolor{blue}{extract\_unmapped.sh} (PSMN)\\
-\textcolor{blue}{bamtofq\_Mbelari.sh}\\
-
-\textcolor{blue}{Need to call FastQC on both unmapped reads, Laurent suggested to add all mapped samples in the multiQC output.}
-
-
-% ------------------------------------------------------------
-\subsection{cdhit on unmapped (on E.coli and M.belari) reads}
-
-\textcolor{blue}{run\_cdhit.sh} (PSMN)\\
-Latest realease of cd-hit can be obtained from \texttt{https://github.com/weizhongli/cdhit/releases}.
-
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Coverage analysis}
-
-I subsetted the gff3 for gene regions and converted it in bed format using \textcolor{blue}{convertgff\_to\_bed.sh}. \\
-\textcolor{red}{Be careful because it converts 1-based, closed [a, b] GFF3 input into 0-based, half-  open [a-1, b) six-column extended BED so it converts the first coordinate to 0 if it was 1, or 6,037 if it was 6,038.} To correct the coordinates for the genes, I changed the bed with \textcolor{blue}{format\_bed.R}.
-
-
-% -------------------------
-\subsection{Contig length}
-
-Contig length greatly varies:
-\begin{verbatim}
-  Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
-  500     813    2362    9936   11173  501686
-\end{verbatim}
-
-
-% ----------------------------------------
-\subsection{Genes identified within contig}
-
-\includegraphics{{../results/coverage/number_genes_detected_in_contigs}.pdf}
-
-
-% -----------------------
-\subsection{Raw coverage}
-
-I produced coverage indicators from filtered (on quality) mapped BAM files.
-\begin{itemize}
- \item Produce bedpe files: \textcolor{red}{bamtobedpe\_Mbelari.sh}. Eventually, we did not work with these files. (PSMN)\\
-  \item Produce bed files with depth at each bp after having sorted and indexed BAM: \textcolor{red}{bamtobed\_Mbelari.sh} (PSMN)\\
- \item Open BAM with \texttt{tablet}: it provides a table with contig name, contig length and number of mapped reads.
-\end{itemize}
-
-After rmdup and realignment around INDELs (From \texttt{tablet}):
-\begin{small}
-\begin{tabular}{l|l|l}
-sample & mean reads per contig  & median reads per contig \\
-\hline
-MRDR5 (female) & 1,838.3 & 275 \\
- \hline
-MRDR6 (male) & 1,042.4 & 165  \\
-\end{tabular}
-\end{small}
-
-% -----------------------
-\subsection{Count per gene}
-
-\textcolor{blue}{get\_counts\_per\_gene.sh}\\
-It allows to subset bed to genes areas only.
-
-
-% ----------------------------------------------------------
-\subsection{Normalized coverage at contig, gene and bp level}
-
-\textcolor{blue}{coverage\_analysis.sh}
-
-\includegraphics{{../results/coverage/2017_12_14_all_log2_FC}.pdf}\\
-\includegraphics{{../results/coverage/2017_12_14_pval_output_tests_genes_log2_FC}.pdf}
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Variants calling}
-
-All the steps done are listed in order in the following subsections. \\
-
-I get vcftools on 14th sept from:
-\begin{verbatim}
-git clone https://github.com/vcftools/vcftools.git
-cd vcftools
-./autogen.sh
-./configure
-make
-make install
-\end{verbatim}
-I copy-paste cd ./vcftools executable in src/cpp/ within the cloned remote to bin of our project. To get the version of vcftools, I type ./vcftools (0.1.15).\\
-
-I get rtg-tools on 15th sept from:
-\begin{verbatim}
- git clone https://github.com/RealTimeGenomics/rtg-tools.git
-\end{verbatim}
-and I followed the instruction on README.md to get a rtg executable. To get the version of rtg-tools, I type ./rtg (6.8.4).\\
-
-For the others toolboxes used, see in script the versions used.
-
-
-% -----------------------
-\subsection{Call variants}
-
-\textcolor{blue}{call\_var\_Mbelari.sh}\\
-
-
-% ---------------------------
-\subsection{Variants summary}
-
-Summaries were obtained from vcf.gz files with \textcolor{blue}{summary-vcf\_file.sh}.\\
-Variants files intersection were obtained from vcf.gz files with \textcolor{blue}{intersect-vcf\_file.sh}.
-
-% .........................
-\subsubsection{Raw variants}
-
-Summaries are in \texttt{results/call\_var/2017\_09\_15\_summary\_raw\_var\_female\_JU2917.txt} and \texttt{results/call\_var/2017\_09\_21\_summary\_realign\_indels\_var\_male\_JU2917.txt} like files.\\
-Summaries on intersected files are saved in \texttt{results/call\_var/inter\_female\_male\_realign\_indels/summary\_in\_both\_0002.txt} and \texttt{results/call\_var/inter\_female\_male\_realign\_indels/summary\_in\_MRDR6\_not\_in\_MRDR5\_0000.txt}.
-
-\small
-\begin{tabular}{c|c|c|c|c}
- & male & female & intersection &  in male, not in female  \\
-  &  &  & after realign &   after realign \\
-
- \hline
-  & raw / after realignment & raw / after realignment &  & \\
-\hline
-SNPs & 653,292 / 646,096 & 943,379 / 915,624 & 533,693 & 136,139 \\
-Insertions & 55,379 / 47,326 & 81,318 / 65,917 & 31,018 & 16,308\\
-Deletions & 32,949 / 33,200 & 42,555 / 41,879 & 25,784 & 7,416 \\
-MNPs & 0 & 0 & & \\
-het/hom ratio  & 3.4 / 3.88 / 1.5 / 1.6 & 8.75 / 11.76 / 2.59 / 3.32 &  & \\
-(total/SNPs/Ins/Del) & 3.47 / 3.85 / 1.72 / 1.71 & 9.49 / 11.83 / 3.33 / 3.62 & 3.21 / 3.47 / 1.78 / 1.63 & 5.09 / 7.21 / 1.63 / 2.02\\
-Ins/Del ratio & 1.68 / 1.43 & 1.91 / 1.57 & 1.20 & 2.20 \\
-SNP Transit/Transv & 1.45 / 1.47 & 1.43 / 1.45 & 1.52 & 1.21\\
-\end{tabular}
-
-
-% -------------------------------------------
-\subsection{Prepare count tables for variants}
-
-\textcolor{blue}{extract\_info\_from\_VCF.R}\\
-
-\includegraphics{{../results/call_var/2017_11_09_distance_from_INDEL_to_nearest_variant_female}.pdf}
-\includegraphics{{../results/call_var/2017_11_09_distance_from_INDEL_to_nearest_variant_male}.pdf}\\
-\includegraphics{{../results/call_var/2017_11_09_summary_raw_variants}.pdf}
-\includegraphics{{../results/call_var/2017_11_12_log2_density_ratio_raw_SNPs}.pdf}
-
-
-% --------------------------------------------------
-\subsection{Filter variants to perform fisher tests}
-
-\textcolor{blue}{prep\_fisher.R}.\\
-
-\includegraphics{{../results/call_var/2017_12_08_summary_alleles_ALT_between_pools}.pdf}
-knowing that only variants sharing the same alt allele will be used for the analysis.\\
-
-\includegraphics{{../results/call_var/2017_12_13_frequency_SNPs_sexes}.pdf}\\
-\includegraphics{{../results/call_var/2017_12_13_log2_density_ratio_SNPs}.pdf}
-
-% --------------------------------------------------------
-\subsection{Make fisher tests and data simulation under H0}
-
-\textcolor{blue}{fisher.R}\\
-
-\includegraphics{{../results/fisher/2017_12_13_signif_Fisher_contig_gene_level}.pdf}
-
 
 \end{document}
