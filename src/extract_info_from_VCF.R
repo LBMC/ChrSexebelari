@@ -54,7 +54,6 @@ tab.variants.male <- fread("results/call_var/2017_09_25_MRDR6_trim_Mbelari_mappe
 
 ##### Summary of detected variants
 if(do.summary.raw) {
-  summary.raw.variants <- NULL
   for (sexe in c("male", "female")) {
     eval(parse(text = paste("tmp = tab.variants.", sexe, sep = "")))
     tmp.tab <- table(tmp$is.INDEL)
@@ -120,7 +119,37 @@ if(do.summary.raw) {
       sexe, sep = ""), xlab = "distance in bp")
     dev.off()
     system(paste("bash src/date.sh results/call_var/distance_from_INDEL_to_nearest_variant_", 
-      sexe, ".pdf", sep = ""))
+      sexe, ".pdf", sep = ""))	
+  }
+
+  summary.raw.variants <- NULL
+  for (sexe in c("male", "female")) {
+    eval(parse(text = paste("tmp = tab.variants.", sexe, sep = "")))
+    tmp.tab <- table(tmp$is.INDEL)
+    nb.SNPs.all <- tmp.tab["0"]
+    nb.INDELs.all <- tmp.tab["1"]
+    nb.pluriallelic.sites <- length(which(tmp$nb.alleles > 2))
+    eval(parse(text = paste("nb.median.depth.all <- median(tmp$tot.", sexe, ")", sep = "")))
+    eval(parse(text = paste("nb.mean.depth.all <- mean(tmp$tot.", sexe, ")", sep = "")))
+    eval(parse(text = paste("nb.median.freq.all <- median(100*tmp$count.alt.", sexe, 
+      "/tmp$tot.", sexe, ")", sep = "")))
+    eval(parse(text = paste("nb.mean.freq.all <- mean(100*tmp$count.alt.", sexe, "/tmp$tot.", 
+      sexe, ")", sep = "")))
+
+    all <- read.csv(paste("results/call_var/2017_11_09_", sexe, "_trim_Mbelari_mapped_rmdup_rg_realign_indels_counts_genic_information.txt", 
+      sep = ""), sep = "\t", h = T)
+    all.genic <- all[-which(all$genes == ""), ]
+    tmp.tab <- table(all.genic$is.INDEL)
+    nb.SNPs.genic <- tmp.tab["0"]
+    nb.INDELs.genic <- tmp.tab["1"]
+    eval(parse(text = paste("nb.median.depth.genic <- median(all.genic$tot.", sexe, ")", 
+      sep = "")))
+    eval(parse(text = paste("nb.mean.depth.genic <- mean(all.genic$tot.", sexe, ")", 
+      sep = "")))
+    eval(parse(text = paste("nb.median.freq.genic <- median(100*all.genic$count.alt.", 
+      sexe, "/all.genic$tot.", sexe, ")", sep = "")))
+    eval(parse(text = paste("nb.mean.freq.genic <- mean(100*all.genic$count.alt.", sexe, 
+      "/all.genic$tot.", sexe, ")", sep = "")))
 
     summary.raw.variants <- rbind(summary.raw.variants, data.frame(sexe = sexe, nb.SNPs.all = nb.SNPs.all, 
       nb.INDELs.all = nb.INDELs.all, nb.pluriallelic.sites = nb.pluriallelic.sites, 
@@ -128,7 +157,7 @@ if(do.summary.raw) {
       median.freq.all = nb.median.freq.all, mean.freq.all = nb.mean.freq.all, nb.SNPs.genic = nb.SNPs.genic, 
       nb.INDELs.genic = nb.INDELs.genic, nb.median.depth.genic = nb.median.depth.genic, 
       nb.mean.depth.genic = nb.mean.depth.genic, median.freq.genic = nb.median.freq.genic, 
-      mean.freq.genic = nb.mean.freq.genic, stringsAsFactors = F))	
+      mean.freq.genic = nb.mean.freq.genic, stringsAsFactors = F))
   }
   write.table(summary.raw.variants, "results/call_var/summary_raw_variants.txt", sep = "\t",  quote = F, 
     row.names = F)
@@ -136,7 +165,7 @@ if(do.summary.raw) {
 }
 
 ##### Summary of number of variants found
-s <- read.table("results/call_var/summary_raw_variants.txt", sep = "\t", h = T)
+s <- read.table("results/call_var/2017_11_09_summary_raw_variants.txt", sep = "\t", h = T)
 pdf("results/call_var/summary_raw_variants.pdf", height = 4, width = 25)
 grid.table(s)
 dev.off()
@@ -154,7 +183,7 @@ density.tests.sexe$den.male <- density.tests.sexe$nb.test.male/density.tests.sex
 density.tests.sexe$den.female <- density.tests.sexe$nb.test.female/density.tests.sexe$length
 log2.den.var <- log2(density.tests.sexe$den.female/density.tests.sexe$den.male)
 pdf("results/call_var/log2_density_ratio_raw_SNPs.pdf")
-hist(log2.den.var, main = "log2(density SNP female/density SNP male) on raw detected SNPs", 
+hist(log2.den.var, main = "log2(density SNP female/density SNP male) per contig\non raw detected SNPs", 
   xlab = "log2(density SNP female/density SNP male)", breaks = 100)
 abline(v = 0, col = "black", lty = 2)
 dev.off()
