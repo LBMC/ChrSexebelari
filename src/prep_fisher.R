@@ -17,35 +17,47 @@ if (do.prep.fisher) {
  
   ##### Variants with same position in both pools
   merge.sexe.common <- merge(tab.variants.male[, c("CHROM", "POS", "REF", "ALT", "QUAL", "nb.alleles", "count.ref.male", "count.alt.male", "tot.male", "is.INDEL", "genes")], tab.variants.female[, c("CHROM", "POS", "REF", "ALT", "QUAL", "nb.alleles", "count.ref.female", "count.alt.female", "tot.female", "is.INDEL", "genes")], by = c("CHROM",  "POS", "REF", "genes"))
+  SNP.common.pos <- length(which(merge.sexe.common$is.INDEL.x == merge.sexe.common$is.INDEL.y & merge.sexe.common$is.INDEL.x == 0))
+  INDEL.common.pos <- length(which(merge.sexe.common$is.INDEL.x == merge.sexe.common$is.INDEL.y & merge.sexe.common$is.INDEL.x == 1))
+  SNP.common.pos.gene <- length(which(merge.sexe.common$is.INDEL.x == merge.sexe.common$is.INDEL.y & merge.sexe.common$is.INDEL.x == 0 & merge.sexe.common$genes != ""))
+  INDEL.common.pos.gene <- length(which(merge.sexe.common$is.INDEL.x == merge.sexe.common$is.INDEL.y & merge.sexe.common$is.INDEL.x == 1 & merge.sexe.common$genes != ""))
 
   ##### All variants in both pools 
   merge.sexe.all <- merge(tab.variants.male[, c("CHROM", "POS", "REF", "ALT", "QUAL", "nb.alleles", "count.ref.male", "count.alt.male", "tot.male", "is.INDEL","genes")], tab.variants.female[, c("CHROM", "POS", "REF", "ALT", "QUAL", "nb.alleles", "count.ref.female", "count.alt.female", "tot.female", "is.INDEL", "genes")], by = c("CHROM",  "POS", "REF", "genes"), all.x = T, all.y = T)
 
   ##### Variants with same position and same alt allele in both pools
   merge.sexe.common.biallelic <- merge(tab.variants.male[, c("CHROM", "POS", "REF", "ALT", "QUAL", "nb.alleles", "count.ref.male", "count.alt.male", "tot.male","is.INDEL", "genes")], tab.variants.female[, c("CHROM", "POS", "REF", "ALT", "QUAL", "nb.alleles", "count.ref.female", "count.alt.female", "tot.female", "is.INDEL", "genes")], by = c("CHROM",  "POS", "REF", "ALT", "genes"))
- 
+  SNP.common.biallelic.pos <- length(which(merge.sexe.common.biallelic$is.INDEL.x == merge.sexe.common.biallelic$is.INDEL.y & merge.sexe.common.biallelic$is.INDEL.x == 0))
+  INDEL.common.biallelic.pos <- length(which(merge.sexe.common.biallelic$is.INDEL.x == merge.sexe.common.biallelic$is.INDEL.y & merge.sexe.common.biallelic$is.INDEL.x == 1))
+  SNP.common.biallelic.pos.gene <- length(which(merge.sexe.common.biallelic$is.INDEL.x == merge.sexe.common.biallelic$is.INDEL.y & merge.sexe.common.biallelic$is.INDEL.x == 0 & merge.sexe.common.biallelic$genes != ""))
+  INDEL.common.biallelic.pos.gene <- length(which(merge.sexe.common.biallelic$is.INDEL.x == merge.sexe.common.biallelic$is.INDEL.y & merge.sexe.common.biallelic$is.INDEL.x == 1 & merge.sexe.common.biallelic$genes != ""))
+
   ##### Apply filter on contig size, DP (>1 in total count) and distance to INDEL:
   # for variants with same position and same alt allele in both pools
   tmp.common.biallelic <- merge.sexe.common.biallelic[which(merge.sexe.common.biallelic$tot.male> 1 | merge.sexe.common.biallelic$tot.female>1), ]
   tmp.common.biallelic$ID <- 1:dim(tmp.common.biallelic)[1]
-
+  SNP.common.biallelic.pos.filt <- length(which(tmp.common.biallelic$is.INDEL.x == tmp.common.biallelic$is.INDEL.y & tmp.common.biallelic$is.INDEL.x == 0))
+  INDEL.common.biallelic.pos.filt <- length(which(tmp.common.biallelic$is.INDEL.x == tmp.common.biallelic$is.INDEL.y & tmp.common.biallelic$is.INDEL.x == 1))
+  SNP.common.biallelic.pos.gene.filt <- length(which(tmp.common.biallelic$is.INDEL.x == tmp.common.biallelic$is.INDEL.y & tmp.common.biallelic$is.INDEL.x == 0 & tmp.common.biallelic$genes != ""))
+  INDEL.common.biallelic.pos.gene.filt <- length(which(tmp.common.biallelic$is.INDEL.x == tmp.common.biallelic$is.INDEL.y & tmp.common.biallelic$is.INDEL.x == 1 & tmp.common.biallelic$genes != ""))
   # for all variants in both pools
   tmp.all <- merge.sexe.all[which(merge.sexe.all$tot.male>1 | merge.sexe.all$tot.female>1), ]
   tmp.all$ID <- 1:dim(tmp.all)[1]
+  SNP.common.pos.filt <- length(which(tmp.all$is.INDEL.x == tmp.all$is.INDEL.y & tmp.all$is.INDEL.x == 0))
+  INDEL.common.pos.filt <- length(which(tmp.all$is.INDEL.x == tmp.all$is.INDEL.y & tmp.all$is.INDEL.x == 1))
+  SNP.common.pos.gene.filt <- length(which(tmp.all$is.INDEL.x == tmp.all$is.INDEL.y & tmp.all$is.INDEL.x == 0 & tmp.all$genes != ""))
+  INDEL.common.pos.gene.filt <- length(which(tmp.all$is.INDEL.x == tmp.all$is.INDEL.y & tmp.all$is.INDEL.x == 1 & tmp.all$genes != ""))
 
-  # Manage is.INDEL when variants is found only once (NA) or found in both but with different type (FALSE)
+  ###### Pick variants when variants is found in one sexe (create same_class_variant = NA) or found in both but with different type like SNP in male and INDEL in female (same_class_variant = FALSE) and add this information in same_class_variant new column
   test <- apply(tmp.all[, paste("is.INDEL.", c("x", "y"), sep = "")], 1, function(x) ifelse(is.na(x[["is.INDEL.x"]]) | is.na(x[["is.INDEL.y"]]), NA, 
 x[["is.INDEL.x"]] == x[["is.INDEL.y"]]))
-
   tab.test <- table(test, useNA = "always") 
   tmp.all$same_class_variant <- test
-
-  tmp.all.SNP <- tmp.all[which(tmp.all$is.INDEL.x == 0 & tmp.all$is.INDEL.y == 0), ]
-  tmp.all.INDEL <- tmp.all[which(tmp.all$is.INDEL.x == 1 & tmp.all$is.INDEL.y == 1), ] 
+  tmp.all.SNP <- tmp.all[which(tmp.all$is.INDEL.x == 0 & tmp.all$is.INDEL.y == 0), ] # All filtered SNPs
+  tmp.all.INDEL <- tmp.all[which(tmp.all$is.INDEL.x == 1 & tmp.all$is.INDEL.y == 1), ] # All filtered INDELs
   tmp.all.SNP.in.one.sexe <- tmp.all[which(tmp.all$same_class_variant == F), ] 
   tmp.all.in.one.sexe <- tmp.all[which(is.na(tmp.all$same_class_variant)), ] 
-
-  # Add supplementary SNP for variants that are both SNP and INDEL
+  ## Add supplementary SNP for variants that are both SNP and INDEL
   add.SNP.in.one.sexe <- NULL
   for(i in 1:dim(tmp.all.SNP.in.one.sexe)[1]){
 	temp <- as.data.frame(tmp.all.SNP.in.one.sexe[i, ])
@@ -57,8 +69,7 @@ x[["is.INDEL.x"]] == x[["is.INDEL.y"]]))
 	for (c in change) {temp[1, c]<- 0}
 	add.SNP.in.one.sexe <- rbind(add.SNP.in.one.sexe, temp)
   }
-
-  # Add supplementary INDEL for variants that are both SNP and INDEL
+  ## Add supplementary INDEL for variants that are both SNP and INDEL 
   add.INDEL.in.one.sexe <- NULL
   for(i in 1:dim(tmp.all.SNP.in.one.sexe)[1]){
 	temp <- as.data.frame(tmp.all.SNP.in.one.sexe[i, ])
@@ -70,8 +81,7 @@ x[["is.INDEL.x"]] == x[["is.INDEL.y"]]))
 	for (c in change) {temp[1, c]<- 0}
 	add.INDEL.in.one.sexe <- rbind(add.INDEL.in.one.sexe, temp)
   }
-
-  # Complete counts to 0 for variants that are found in one sexe
+  ## Complete counts to 0 for variants that are found in one sexe
   add.in.one.sexe <- NULL
   for(i in 1:dim(tmp.all.SNP.in.one.sexe)[1]){
 	temp <- as.data.frame(tmp.all.in.one.sexe[i, ])
@@ -121,15 +131,34 @@ x[["is.INDEL.x"]] == x[["is.INDEL.y"]]))
   tmp.all.SNP.test.INDEL.filt$contig_length <- mat.size.ctg[,  tmp.all.SNP.test.INDEL.filt$CHROM]
   tmp.all.INDEL.test.INDEL.filt$contig_length <- mat.size.ctg[, tmp.all.INDEL.test.INDEL.filt$CHROM]
 
+  SNP.common.pos.filt.comb.posINDEL <- dim(tmp.all.SNP.test.INDEL.filt)[1]
+  INDEL.common.pos.filt.comb.posINDEL <- dim(tmp.all.INDEL.test.INDEL.filt)[1]
+  SNP.common.pos.gene.filt.comb.posINDEL <- length(which(tmp.all.SNP.test.INDEL.filt$genes != ""))
+  INDEL.common.pos.gene.filt.comb.posINDEL <- length(which(tmp.all.INDEL.test.INDEL.filt$genes != ""))
+
+  ##### write summary
+  summary.filt.variants <- data.frame(label = c("nb.common.pos", "nb.common.pos.gene", "nb.common.pos.same.ALT", "nb.common.pos.same.ALT.gene", "nb.common.pos.same.ALT.filt.DP>1", "nb.common.pos.same.ALT.gene.filt.DP>1", "nb.common.pos.filt.DP>1", "nb.common.pos.gene.filt.DP>1", "nb.common.pos.filt.DP>1.final", "nb.common.pos.gene.filt.DP>1.final"),
+nb_SNP_INDEL = c(paste(SNP.common.pos, INDEL.common.pos, sep = "/"), paste(SNP.common.pos.gene, INDEL.common.pos.gene, sep = "/"), paste(SNP.common.biallelic.pos, INDEL.common.biallelic.pos, sep = "/"), paste(SNP.common.biallelic.pos.gene, INDEL.common.biallelic.pos.gene, sep = "/"), paste(SNP.common.biallelic.pos.filt, INDEL.common.biallelic.pos.filt, sep = "/"), paste(SNP.common.biallelic.pos.gene.filt, INDEL.common.biallelic.pos.gene.filt, sep = "/"), paste(SNP.common.pos.filt, INDEL.common.pos.filt, sep = "/"), paste(SNP.common.pos.gene.filt, INDEL.common.pos.gene.filt, sep = "/"), paste(SNP.common.pos.filt.comb.posINDEL, INDEL.common.pos.filt.comb.posINDEL, sep = "/"), paste(SNP.common.pos.gene.filt.comb.posINDEL, INDEL.common.pos.gene.filt.comb.posINDEL, sep = "/")))
+  write.table(summary.filt.variants, "results/call_var/summary_filt_variants.txt", sep = "\t",  quote = F, 
+    row.names = F)
+  system("bash src/date.sh results/call_var/summary_filt_variants.txt")
+
   ##### Summary of filtered variants
   tab.snp <- table(tmp.all.SNP.test.INDEL.filt$same.ALT)
   tab.indel <- table(tmp.all.INDEL.test.INDEL.filt$same.ALT)
-  pdf("results/call_var/summary_alleles_ALT_between_pools.pdf", height=4, width=10)
-  par(mfrow = c(1, 2))
-  bb.snp <- barplot(tab.snp, names.arg = c("different ALT allele", "same ALT allele"), main = "SNP identity between both pools", cex.main = 0.75)
+  tab.snp.g <- table(tmp.all.SNP.test.INDEL.filt[which(tmp.all.SNP.test.INDEL.filt$gene != ""), ]$same.ALT)
+  tab.indel.g <- table(tmp.all.INDEL.test.INDEL.filt[which(tmp.all.INDEL.test.INDEL.filt$gene != ""), ]$same.ALT)
+  pdf("results/call_var/summary_alleles_ALT_between_pools.pdf", height=8, width=10)
+  par(mfrow = c(2, 2))
+  bb.snp <- barplot(tab.snp, names.arg = c("different ALT allele", "same ALT allele"), main = "SNP identity between both pools\nfor all SNP", cex.main = 0.75)
   text(bb.snp, max(tab.snp)/2,labels=tab.snp) 
-  bb.indel <- barplot(tab.indel, names.arg = c("different ALT allele", "same ALT allele"), main = "INDELs identity between both pools", cex.main = 0.75) 
+  bb.indel <- barplot(tab.indel, names.arg = c("different ALT allele", "same ALT allele"), main = "INDELs identity between both pools\nfor all INDEL", cex.main = 0.75) 
   text(bb.indel, max(tab.indel)/2,labels=tab.indel) 
+
+  bb.snp.g <- barplot(tab.snp.g, names.arg = c("different ALT allele", "same ALT allele"), main = "SNP identity between both pools\nwithin genes", cex.main = 0.75)
+  text(bb.snp.g, max(tab.snp.g)/2,labels=tab.snp.g) 
+  bb.indel.g <- barplot(tab.indel.g, names.arg = c("different ALT allele", "same ALT allele"), main = "INDELs identity between both pools\nwithin genes", cex.main = 0.75) 
+  text(bb.indel.g, max(tab.indel.g)/2,labels=tab.indel.g) 
   dev.off()
   system("bash src/date.sh results/call_var/summary_alleles_ALT_between_pools.pdf")
 
@@ -140,6 +169,12 @@ x[["is.INDEL.x"]] == x[["is.INDEL.y"]]))
   system("bash src/date.sh results/call_var/merge.sexe.all.filt.SNP.txt")
 }
 
+##### Summary of number of variants found
+s <- read.table("results/call_var/2017_12_20_summary_filt_variants.txt", sep = "\t", h = T)
+pdf("results/call_var/summary_filt_variants.pdf", height = 4, width = 5)
+grid.table(s)
+dev.off()
+system("bash src/date.sh results/call_var/summary_filt_variants.pdf")
 
 ##### Summary of density of SNPs for filtered SNPs per contig 
 tests  <- fread("results/call_var/2017_12_08_merge.sexe.all.filt.SNP.txt", sep = "\t", h = T)
@@ -195,7 +230,8 @@ names(tab.g)[ind.na] <- paste(names[ind.na], "\n0 count")
 names(tab.g)[which(names(tab.g) == "NA")] <- paste("0 in male\n(", tab.g["NA"], ")", sep = "")
 names(tab.g)[which(names(tab.g) == "0")] <- "male\n=fem"
 
-pdf("results/call_var/log2_density_ratio_SNPs.pdf", w = 13, h = 5)
+##### Summary of density of SNPs for filtered variants per contig
+pdf("results/call_var/log2_density_ratio_filt_SNPs.pdf", w = 13, h = 5)
 par(mfrow = c(1,2))
 barplot(tab.ctg, main = "log2(density SNP female/density SNP male)\non filtered detected SNPs on contig", xlab  = "log2(density SNP female/density SNP male)", cex.names = 0.4)
 barplot(tab.g, main = "log2(density SNP female/density SNP male)\non filtered detected SNPs on gene", xlab  = "log2(density SNP female/density SNP male)", cex.names = 0.4)
