@@ -219,7 +219,7 @@ neg <- density.tests.sexe.g$log2.den.female.male[which(density.tests.sexe.g$log2
 data.pos <- transform(pos, groupdata = cut(pos, breaks=c(0, 0.5, 1, 1.5, 2, 2.5),
 right=F, include.lowest = F))
 data.neg <- transform(neg, groupdata = cut(neg, breaks=rev(-c(0, 0.5, 1, 1.5, 2, 2.5)),
-right=T, include.lowest = F))
+right=T, include.lowest = F)) 
 data <- rbind(data.neg, data.pos)
 tab <- table(c(as.character(data$groupdata), rep("NA", length(which(is.na(density.tests.sexe.g$log2.den.female.male)))), rep("0", length(which(density.tests.sexe.g$log2.den.female.male == 0)))))
 names <- c("NA", "(-2.5,-2]", "(-2,-1.5]", "(-1.5,-1]", "(-1,-0.5]", "(-0.5,0]", "0", "[0,0.5)", "[0.5,1)", "[1,1.5)", "[1.5,2)" , "[2,2.5)")
