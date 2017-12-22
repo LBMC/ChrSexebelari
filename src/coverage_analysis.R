@@ -20,6 +20,8 @@ write.table(gff.genes.mbela, "data/ReferenceGenomes/Mesorhabditis_belari_JU2817_
 contigs.mbela <- fread("data/ReferenceGenomes/2017_09_13_Mbelari.sizes.genome", sep = "\t", 
   h = F, stringsAsFactors = F)
 
+thresh.norm.FC <- 1
+
 compute.norm <- F
 
 if(compute.norm){
@@ -84,16 +86,22 @@ if(compute.norm){
   system("bash src/intersect_gene_bed_genes.sh")
 
   ##### Normalize counts at contig level, gene level and at gene bp level
+  # at contig
   counts.contigs <- ComputeNormalizedCount(cov.female, cov.male, "contig")
+  counts.contigs$missing.sexe <- ""; counts.contigs$missing.sexe[which(counts.contigs$counts.raw.female == 0)] <- "female"; 
+  counts.contigs$missing.sexe[which(counts.contigs$counts.raw.male == 0)] <- "male"; 
   write.table(counts.contigs, "results/coverage/FC_normalized_coverage_at_contig.txt", 
     sep = "\t", quote = F, col.names = T, row.names = F)
   system("bash src/date.sh results/coverage/FC_normalized_coverage_at_contig.txt")
 
+  # at gene 
   counts.genes.female <- fread("results/coverage/2017_12_06_MRDR5_trim_Mbelari_mapped_rmdup_rg_realign_indels_count_genes.txt", 
     h = F, sep = "\t", stringsAsFactors = F)
   counts.genes.male <- fread("results/coverage/2017_12_06_MRDR6_trim_Mbelari_mapped_rmdup_rg_realign_indels_count_genes.txt", 
     h = F, sep = "\t", stringsAsFactors = F)
   counts.genes <- ComputeNormalizedCount(counts.genes.female, counts.genes.male, "gene")
+  counts.genes$missing.sexe <- ""; counts.genes$missing.sexe[which(counts.genes$counts.raw.female == 0)] <- "female"; 
+  counts.genes$missing.sexe[which(counts.genes$counts.raw.male == 0)] <- "male"; 
   write.table(counts.genes, "results/coverage/FC_normalized_coverage_at_gene.txt", 
     sep = "\t", quote = F, col.names = T, row.names = F)
   system("bash src/date.sh results/coverage/FC_normalized_coverage_at_gene.txt")
@@ -118,6 +126,27 @@ if(compute.norm){
     sep = "\t", quote = F, col.names = T, row.names = F)
   system("bash src/date.sh results/coverage/FC_normalized_coverage_at_bp_within_genes.txt")
 }
+
+##### Zoom on gene with no count in one gene or in one contig
+counts.contigs <- read.csv("results/coverage/2017_12_06_FC_normalized_coverage_at_contig.txt", 
+  sep = "\t", h = T, stringsAsFactors = F)
+counts.genes <- read.csv("results/coverage/2017_12_06_FC_normalized_coverage_at_gene.txt", 
+  sep = "\t", h = T, stringsAsFactors = F)
+
+counts.genes.missing.one.sexe <- counts.genes[which(counts.genes$missing.sexe != ""), ]
+counts.genes.missing.one.sexe <- counts.genes.missing.one.sexe[order(counts.genes.missing.one.sexe$missing.sexe), ]
+counts.contigs.missing.one.sexe <- counts.contigs[which(counts.contigs$missing.sexe != ""), ]
+counts.contigs.missing.one.sexe <- counts.contigs.missing.one.sexe[order(counts.contigs.missing.one.sexe$missing.sexe), ]
+pdf("results/coverage/counts_per_features_raw_counts_not_present_in_both_sexe.pdf")
+par(mfrow = c(1, 2))
+barplot(table(counts.genes.missing.one.sexe$missing.sexe), main = "#genes missing in one sexe", xlab = "sexe")
+barplot(table(counts.contigs.missing.one.sexe$missing.sexe), main = "#contigs missing in one sexe", xlab = "sexe")
+dev.off()
+system("bash src/date.sh results/coverage/counts_per_features_raw_counts_not_present_in_both_sexe.pdf")
+write.table(counts.genes.missing.one.sexe, "results/coverage/counts_per_genes_raw_counts_not_present_in_both_sexe.txt", sep = "\t", col.names = T, row.names = F, quote = F)
+write.table(counts.contigs.missing.one.sexe, "results/coverage/counts_per_contigs_raw_counts_not_present_in_both_sexe.txt", sep = "\t", col.names = T, row.names = F, quote = F)
+system("bash src/date.sh results/coverage/counts_per_contigs_raw_counts_not_present_in_both_sexe.txt")
+system("bash src/date.sh results/coverage/counts_per_genes_raw_counts_not_present_in_both_sexe.txt")
 
 do.test.at.bp <- F
 if(do.test.at.bp ){
@@ -146,10 +175,10 @@ if(do.test.at.bp ){
   res <- NULL
   for(g in genes) {
     tmp <- filter(counts.bp, V8 == g)[, c("counts.norm.female", "counts.norm.male", "log2.norm.FC")]
-    contig <- counts.genes[which(counts.genes$V4 == g), ]$V1	
-    f <- tmp$counts.norm.female; f.a <- 2*sqrt(f+3/8)
-    m <- tmp$counts.norm.male; m.a <- 2*sqrt(m+3/8)
-    fc <- tmp$log2.norm.FC; fc.a <- log2(f.a/m.a)
+    contig <- unique(tmp$V1)	
+    f <- tmp[, "counts.norm.female"]; f.a <- 2*sqrt(f+3/8)
+    m <- tmp[, "counts.norm.male"]; m.a <- 2*sqrt(m+3/8)
+    fc <- tmp[, "log2.norm.FC"]; fc.a <- log2(f.a/m.a)
     me <- median(fc); me.a <- median(fc.a)
     mean <- mean(fc); mean.a <- mean(fc.a)
     me.f <- median(f); me.f.a <- median(f.a)
@@ -166,36 +195,19 @@ if(do.test.at.bp ){
       t.test.both <- NA; t.test.both.a <- NA
       t.test.both.greater <- NA; t.test.both.a.greater <- NA
       t.test.both.lower <- NA; t.test.both.a.lower <- NA
-     } else{
-        med.test <- prop.test(sum(fc > 0), length(fc), p = 0.5, "two.sided")$p.value
-        med.test.a <- prop.test(sum(fc.a > 0), length(fc.a), p = 0.5, "two.sided")$p.value
-		
-        t.test <- t.test(fc)$p.value
-        t.test.a <- t.test(fc.a)$p.value
-		
-        t.test.both <- t.test(f, m)$p.value	
-        t.test.both.a <- t.test(f.a, m.a)$p.value
-
-        t.test.both.lower <- t.test(f, m, alternative = "less")$p.value	
-        t.test.both.greater <- t.test(f, m, alternative = "greater")$p.value
-	
-        t.test.both.a.lower <- t.test(f.a, m.a, alternative = "less")$p.value	
-        t.test.both.a.greater <- t.test(f.a, m.a, alternative = "greater")$p.value
-	
-        #dat <- data.frame(count = round(c(m, f)), sexe = c(rep("male", length(m)), rep("female", length(f))))
-        #m1 <- MASS::glm.nb(count~sexe, data = dat, control = glm.control(maxit=200))	
-        #m1.g <- glm(count~sexe, data = dat, family = "poisson")	
-        #m1.q <- glm(count~sexe, data = dat, family = "quasipoisson")	
-        #m1.n <- glm(count~sexe, data = dat, family = "gaussian")	
-        #m0 <- MASS::glm.nb(count~1, data = dat,control = glm.control(trace = 10,maxit=200))	
-        #m0.g <- glm(count~1, data = dat, family = "poisson")	
-        #m0.q <- glm( count~1, data = dat, family = "quasipoisson")	
-        #m0.n <- glm(count~1, data = dat, family = "gaussian")	
-        #pm.anova <- anova(m0, m1)[["Pr(Chi)"]][2]
-      }
-      tmp.res <- data.frame(contig = contig, gene = g, mean.f = mean.f, median.f = me.f, sd.f = sd.f, mean.m = mean.m, median.m = me.m, sd.m = sd.m,
+    } else{
+      med.test <- prop.test(sum(fc > 0), length(fc), p = 0.5, "two.sided")$p.value; med.test.a <- prop.test(sum(fc.a > 0), length(fc.a), p = 0.5, "two.sided")$p.value	
+      t.test <- t.test(fc)$p.value; t.test.a <- t.test(fc.a)$p.value	
+      t.test.both <- t.test(f, m)$p.value; t.test.both.a <- t.test(f.a, m.a)$p.value
+      t.test.both.lower <- t.test(f, m, alternative = "less")$p.value; t.test.both.greater <- t.test(f, m, alternative = "greater")$p.value
+      t.test.both.a.lower <- t.test(f.a, m.a, alternative = "less")$p.value; t.test.both.a.greater <- t.test(f.a, m.a, alternative = "greater")$p.value
+    }
+    tmp.res <- data.frame(contig = contig, gene = g,  
+      mean.f = mean.f, median.f = me.f, sd.f = sd.f, 
+      mean.m = mean.m, median.m = me.m, sd.m = sd.m,
       mean.fc = mean, median.fc = me, sd.fc = sd.fc,
-      mean.f.a = mean.f.a, median.f.a = me.f.a, sd.f = sd.f.a, mean.m.a = mean.m.a, median.m.a = me.m.a, sd.m.a = sd.m.a,
+      mean.f.a = mean.f.a, median.f.a = me.f.a, sd.f.a = sd.f.a, 
+      mean.m.a = mean.m.a, median.m.a = me.m.a, sd.m.a = sd.m.a,
       mean.fc.a = mean.a, median.fc.a = me.a, sd.fc.a = sd.fc.a,
       pval.med = med.test, pval.med.a = med.test.a, 
       pval.ttest = t.test, pval.ttest.a = t.test.a, 
@@ -203,18 +215,17 @@ if(do.test.at.bp ){
       pval.ttest.lower.both = t.test.both.lower, pval.ttest.both.lower.a = t.test.both.a.lower, 
       pval.ttest.greater.both = t.test.both.greater, pval.ttest.both.greater.a = t.test.both.a.greater, 
       stringsAsFactors = F)
-      res <- rbind(res, tmp.res)
+    res <- rbind(res, tmp.res)
   }
+  res$is.gene.missing.sexe <- sapply(res$gene, function(x) {tmp <- which(counts.genes.missing.one.sexe$V4 == x); ifelse(length(tmp)>0, counts.genes.missing.one.sexe[tmp, "missing.sexe"], "")})
+  res$is.contig.missing.sexe <- sapply(res$contig, function(x) {tmp <- which(counts.contigs.missing.one.sexe$Contig == x); ifelse(length(tmp)>0, counts.contigs.missing.one.sexe[tmp, "missing.sexe"], "")})
+
   write.table(res, "results/coverage/tests_FC_normalized_coverage_at_bp_within_genes.txt", sep= "\t", quote =F, col.names = T, row.names = F)
   system("bash src/date.sh results/coverage/tests_FC_normalized_coverage_at_bp_within_genes.txt")
 }
 
 ##### Histogram of log2(FC) at contig, gene and estimated at gene bp level
-counts.contigs <- read.csv("results/coverage/2017_12_06_FC_normalized_coverage_at_contig.txt", 
-  sep = "\t", h = T, stringsAsFactors = F)
-counts.genes <- read.csv("results/coverage/2017_12_06_FC_normalized_coverage_at_gene.txt", 
-  sep = "\t", h = T, stringsAsFactors = F)
-counts.genes.bp <- read.csv("results/coverage/2017_11_30_tests_FC_normalized_coverage_at_bp_within_genes.txt", 
+counts.genes.bp <- read.csv("results/coverage/2017_12_20_tests_FC_normalized_coverage_at_bp_within_genes.txt", 
   sep = "\t", h = T, stringsAsFactors = T)
 
 pdf("results/coverage/all_log2_FC.pdf", w = 10, h = 5)
@@ -232,65 +243,95 @@ hist(counts.genes$log2.norm.FC, breaks = 100, add = T, col = adjustcolor("red", 
 legend("topleft", title = paste("at gene level (n=", dim(counts.genes)[1], ")", sep = ""), 
   legend = c("log2(FC) on quantile normalized counts", "log2(FC) on raw counts"), 
   fill = c("red", "white"), cex = 0.75, bty = "n")
-hist(counts.genes.bp$mean.log2.norm.FC, main = "Histogram of log2(female/male)) for\ngenes from bp resolution", 
+hist(counts.genes.bp$mean.fc, main = "Histogram of log2(female/male)) for\ngenes from bp resolution", 
   xlab = "log2(FC)", breaks = 100, col = adjustcolor("red", 0.75))
 dev.off()
 system("bash src/date.sh results/coverage/all_log2_FC.pdf")
-  
-##### Barplot of contig with number of gene abs(FC)>=1
+
+##### Barplot of contig with number of gene abs(FC)>=threshold 
+# extract info for the threshold
 tab.genes.per.contig <- table(counts.genes$V1)
-fc.at.bp.female <- counts.genes.bp[which(counts.genes.bp$mean.log2.norm.FC >= 1), 
-  ]
-fc.at.bp.male <- counts.genes.bp[which(counts.genes.bp$mean.log2.norm.FC <= -1), 
-  ]
-tab.female <- table(fc.at.bp.female$contig)
-ind.female <- which(tab.female == 1)
-tab.female.tmp <- tab.female[-ind.female]
-names(tab.female.tmp) <- sapply(names(tab.female.tmp), function(x) paste(x, " (", 
-  tab.genes.per.contig[x], ")", sep = ""))
-tab.male <- table(fc.at.bp.male$contig)
-ind.male <- which(tab.male == 1)
-tab.male.tmp <- tab.male[-ind.male]
-names(tab.male.tmp) <- sapply(names(tab.male.tmp), function(x) paste(x, " (", tab.genes.per.contig[x], 
-  ")", sep = ""))
-pdf("results/coverage/barplot_FC_threshold1_per_sexe.pdf", w = 12, h = 8)
-par(mfrow = c(2, 1))
-barplot(tab.female.tmp, las = 2, cex.names = 0.6, main = "#log2(FC)>=1 per contig - female enrichment\nContig (nb tot genes)", 
-  xlab = "")
-barplot(tab.male.tmp, las = 2, cex.names = 0.6, main = "#log2(FC)<=-1 per contig - male enrichment\nContig (nb tot genes)", 
-  xlab = "")
+for (sexe in c("female", "male")) {
+  if(sexe == "female"){
+    fc.at.bp <- counts.genes.bp[which(counts.genes.bp$mean.fc >= thresh.norm.FC), ]
+  }else{
+    fc.at.bp <- counts.genes.bp[which(counts.genes.bp$mean.fc <= -thresh.norm.FC), ]  
+  }
+  tab <- table(fc.at.bp$contig)
+  ind <- which(tab <= 1); tab.tmp <- tab[-ind]; lim <- max(as.vector(tab.tmp))
+  names(tab.tmp) <- sapply(names(tab.tmp), function(x) paste(x, " (", 
+    tab.genes.per.contig[x], ")", sep = ""))
+  tab.tmp <- c(tab.tmp, length(which(tab == thresh.norm.FC)))
+  names(tab.tmp)[length(tab.tmp)] <- "contigs with1/1 gene"
+  tmp.coord <- do.call(rbind, t(sapply(fc.at.bp$gene, function(x) gff.genes.mbela[which(gff.genes.mbela$V9 == paste("ID=", x, sep = "")), c("V4", "V5")], simplify = F)))
+  colnames(tmp.coord) <- c("beg", "end")
+  info <- cbind(fc.at.bp[, c("contig", "gene")], tmp.coord, fc.at.bp[, c("mean.f", "median.f", "sd.f", "mean.m", "median.m", "sd.m", "mean.fc", "median.fc", "sd.fc")])
+  info$contig <- as.character(info$contig)
+
+  eval(parse(text = paste("lim.", sexe, " <- lim", sep = "")))
+  eval(parse(text = paste("info.", sexe, " <- info", sep = "")))
+  eval(parse(text = paste("fc.at.bp.", sexe, " <- fc.at.bp", sep = "")))
+  eval(parse(text = paste("tab.", sexe, ".tmp <- tab.tmp", sep = "")))
+}
+
+subset <- rbind(info.female, info.male)
+fc.at.bp.male$contig <- as.character(fc.at.bp.male$contig) 
+fc.at.bp.female$contig <-  as.character(fc.at.bp.female$contig)
+counts.genes.bp$contig <- as.character(counts.genes.bp$contig)
+
+add.others.genes <- do.call(rbind, sapply(unique(c(fc.at.bp.male$contig, fc.at.bp.female$contig)), function(x) counts.genes.bp[which(counts.genes.bp$contig == x & counts.genes.bp$mean.fc > -thresh.norm.FC & counts.genes.bp$mean.fc < thresh.norm.FC), ], simplify = F))
+tmp.coord <- do.call(rbind, t(sapply(add.others.genes$gene, function(x) gff.genes.mbela[which(gff.genes.mbela$V9 == paste("ID=", x, sep = "")), c("V4", "V5")], simplify = F)))
+colnames(tmp.coord) <- c("beg", "end")
+add.others.genes <- cbind(add.others.genes, tmp.coord)
+all.subset <- rbind(subset, add.others.genes[, c("contig", "gene", "beg", "end", "mean.f", "median.f", "sd.f", "mean.m", "median.m", "sd.m", "mean.fc", "median.fc", "sd.fc")])
+
+all.subset$contig <- as.factor(all.subset$contig)
+all.subset <- all.subset[order(all.subset$contig), ]
+all.subset$is.gene.missing.sexe <- sapply(all.subset$gene, function(x) {tmp <- which(counts.genes.missing.one.sexe$V4 == x); 
+  ifelse(length(tmp)>0, counts.genes.missing.one.sexe[tmp, "missing.sexe"], "")})
+all.subset$is.contig.missing.sexe <- sapply(all.subset$contig, function(x) {tmp <- which(counts.contigs.missing.one.sexe$Contig == x); 
+  ifelse(length(tmp)>0, counts.contigs.missing.one.sexe[tmp, "missing.sexe"], "")})
+write.table(all.subset, paste("results/coverage/subset_genes_FC_norm_threshold", thresh.norm.FC, ".txt", sep = ""), sep = "\t", col.names = T, row.names = F, quote = F)
+system(paste("bash src/date.sh results/coverage/subset_genes_FC_norm_threshold", thresh.norm.FC, ".txt", sep = ""))
+
+# barplot 
+trans <- function(x){pmin(x,lim) + 0.05*pmax(x-lim,0)}
+yticks <- c(round(seq(0, lim.female, length = 3)), seq(lim.female, max(tab.female.tmp)+20, by = 20))
+dat <- data.frame(label = names(tab.female.tmp), value = trans(tab.female.tmp))
+gf <- ggplot(data=dat, aes(x=label, y=value)) +
+  geom_col(position="dodge") +
+  geom_rect(aes(xmin=0, xmax=length(tab.female.tmp)+1, ymin=trans(lim.female), ymax=trans(lim.female)+1), fill="white") + theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  scale_y_continuous(limits=c(0,NA), breaks=trans(yticks), labels=yticks) +
+  labs(y="# genes") + ggtitle (paste("#log2(FC)>=", thresh.norm.FC,  " per contig - female enrichment\nContig (nb tot genes)", sep = ""))
+
+yticks <- c(round(seq(0, lim.male, length = 3)), seq(lim.male, max(tab.male.tmp)+20, by = 20))
+dat <- data.frame(label = names(tab.male.tmp), value = trans(tab.male.tmp))
+gm <- ggplot(data=dat, aes(x=label, y=value)) +
+  geom_col(position="dodge") +
+  geom_rect(aes(xmin=0, xmax=length(tab.male.tmp)+1, ymin=trans(lim.male), ymax=trans(lim.male)+1), fill="white") + theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  scale_y_continuous(limits=c(0,NA), breaks=trans(yticks), labels=yticks) +
+  labs(y="# genes")  + ggtitle (paste("#log2(FC)<=-", thresh.norm.FC,  " per contig - male enrichment\nContig (nb tot genes)", sep = ""))
+
+pdf(paste("results/coverage/barplot_FC_threshold", thresh.norm.FC, "_per_sexe.pdf", sep = ""), w = 12, h = 8)
+multiplot(gf, gm, cols = 1)
 dev.off()
 system("bash src/date.sh results/coverage/barplot_FC_threshold1_per_sexe.pdf")
 
 ##### Histogram of pvalue for FC tests at bp level
-tests <- read.csv("results/coverage/2017_11_30_tests_FC_normalized_coverage_at_bp_within_genes.txt", 
+tests <- read.csv("results/coverage/2017_12_20_tests_FC_normalized_coverage_at_bp_within_genes.txt", 
   sep = "\t", h = T)
 
-pdf("results/coverage/pval_output_tests_genes_log2_FC.pdf", w = 11, h = 5)
-par(mfrow = c(2, 3))
-hist(p.adjust(tests$pval.ttest.both.a, "BH"), main = "t-test on female vs male Anscombe\ntransformed normalized counts on genes", 
-  xlab = "Adjusted p-value with BH", breaks = 20, xaxt = "n")
-axis(side = 1, at = seq(0, 1, by = 0.05), labels = seq(0, 1, by = 0.05))
-hist(p.adjust(tests$pval.ttest.both, "BH"), main = "t-test on female vs male \nnormalized counts on genes", 
-  xlab = "Adjusted p-value with BH", breaks = 20, xaxt = "n")
-axis(side = 1, at = seq(0, 1, by = 0.05), labels = seq(0, 1, by = 0.05))
-
-hist(p.adjust(tests$pval.med.a, "BH"), main = "median test on log2(female/male) Anscombe\ntransformed normalized counts on genes", 
-  xlab = "Adjusted p-value with BH", breaks = 20, xaxt = "n")
-axis(side = 1, at = seq(0, 1, by = 0.05), labels = seq(0, 1, by = 0.05))
-hist(p.adjust(tests$pval.ttest.a, "BH"), main = "t-test on log2(female/male) Anscombe\ntransformed normalized counts on genes", 
-  xlab = "Adjusted p-value with BH", breaks = 20, xaxt = "n")
-axis(side = 1, at = seq(0, 1, by = 0.05), labels = seq(0, 1, by = 0.05))
-
-hist(p.adjust(tests$pval.ttest.both.a, "BY"), main = "t-test on female vs male Anscombe\ntransformed normalized counts on genes", 
-  xlab = "Adjusted p-value with BY", breaks = 20, xaxt = "n")
-axis(side = 1, at = seq(0, 1, by = 0.05), labels = seq(0, 1, by = 0.05))
-hist(p.adjust(tests$pval.med.a, "BY"), main = "median test on log2(female/male) Anscombe\ntransformed normalized counts on genes", 
-  xlab = "Adjusted p-value with BY", breaks = 20, xaxt = "n")
-axis(side = 1, at = seq(0, 1, by = 0.05), labels = seq(0, 1, by = 0.05))
-hist(p.adjust(tests$pval.ttest.a, "BY"), main = "t-test on log2(female/male) Anscombe\ntransformed normalized counts on genes", 
-  xlab = "Adjusted p-value with BY", breaks = 20, xaxt = "n")
-axis(side = 1, at = seq(0, 1, by = 0.05), labels = seq(0, 1, by = 0.05))
+pdf("results/coverage/pval_output_tests_genes_log2_FC.pdf", w = 7, h = 10)
+par(mfrow = c(4, 2))
+indicators <- c("t-test female vs male", "t-test unilateral lower", "median test FC", "t-test FC")
+tests_done <- c("pval.ttest.both.a", "pval.ttest.both.lower.a", "pval.med.a", "pval.ttest.a")
+for (i in seq_along(tests_done)) {
+  for(type in c("BH", "BY")) {
+    hist(p.adjust(tests[, tests_done[i]], type), main = paste(indicators[i], " on female vs male\nAnscombe transf. norm. counts on genes", sep = ""),
+      xlab = paste("Adjusted p-value with ", type, sep = ""), breaks = 20, xaxt = "n")
+    axis(side = 1, at = seq(0, 1, by = 0.05), labels = seq(0, 1, by = 0.05))
+  }
+}
 dev.off()
 system("bash src/date.sh results/coverage/pval_output_tests_genes_log2_FC.pdf")
 
