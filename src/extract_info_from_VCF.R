@@ -171,7 +171,6 @@ grid.table(s)
 dev.off()
 system("bash src/date.sh results/call_var/summary_raw_variants.pdf")
 
-
 ##### Summary of density of SNPs for raw variants per contig
 nb.test.female <- sapply(size.genome.mbelari$V1, function(x) length(which(tab.variants.female$CHROM == 
   x & tab.variants.female$is.INDEL == 0)))
