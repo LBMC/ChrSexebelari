@@ -15,8 +15,8 @@ if (do.fisher) {
   data.filt.SNP <- read.csv("results/call_var/2017_12_08_merge.sexe.all.filt.SNP.txt", sep = "\t", h = T, stringsAsFactors = F)
 
   # Fisher tests are not computed on all SNPs!!
-  # Pick same alt allele for female and male and with contig length >= 1000
-  data.filt.SNP.same.alt <- data.filt.SNP[which(data.filt.SNP$same.ALT == 1 & data.filt.SNP$contig_length>=1000), ]
+  # Pick same alt allele for female and male
+  data.filt.SNP.same.alt <- data.filt.SNP[which(data.filt.SNP$same.ALT == 1), ]
 
   # Compute freq male and freq female
   data.filt.SNP.same.alt$freq.alt.female <- data.filt.SNP.same.alt$count.alt.female/(data.filt.SNP.same.alt$count.ref.female+data.filt.SNP.same.alt$count.alt.female)
