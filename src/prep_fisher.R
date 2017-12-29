@@ -32,7 +32,7 @@ if (do.prep.fisher) {
   SNP.common.biallelic.pos.gene <- length(which(merge.sexe.common.biallelic$is.INDEL.x == merge.sexe.common.biallelic$is.INDEL.y & merge.sexe.common.biallelic$is.INDEL.x == 0 & merge.sexe.common.biallelic$genes != ""))
   INDEL.common.biallelic.pos.gene <- length(which(merge.sexe.common.biallelic$is.INDEL.x == merge.sexe.common.biallelic$is.INDEL.y & merge.sexe.common.biallelic$is.INDEL.x == 1 & merge.sexe.common.biallelic$genes != ""))
 
-  ##### Apply filter on contig size, DP (>1 in total count) and distance to INDEL:
+  ##### Apply filter on DP (>1 in total count) and distance to INDEL:
   # for variants with same position and same alt allele in both pools
   tmp.common.biallelic <- merge.sexe.common.biallelic[which(merge.sexe.common.biallelic$tot.male> 1 | merge.sexe.common.biallelic$tot.female>1), ]
   tmp.common.biallelic$ID <- 1:dim(tmp.common.biallelic)[1]
@@ -139,9 +139,10 @@ x[["is.INDEL.x"]] == x[["is.INDEL.y"]]))
   ##### write summary
   summary.filt.variants <- data.frame(label = c("nb.common.pos", "nb.common.pos.gene", "nb.common.pos.same.ALT", "nb.common.pos.same.ALT.gene", "nb.common.pos.same.ALT.filt.DP>1", "nb.common.pos.same.ALT.gene.filt.DP>1", "nb.common.pos.filt.DP>1", "nb.common.pos.gene.filt.DP>1", "nb.common.pos.filt.DP>1.final", "nb.common.pos.gene.filt.DP>1.final"),
 nb_SNP_INDEL = c(paste(SNP.common.pos, INDEL.common.pos, sep = "/"), paste(SNP.common.pos.gene, INDEL.common.pos.gene, sep = "/"), paste(SNP.common.biallelic.pos, INDEL.common.biallelic.pos, sep = "/"), paste(SNP.common.biallelic.pos.gene, INDEL.common.biallelic.pos.gene, sep = "/"), paste(SNP.common.biallelic.pos.filt, INDEL.common.biallelic.pos.filt, sep = "/"), paste(SNP.common.biallelic.pos.gene.filt, INDEL.common.biallelic.pos.gene.filt, sep = "/"), paste(SNP.common.pos.filt, INDEL.common.pos.filt, sep = "/"), paste(SNP.common.pos.gene.filt, INDEL.common.pos.gene.filt, sep = "/"), paste(SNP.common.pos.filt.comb.posINDEL, INDEL.common.pos.filt.comb.posINDEL, sep = "/"), paste(SNP.common.pos.gene.filt.comb.posINDEL, INDEL.common.pos.gene.filt.comb.posINDEL, sep = "/")))
-  write.table(summary.filt.variants, "results/call_var/summary_filt_variants.txt", sep = "\t",  quote = F, 
-    row.names = F)
-  system("bash src/date.sh results/call_var/summary_filt_variants.txt")
+pdf("results/call_var/summary_filt_variants.pdf", height = 4, width = 5)
+  grid.table(summary.filt.variants)
+  dev.off()
+  system("bash src/date.sh results/call_var/summary_filt_variants.pdf")
 
   ##### Summary of filtered variants
   tab.snp <- table(tmp.all.SNP.test.INDEL.filt$same.ALT)
@@ -169,13 +170,6 @@ nb_SNP_INDEL = c(paste(SNP.common.pos, INDEL.common.pos, sep = "/"), paste(SNP.c
   system("bash src/date.sh results/call_var/merge.sexe.all.filt.SNP.txt")
 }
 
-##### Summary of number of variants found
-s <- read.table("results/call_var/2017_12_20_summary_filt_variants.txt", sep = "\t", h = T)
-pdf("results/call_var/summary_filt_variants.pdf", height = 4, width = 5)
-grid.table(s)
-dev.off()
-system("bash src/date.sh results/call_var/summary_filt_variants.pdf")
-
 ##### Summary of density of SNPs for filtered SNPs per contig 
 tests  <- fread("results/call_var/2017_12_08_merge.sexe.all.filt.SNP.txt", sep = "\t", h = T)
 
@@ -186,15 +180,19 @@ tmp.tests <- tests[which(tests$tot.male>0), ]
 nb.test.male <- table(tmp.tests$CHROM)
 density.tests.sexe.ctg <- data.frame(contig = size.genome.mbelari$V1, nb.female= as.vector(unname(nb.test.female[size.genome.mbelari$V1])), nb.male = as.vector(unname(nb.test.male[size.genome.mbelari$V1])), stringsAsFactors = F)
 density.tests.sexe.ctg$log2.den.female.male <- log2(density.tests.sexe.ctg$nb.female/density.tests.sexe.ctg$nb.male)
+write.table(density.tests.sexe.ctg, "results/call_var/density.contigs.merge.sexe.all.filt.SNP.txt", sep = "\t", row.names = F, col.names = T, quote = F)
+system("bash src/date.sh results/call_var/density.contigs.merge.sexe.all.filt.SNP.txt")
 
 # At gene
 g <- unique(tests$genes)
-tmp.tests <- tests[which(tests$tot.female>0 & genes != ""), ]
+tmp.tests <- tests[which(tests$tot.female>0 & tests$genes != ""), ]
 nb.test.female <- table(tmp.tests$genes)
-tmp.tests <- tests[which(tests$tot.male>0  & genes != ""), ]
+tmp.tests <- tests[which(tests$tot.male>0  & tests$genes != ""), ]
 nb.test.male <- table(tmp.tests$genes)
 density.tests.sexe.g <- data.frame(gene = g, nb.female= as.vector(unname(nb.test.female[g])), nb.male = as.vector(unname(nb.test.male[g])), stringsAsFactors = F)
 density.tests.sexe.g$log2.den.female.male <- log2(density.tests.sexe.g$nb.female/density.tests.sexe.g$nb.male)
+write.table(density.tests.sexe.g, "results/call_var/density.genes.merge.sexe.all.filt.SNP.txt", sep = "\t", row.names = F, col.names = T, quote = F)
+system("bash src/date.sh results/call_var/density.genes.merge.sexe.all.filt.SNP.txt")
 
 # tab at ctg
 pos <- density.tests.sexe.ctg$log2.den.female.male[which(density.tests.sexe.ctg$log2.den.female.male>0 & is.na(density.tests.sexe.ctg$log2.den.female.male) == F)]
@@ -246,6 +244,6 @@ hist(tests$count.alt.male/tests$tot.male, col = adjustcolor("blue", 0.5), breaks
 hist(tests$count.alt.female/tests$tot.female, col = adjustcolor("red", 0.5), add = T, breaks = 20, xlim = c(0,1))
 abline(v = mean.f, col = "red", lty = 2, lwd = 2)
 abline(v = mean.m, col = "blue", lty = 2, lwd = 2)
-legend("topleft", c("male frequency", "female frequency"), fill = c("blue", "red"))
+legend("topleft", c(paste("male frequency (SNPs found in\nfemale only = ", length(which(tests$tot.female == 0)), ")", sep = ""), paste("female frequency (SNPs found in\nmale only = ", length(which(tests$tot.male == 0)), ")", sep = "")), fill = c("blue", "red"))
 dev.off()
 system("bash src/date.sh results/call_var/frequency_SNPs_sexes.pdf")
