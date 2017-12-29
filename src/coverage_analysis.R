@@ -137,12 +137,6 @@ counts.genes.missing.one.sexe <- counts.genes[which(counts.genes$missing.sexe !=
 counts.genes.missing.one.sexe <- counts.genes.missing.one.sexe[order(counts.genes.missing.one.sexe$missing.sexe), ]
 counts.contigs.missing.one.sexe <- counts.contigs[which(counts.contigs$missing.sexe != ""), ]
 counts.contigs.missing.one.sexe <- counts.contigs.missing.one.sexe[order(counts.contigs.missing.one.sexe$missing.sexe), ]
-pdf("results/coverage/counts_per_features_raw_counts_not_present_in_both_sexe.pdf")
-par(mfrow = c(1, 2))
-barplot(table(counts.genes.missing.one.sexe$missing.sexe), main = "#genes missing in one sexe", xlab = "sexe")
-barplot(table(counts.contigs.missing.one.sexe$missing.sexe), main = "#contigs missing in one sexe", xlab = "sexe")
-dev.off()
-system("bash src/date.sh results/coverage/counts_per_features_raw_counts_not_present_in_both_sexe.pdf")
 write.table(counts.genes.missing.one.sexe, "results/coverage/counts_per_genes_raw_counts_not_present_in_both_sexe.txt", sep = "\t", col.names = T, row.names = F, quote = F)
 write.table(counts.contigs.missing.one.sexe, "results/coverage/counts_per_contigs_raw_counts_not_present_in_both_sexe.txt", sep = "\t", col.names = T, row.names = F, quote = F)
 system("bash src/date.sh results/coverage/counts_per_contigs_raw_counts_not_present_in_both_sexe.txt")
@@ -153,11 +147,11 @@ if(do.test.at.bp ){
   ##### In case of bp level, implement test per gene on estimated FC values: if not
   ##### gaussian, compute i) a median like based test on the log2(FC), ii) try the the
   ##### ans comb transformation and perform a test on it.
-  counts.bp <- tbl_df(fread("2017_11_30_FC_normalized_coverage_at_bp_within_genes.txt", 
+  counts.bp <- tbl_df(fread("results/coverage/2017_11_30_FC_normalized_coverage_at_bp_within_genes.txt", 
     sep = "\t", stringsAsFactors = F))
 
-  counts.genes.missing.one.sexe <- read.csv("2017_12_21_counts_per_genes_raw_counts_not_present_in_both_sexe.txt", sep = "\t", h = T, stringsAsFactors = F)
-  counts.contigs.missing.one.sexe <- read.csv("2017_12_21_counts_per_contigs_raw_counts_not_present_in_both_sexe.txt", sep = "\t", h = T, stringsAsFactors = F)
+  counts.genes.missing.one.sexe <- read.csv("results/coverage/2017_12_21_counts_per_genes_raw_counts_not_present_in_both_sexe.txt", sep = "\t", h = T, stringsAsFactors = F)
+  counts.contigs.missing.one.sexe <- read.csv("results/coverage/2017_12_21_counts_per_contigs_raw_counts_not_present_in_both_sexe.txt", sep = "\t", h = T, stringsAsFactors = F)
 
   #pdf("results/coverage/count_distribution_before_after_cov_at_gene_bp.pdf", w = 12, 
   #  h = 8)
@@ -230,10 +224,41 @@ if(do.test.at.bp ){
   system("bash src/date.sh results/coverage/tests_FC_normalized_coverage_at_bp_within_genes.txt")
 }
 
-##### Histogram of log2(FC) at contig, gene and estimated at gene bp level
 counts.genes.bp <- read.csv("results/coverage/2017_12_20_tests_FC_normalized_coverage_at_bp_within_genes.txt", 
   sep = "\t", h = T, stringsAsFactors = T)
+counts.genes.bp.raw <- counts.genes.bp[which(counts.genes.bp$type == "raw"), ]
+counts.genes.bp <- counts.genes.bp[which(counts.genes.bp$type == "norm"), ]
 
+
+##### Investigation on features missing in one sexe
+counts.genes.missing.one.sexe <- read.csv("results/coverage/2017_12_21_counts_per_genes_raw_counts_not_present_in_both_sexe.txt", sep = "\t", h = T, stringsAsFactors = F)
+counts.contigs.missing.one.sexe <- read.csv("results/coverage/2017_12_21_counts_per_contigs_raw_counts_not_present_in_both_sexe.txt", sep = "\t", h = T, stringsAsFactors = F)
+
+pdf("results/coverage/counts_per_features_raw_counts_not_present_in_both_sexe.pdf")
+par(mfrow = c(1, 2))
+barplot(table(counts.genes.missing.one.sexe$missing.sexe), main = "#genes missing in one sexe", xlab = "sexe")
+barplot(table(counts.contigs.missing.one.sexe$missing.sexe), main = "#contigs missing in one sexe", xlab = "sexe")
+dev.off()
+system("bash src/date.sh results/coverage/counts_per_features_raw_counts_not_present_in_both_sexe.pdf")
+
+counts.contigs.missing.one.sexe$missing.sexe <- as.factor(counts.contigs.missing.one.sexe$missing.sexe)
+counts.genes.missing.one.sexe$missing.sexe <- as.factor(counts.genes.missing.one.sexe$missing.sexe)
+graw <- ggplot(counts.genes.missing.one.sexe, aes(x=counts.raw.male, y=counts.raw.female, color=missing.sexe, size=V3-V2)) +
+  geom_point(alpha = 0.4) + ggtitle("raw count per gene")+ theme(legend.position="none")
+gnorm <- ggplot(counts.genes.missing.one.sexe, aes(x=counts.norm.male, y=counts.norm.female, color=missing.sexe, size=V3-V2)) +
+  geom_point(alpha = 0.4) + ggtitle("norm count per gene") + labs(colour = "missin sexe", size = "length (bp)") + 
+  theme(legend.justification = "top",legend.text = element_text(size=6))
+craw <- ggplot(counts.contigs.missing.one.sexe, aes(x=counts.raw.male, y=counts.raw.female, color=missing.sexe, size=Length)) +
+  geom_point(alpha = 0.4) + ggtitle("raw count per contig")+ theme(legend.position="none")
+cnorm <- ggplot(counts.contigs.missing.one.sexe, aes(x=counts.norm.male, y=counts.norm.female, color=missing.sexe, size=Length)) +
+  geom_point(alpha = 0.4)+ ggtitle("norm count per contig")+ theme(legend.position="none")
+
+pdf("results/coverage/counts_per_features_not_present_in_both_sexe.pdf", w = 9, h = 4)
+multiplot(graw, gnorm, craw, cnorm, cols = 2)
+dev.off()
+system("bash src/date.sh results/coverage/counts_per_features_not_present_in_both_sexe.pdf")
+
+##### Histogram of log2(FC) at contig, gene and estimated at gene bp level
 pdf("results/coverage/all_log2_FC.pdf", w = 10, h = 5)
 par(mfrow = c(1, 3))
 hist(counts.contigs$log2.raw.FC, main = "Histogram of log2(female/male)) for contig", 
@@ -249,13 +274,16 @@ hist(counts.genes$log2.norm.FC, breaks = 100, add = T, col = adjustcolor("red", 
 legend("topleft", title = paste("at gene level (n=", dim(counts.genes)[1], ")", sep = ""), 
   legend = c("log2(FC) on quantile normalized counts", "log2(FC) on raw counts"), 
   fill = c("red", "white"), cex = 0.75, bty = "n")
-hist(counts.genes.bp$mean.fc, main = "Histogram of log2(female/male)) for\ngenes from bp resolution", 
-  xlab = "log2(FC)", breaks = 100, col = adjustcolor("red", 0.75))
+hist(counts.genes.bp.raw$mean.fc, main = "Histogram of log2(female/male)) for\ngenes from bp resolution", 
+  xlab = "log2(FC)", breaks = 100)
+hist(counts.genes.bp$mean.fc, breaks = 100, add = T, col = adjustcolor("red", 0.75))
+legend("topleft", title = paste("at gene bp level (n=", dim(counts.genes)[1], ")", sep = ""), 
+  legend = c("log2(FC) on quantile normalized counts", "log2(FC) on raw counts"), 
+  fill = c("red", "white"), cex = 0.75, bty = "n")
 dev.off()
 system("bash src/date.sh results/coverage/all_log2_FC.pdf")
 
-##### Barplot of contig with number of gene abs(FC)>=threshold 
-# extract info for the threshold
+##### Zoom on data with abs(FC)>=threshold 
 tab.genes.per.contig <- table(counts.genes$V1)
 for (sexe in c("female", "male")) {
   if(sexe == "female"){
@@ -279,7 +307,6 @@ for (sexe in c("female", "male")) {
   eval(parse(text = paste("fc.at.bp.", sexe, " <- fc.at.bp", sep = "")))
   eval(parse(text = paste("tab.", sexe, ".tmp <- tab.tmp", sep = "")))
 }
-
 subset <- rbind(info.female, info.male)
 fc.at.bp.male$contig <- as.character(fc.at.bp.male$contig) 
 fc.at.bp.female$contig <-  as.character(fc.at.bp.female$contig)
@@ -321,12 +348,10 @@ gm <- ggplot(data=dat, aes(x=label, y=value)) +
 pdf(paste("results/coverage/barplot_FC_threshold", thresh.norm.FC, "_per_sexe.pdf", sep = ""), w = 12, h = 8)
 multiplot(gf, gm, cols = 1)
 dev.off()
-system("bash src/date.sh results/coverage/barplot_FC_threshold1_per_sexe.pdf")
+system(paste("bash src/date.sh results/coverage/barplot_FC_threshold", thresh.norm.FC, "_per_sexe.pdf", sep = ""))
 
 ##### Histogram of pvalue for FC tests at bp level
-tests <- read.csv("results/coverage/2017_12_20_tests_FC_normalized_coverage_at_bp_within_genes.txt", 
-  sep = "\t", h = T)
-
+tests <- counts.genes.bp
 pdf("results/coverage/pval_output_tests_genes_log2_FC.pdf", w = 7, h = 10)
 par(mfrow = c(4, 2))
 indicators <- c("t-test female vs male", "t-test unilateral lower", "median test FC", "t-test FC")
