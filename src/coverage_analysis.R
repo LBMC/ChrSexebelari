@@ -153,74 +153,80 @@ if(do.test.at.bp ){
   ##### In case of bp level, implement test per gene on estimated FC values: if not
   ##### gaussian, compute i) a median like based test on the log2(FC), ii) try the the
   ##### ans comb transformation and perform a test on it.
-  counts.bp <- tbl_df(fread("results/coverage/2017_11_30_FC_normalized_coverage_at_bp_within_genes.txt", 
+  counts.bp <- tbl_df(fread("2017_11_30_FC_normalized_coverage_at_bp_within_genes.txt", 
     sep = "\t", stringsAsFactors = F))
 
-  pdf("results/coverage/count_distribution_before_after_cov_at_gene_bp.pdf", w = 12, 
-    h = 8)
-  par(mfrow = c(2, 2))
-  plot(density(log(counts.bp$counts.raw.male + 1)), main = "Raw male counts at gene bp level", 
-    xlab = "log+1 raw counts at gene bp level")
-  plot(density(log(counts.bp$counts.raw.female + 1)), main = "Raw female counts at gene bp level", 
-    xlab = "log+1 raw counts at gene bp level")
-  plot(density(log(counts.bp$counts.norm.male + 1)), main = "Norm. male counts at gene bp level", 
-    xlab = "log+1 quantile normalized counts at gene bp level")
-  plot(density(log(counts.bp$counts.norm.female + 1)), main = "Norm. female counts at gene bp level", 
-    xlab = "log+1 quantile normalized counts at gene bp level")
-  dev.off()
-  genes <- counts.bp %>% distinct(V8)
-  genes <- unique(genes$V8)
-  counts.genes <- read.csv("results/coverage/2017_12_06_FC_normalized_coverage_at_gene.txt", 
+  counts.genes.missing.one.sexe <- read.csv("2017_12_21_counts_per_genes_raw_counts_not_present_in_both_sexe.txt", sep = "\t", h = T, stringsAsFactors = F)
+  counts.contigs.missing.one.sexe <- read.csv("2017_12_21_counts_per_contigs_raw_counts_not_present_in_both_sexe.txt", sep = "\t", h = T, stringsAsFactors = F)
+
+  #pdf("results/coverage/count_distribution_before_after_cov_at_gene_bp.pdf", w = 12, 
+  #  h = 8)
+  #par(mfrow = c(2, 2))
+  #plot(density(log(counts.bp$counts.raw.male + 1)), main = "Raw male counts at gene bp level", 
+  #  xlab = "log+1 raw counts at gene bp level")
+  #plot(density(log(counts.bp$counts.raw.female + 1)), main = "Raw female counts at gene bp level", 
+  #  xlab = "log+1 raw counts at gene bp level")
+  #plot(density(log(counts.bp$counts.norm.male + 1)), main = "Norm. male counts at gene bp level", 
+  #  xlab = "log+1 quantile normalized counts at gene bp level")
+  #plot(density(log(counts.bp$counts.norm.female + 1)), main = "Norm. female counts at gene bp level", 
+  #  xlab = "log+1 quantile normalized counts at gene bp level")
+  #dev.off()
+
+  genes <- counts.bp %>% distinct(V8); genes <- unique(genes$V8)
+  counts.genes <- read.csv("2017_12_06_FC_normalized_coverage_at_gene.txt", 
     sep = "\t", h = T, stringsAsFactors = F)
   res <- NULL
   for(g in genes) {
-    tmp <- filter(counts.bp, V8 == g)[, c("counts.norm.female", "counts.norm.male", "log2.norm.FC")]
-    contig <- unique(tmp$V1)	
-    f <- tmp[, "counts.norm.female"]; f.a <- 2*sqrt(f+3/8)
-    m <- tmp[, "counts.norm.male"]; m.a <- 2*sqrt(m+3/8)
-    fc <- tmp[, "log2.norm.FC"]; fc.a <- log2(f.a/m.a)
-    me <- median(fc); me.a <- median(fc.a)
-    mean <- mean(fc); mean.a <- mean(fc.a)
-    me.f <- median(f); me.f.a <- median(f.a)
-    mean.f <- mean(f); mean.f.a <- mean(f.a)
-    me.m <- median(m); me.m.a <- median(m.a) 
-    mean.m <- mean(m); mean.m.a <- mean(m.a)
-    sd.f <- sd(f); sd.f.a <- sd(f.a)
-    sd.m <- sd(m); sd.m.a <- sd(m.a)
-    sd.fc <- sd(fc); sd.fc.a <- sd(fc.a)
+    tmp <- as.data.frame(filter(counts.bp, V8 == g)[, c("V1", "counts.norm.female", "counts.norm.male", "log2.norm.FC", "counts.raw.female", "counts.raw.male", "log2.raw.FC")])
+    contig <- unique(tmp$V1)
+    for (type in c("raw", "norm")) {	
+      f <- tmp[, paste("counts.", type, ".female", sep = "")]; f.a <- 2*sqrt(f+3/8)
+      m <- tmp[, paste("counts.", type, ".male", sep = "")]; m.a <- 2*sqrt(m+3/8)
+      fc <- tmp[, paste("log2.", type, ".FC", sep = "")]; fc.a <- log2(f.a/m.a)
+      me <- median(fc); me.a <- median(fc.a)
+      mean <- mean(fc); mean.a <- mean(fc.a)
+      me.f <- median(f); me.f.a <- median(f.a)
+      mean.f <- mean(f); mean.f.a <- mean(f.a)
+      me.m <- median(m); me.m.a <- median(m.a) 
+      mean.m <- mean(m); mean.m.a <- mean(m.a)
+      sd.f <- sd(f); sd.f.a <- sd(f.a)
+      sd.m <- sd(m); sd.m.a <- sd(m.a)
+      sd.fc <- sd(fc); sd.fc.a <- sd(fc.a)
 
-    if (length(unique(fc)) == 1) {
-      med.test <- NA; med.test.a <- NA	
-      t.test <- NA; t.test.a <- NA
-      t.test.both <- NA; t.test.both.a <- NA
-      t.test.both.greater <- NA; t.test.both.a.greater <- NA
-      t.test.both.lower <- NA; t.test.both.a.lower <- NA
-    } else{
-      med.test <- prop.test(sum(fc > 0), length(fc), p = 0.5, "two.sided")$p.value; med.test.a <- prop.test(sum(fc.a > 0), length(fc.a), p = 0.5, "two.sided")$p.value	
-      t.test <- t.test(fc)$p.value; t.test.a <- t.test(fc.a)$p.value	
-      t.test.both <- t.test(f, m)$p.value; t.test.both.a <- t.test(f.a, m.a)$p.value
-      t.test.both.lower <- t.test(f, m, alternative = "less")$p.value; t.test.both.greater <- t.test(f, m, alternative = "greater")$p.value
-      t.test.both.a.lower <- t.test(f.a, m.a, alternative = "less")$p.value; t.test.both.a.greater <- t.test(f.a, m.a, alternative = "greater")$p.value
+      if (length(unique(fc)) == 1) {
+        med.test <- NA; med.test.a <- NA	
+        t.test <- NA; t.test.a <- NA
+        t.test.both <- NA; t.test.both.a <- NA
+        t.test.both.greater <- NA; t.test.both.a.greater <- NA
+        t.test.both.lower <- NA; t.test.both.a.lower <- NA
+      } else{
+        med.test <- prop.test(sum(fc > 0), length(fc), p = 0.5, "two.sided")$p.value; med.test.a <- prop.test(sum(fc.a > 0), length(fc.a), p = 0.5, "two.sided")$p.value	
+        t.test <- t.test(fc)$p.value; t.test.a <- t.test(fc.a)$p.value	
+        t.test.both <- t.test(f, m)$p.value; t.test.both.a <- t.test(f.a, m.a)$p.value
+        t.test.both.lower <- t.test(f, m, alternative = "less")$p.value; t.test.both.greater <- t.test(f, m, alternative = "greater")$p.value
+        t.test.both.a.lower <- t.test(f.a, m.a, alternative = "less")$p.value; t.test.both.a.greater <- t.test(f.a, m.a, alternative = "greater")$p.value
+      }
+      tmp.res <- data.frame(contig = contig, gene = g, type = type,
+        mean.f = mean.f, median.f = me.f, sd.f = sd.f, 
+        mean.m = mean.m, median.m = me.m, sd.m = sd.m,
+        mean.fc = mean, median.fc = me, sd.fc = sd.fc,
+        mean.f.a = mean.f.a, median.f.a = me.f.a, sd.f.a = sd.f.a, 
+        mean.m.a = mean.m.a, median.m.a = me.m.a, sd.m.a = sd.m.a,
+        mean.fc.a = mean.a, median.fc.a = me.a, sd.fc.a = sd.fc.a,
+        pval.med = med.test, pval.med.a = med.test.a, 
+        pval.ttest = t.test, pval.ttest.a = t.test.a, 
+        pval.ttest.both = t.test.both, pval.ttest.both.a = t.test.both.a, 
+        pval.ttest.lower.both = t.test.both.lower, pval.ttest.both.lower.a = t.test.both.a.lower, 
+        pval.ttest.greater.both = t.test.both.greater, pval.ttest.both.greater.a = t.test.both.a.greater, 
+        stringsAsFactors = F)
+      res <- rbind(res, tmp.res)
     }
-    tmp.res <- data.frame(contig = contig, gene = g,  
-      mean.f = mean.f, median.f = me.f, sd.f = sd.f, 
-      mean.m = mean.m, median.m = me.m, sd.m = sd.m,
-      mean.fc = mean, median.fc = me, sd.fc = sd.fc,
-      mean.f.a = mean.f.a, median.f.a = me.f.a, sd.f.a = sd.f.a, 
-      mean.m.a = mean.m.a, median.m.a = me.m.a, sd.m.a = sd.m.a,
-      mean.fc.a = mean.a, median.fc.a = me.a, sd.fc.a = sd.fc.a,
-      pval.med = med.test, pval.med.a = med.test.a, 
-      pval.ttest = t.test, pval.ttest.a = t.test.a, 
-      pval.ttest.both = t.test.both, pval.ttest.both.a = t.test.both.a, 
-      pval.ttest.lower.both = t.test.both.lower, pval.ttest.both.lower.a = t.test.both.a.lower, 
-      pval.ttest.greater.both = t.test.both.greater, pval.ttest.both.greater.a = t.test.both.a.greater, 
-      stringsAsFactors = F)
-    res <- rbind(res, tmp.res)
   }
   res$is.gene.missing.sexe <- sapply(res$gene, function(x) {tmp <- which(counts.genes.missing.one.sexe$V4 == x); ifelse(length(tmp)>0, counts.genes.missing.one.sexe[tmp, "missing.sexe"], "")})
   res$is.contig.missing.sexe <- sapply(res$contig, function(x) {tmp <- which(counts.contigs.missing.one.sexe$Contig == x); ifelse(length(tmp)>0, counts.contigs.missing.one.sexe[tmp, "missing.sexe"], "")})
 
-  write.table(res, "results/coverage/tests_FC_normalized_coverage_at_bp_within_genes.txt", sep= "\t", quote =F, col.names = T, row.names = F)
+  write.table(res, "tests_FC_normalized_coverage_at_bp_within_genes.txt", sep= "\t", quote =F, col.names = T, row.names = F)
+
   system("bash src/date.sh results/coverage/tests_FC_normalized_coverage_at_bp_within_genes.txt")
 }
 
