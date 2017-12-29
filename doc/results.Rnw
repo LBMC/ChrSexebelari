@@ -82,7 +82,15 @@ For scripts ran on local computer:
   \item picard 2.3.0
   \item vcftools 0.1.15
   \item pigz 2.3
-  \item CDHIT 4.6.8
+  \item picard 2.12.1
+  \item GATK 3.8
+  \item tablet 1.16.09.06
+  \item gff2bed 2.4.29
+  \item bedtools 2.22.0
+  \item samtools 1.3
+  \item bcftools 1.3
+  \item rtg 6.8.4
+  \item bgzip 1.1
 \end{enumerate}
 
 For scripts on PSMN:
@@ -90,8 +98,7 @@ For scripts on PSMN:
   \item bowtie2 version 2.2.4
   \item SAMtools version 1.3.1
   \item BEDtools version 2.24.0
-  \item picard 2.12.1
-  \item GATK 3.8
+  \item CDHIT 4.6.8
 \end{enumerate}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -247,5 +254,266 @@ Note that the dictionnary must be created on the hybrid reference to avoid rehea
 \textcolor{blue}{src/realign.sh}: the realignment around INDELs is performed in 2 steps: firstly the detection of the intervals to be realigned and secondly the realignement in itself. This generated one intervals file such as \texttt{results/mapping/without\_duplicates/2017\_09\_20\_RDR6\_trim\_Mbelari\_mapped\_rmdup\_rg.intervals} and the final files are \texttt{2017\_09\_20\_MRDR6\_trim\_Mbelari\_mapped\_rmdup\_rg\_realign\_indels.bam} and \texttt{2017\_09\_20\_MRDR5\_trim\_Mbelari\_mapped\_rmdup\_rg\_realign\_indels.bam}.
 You need to index these outputs. 
 \end{enumerate}
+
+
+% -----------------------------------------------------
+\subsection{Summary of mapping against hybrid reference}
+
+\subsubsection*{Global summary of mapping}
+
+From bowtie2 outputs in \textcolor{red}{results/mapping/raw}.
+
+\begin{small}
+\begin{tabular}{c|c|c}
+female against hybrid ref & male against hybrid ref & description \\
+\hline
+62,041,384 (100.00\%) paired; & 49,977,425 (100.00\%) paired; & of these: \\
+13558111 (21.85\%)  &  13061118 (26.13\%) & aligned concordantly 0 times\\
+45187409 (72.83\%) & 33918039 (67.87\%) & aligned concordantly exactly 1 time \\
+3295864 (5.31\%) &  2998268 (6.00\%) & aligned concordantly >1 times \\
+\hline
+13558111 pairs; & 13061118 pairs; & aligned concordantly 0 times; of these: \\
+5173830 (38.16\%) & 4176207 (31.97\%) & aligned discordantly 1 time \\
+\hline
+8384281 pairs; & 8884911 pairs & aligned 0 times concordantly or discordantly; of these: \\
+16768562 mates; & 17769822 mates; & make up the pairs; of these: \\
+9109859 (54.33\%) &  11709251 (65.89\%) & aligned 0 times \\
+6547201 (39.04\%) &  5183867 (29.17\%) & aligned exactly 1 time \\
+1111502 (6.63\%) & 876704 (4.93\%) & aligned >1 times \\
+92.66\%  & 88.29\% & overall alignment rate\\
+\hline
+\end{tabular}
+\end{small}
+
+\subsubsection*{Summary of mapping against M. belari}
+
+From flagstat outputs in \textcolor{red}{results/mapping/mapped} with extension \texttt{\_trim\_Mbelari\_mapped\_flagstat.txt} and in \textcolor{red}{results/mapping/without\_duplicates} with extension \texttt{\_trim\_Mbelari\_mapped\_rmdup\_flagstat.txt}.
+
+\begin{tiny}
+\begin{tabular}{c|c|c|c|c}
+female against belari / after rmdup & female against coli & male against belari / after rmdup & male against coli & description\\
+\hline
+37,074,990 / 35,389,848 & 77,897,919 & 22,004,523 / 20,066,441 & 66,241,076 & mapped \\
+34,427,332 (92.86\%) / 32,744,676 (92.53\%) & 62,539,214 (80.28\%) & 20,238,012 (91.97\%) / 18,301,958 (91.21\%) & 53,594,602 (80.91\%) & properly paired\\
+\hline
+\end{tabular}
+\end{tiny}
+
+% --------------------------------------------------------
+\subsection{FastQC on belari mapped rmudp realigned reads}
+
+\begin{itemize}
+\item bp content. First 6 bp are really less biased in bp content probably than after QC on whole set of reads. However, there is no more 2 modes on GC content and expected GC\% of 36 for female and 37 for male.
+\end{itemize}
+
+\textbf{Female reads}:\\
+\includegraphics{{../results/quality_control/mapped/2017_09_14_female_JU2817_fastqc_per_base_sequence_content_plot_mapped_belari}.png}
+\includegraphics{{../results/quality_control/mapped/2017_09_14_female_JU2817_fastqc_per_sequence_gc_content_plot_mapped_belari}.png}\\
+
+\textbf{Male reads}:\\
+\includegraphics{{../results/quality_control/mapped/2017_09_14_male_JU2817_fastqc_per_base_sequence_content_plot_mapped_belari}.png}
+\includegraphics{{../results/quality_control/mapped/2017_09_14_male_JU2817_fastqc_per_sequence_gc_content_plot_mapped_belari}.png}
+
+% ------------------------------------------------------------
+\subsection{FastQC on unmapped (on E.coli and M.belari) reads}
+
+FASTQC outputs are saved in \textcolor{red}{results/quality\_control/unmapped} directory and FASTQC on both mapped and unmapped reads are saved in \textcolor{red}{results/quality\_control/multiqc\_mapped\_unmapped} directory.
+
+% ------------------------------------------------------------
+\subsection{cdhit on unmapped (on E.coli and M.belari) reads}
+
+\includegraphics{{../results/mapping/unmapped/2017_11_26_cluster_size}.pdf}
+
+\begin{verbatim}
+  #dim(clus.size)
+  #[1] 9079667       2
+  
+  #summary(clus.size$nb)
+  #  Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+  #0.000    0.000    0.000    0.713    0.000 4430.000
+\end{verbatim}  
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Coverage analysis}
+
+% ----------------
+\subsection{Steps}
+
+\begin{enumerate}
+  \item Produce BED files to get the nmber of reads mapped at each bp after having sorted and indexed input BAM:\\
+\textcolor{blue}{src/bamtobed\_Mbelari.sh} (call the script by file) (PSMN): obtain the count at bp level from BAM saved in \textcolor{red}{results/mapping/without\_duplicates} (\texttt{2017\_09\_20\_MRDR6\_trim\_Mbelari\_mapped\_rmdup\_rg\_realign\_indels.bam} and \texttt{2017\_09\_20\_MRDR5\_trim\_Mbelari\_mapped\_rmdup\_rg\_realign\_indels.bam}). BED files are saved in \textcolor{red}{results/coverage} as \texttt{2017\_10\_26\_MRDR6\_trim\_Mbelari\_mapped\_rmdup\_rg\_realign\_indels\_sort.bed} and \texttt{2017\_10\_26\_MRDR5\_trim\_Mbelari\_mapped\_rmdup\_rg\_realign\_indels\_sort.bed}.
+
+  \item Open the BAM files used to generate the BED with \texttt{tablet} to get a summary of the number of raw reads per contig:\\
+  tablet provides a table with contig name, contig length and number of mapped reads saved in \textcolor{red}{results/coverage} as \texttt{2017\_10\_26\_coverage\_summary\_tablet\_male\_JU2817\_trim\_Mbelari\_mapped\_rmdup\_rg\_realign\_indels.txt} and \texttt{2017\_10\_26\_coverage\_summary\_tablet\_female\_JU2817\_trim\_Mbelari\_mapped\_rmdup\_rg\_realign\_indels.txt}.
+  
+  \item Exploit coverage data with \textcolor{blue}{src/coverage\_analysis.R}:
+  \begin{itemize}
+    \item plot distribution of cluster size \texttt{results/mapping/unmapped/2017\_11\_26\_cluster\_size.pdf}
+    \item generate counts at gene region: i) call \textcolor{blue}{src/convertgff\_to\_bed.sh} on \texttt{data/ReferenceGenomes/Mesorhabditis\_belari\_JU2817\_v2\_genes.gff3} to convert the gff3 annotation for genes to bed format (\textcolor{red}{Be careful because it converts 1-based, closed [a, b] GFF3 input into 0-based, half-  open [a-1, b) six-column extended BED so it converts the first coordinate to 0 if it was 1, or 6,037 if it was 6,038.}), \\
+    ii) call \textcolor{blue}{src/format\_bed.R} to rebased the bed genes annotation in 1 based coordinate: the 1-based bed is saved as \texttt{data/ReferenceGenomes/Mesorhabditis\_belari\_JU2817\_v2\_genes\_1based.bed}\\
+    iii) call \textcolor{blue}{src/intersect\_bed\_genes.R} to intersect coverage file at bp with the bed genes annotation: this generated 2 subset bed files at bp level on genic region: \texttt{results/coverage/2017\_12\_06\_MRDR6\_trim\_Mbelari\_mapped\_rmdup\_rg\_realign\_indels\_sort\_in\_genes.bed} and \texttt{results/coverage/2017\_12\_06\_MRDR5\_trim\_Mbelari\_mapped\_rmdup\_rg\_realign\_indels\_sort\_in\_genes.bed}.
+    iv) \textcolor{blue}{src/get\_counts\_per\_gene.sh}: obtain finally raw counts per gene saved in \texttt{results/results/coverage/2017\_12\_06\_MRDR5\_trim\_Mbelari\_mapped\_rmdup\_rg\_realign\_indels\_count\_genes.txt} and \texttt{results/results/coverage/2017\_12\_06\_MRDR6\_trim\_Mbelari\_mapped\_rmdup\_rg\_realign\_indels\_count\_genes.txt}.
+    \item normalized number of reads at contig, gene and bp within gene levels with R ComputeNormalizedCount function described in \texttt{src/func/functions.R}. Output files are in \textcolor{red}{results/coverage/}: 2017\_12\_06\_FC\_normalized\_coverage\_at\_contig.txt, 2017\_12\_06\_FC\_normalized\_coverage\_at\_gene.txt, 2017\_11\_30\_FC\_normalized\_coverage\_at\_bp\_within\_genes.txt.
+    \item for counts at bp level within genes, implement test per gene on estimated FC values: output is in \texttt{results/coverage/2017\_12\_20\_tests\_FC\_normalized\_coverage\_at\_bp\_within\_genes.txt} (be careful pvalues are raw and not adjusted for the moment to account for multiple testing).
+    \item report gene/contig (and associated raw/normalized counts and fold change) that do not have counts in one sexe in \textcolor{red}{results/coverage/}: 2017\_12\_21\_counts\_per\_genes\_raw\_counts\_not\_present\_in\_both\_sexe.txt and 2017\_12\_21\_counts\_per\_contigs\_raw\_counts\_not\_present\_in\_both\_sexe.txt. I generated a subset file based on log2FC on normalized counts after the fail of a test procedure such as \texttt{subset\_genes\_FC\_norm\_threshold1.txt} for a threshold of 1.
+  \end{itemize}
+
+\end{enumerate}
+
+% -----------------------------
+  \subsection{Contig statistics}
+
+Contig length greatly varies...
+  \begin{verbatim}
+Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
+500     813    2362    9936   11173  501686
+\end{verbatim}
+
+...as well as \% of genic region within contig which stays relatively low:
+\begin{verbatim}
+Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+0.000000 0.000000 0.000000 0.000373 0.000000 6.082403
+\end{verbatim}
+ 
+Below the summary of the number of reads per contig 
+\begin{verbatim}
+# Female (mean coverage = 24.76252)
+Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  0     108     478    2170    2455  108520
+  
+# Male (mean coverage = 43.67202)
+Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  0      62     284    1230    1351  101118
+\end{verbatim}
+  
+% ----------------------------------------
+\subsection{Genes identified within contig}
+
+\includegraphics{{../results/coverage/number_genes_detected_in_contigs}.pdf}
+
+
+% -----------------------
+\subsection{Raw coverage}
+
+From the summaries generated by \texttt{tablet}):
+  \begin{small}
+\begin{tabular}{l|l|l}
+sample & mean reads per contig  & median reads per contig \\
+\hline
+MRDR5 (female) & 1,838.3 & 275 \\
+\hline
+MRDR6 (male) & 1,042.4 & 165  \\
+\end{tabular}
+\end{small}
+
+
+% ----------------------------------------------------------
+\subsection{Normalized coverage at contig, gene and bp level}
+
+\setkeys{Gin}{width = 0.9\textwidth}
+\includegraphics{{../results/coverage/2017_12_29_all_log2_FC}.pdf}
+
+
+% ----------------------------------------------------------
+\subsection{Features missing in one sexe at gene and contig level}
+
+\setkeys{Gin}{width = 0.75\textwidth}
+\includegraphics{{../results/coverage/2017_12_21_counts_per_features_raw_counts_not_present_in_both_sexe}.pdf}\\
+The following plot indicates that when one gene or contig is missing in male, it has few counts in female but when it is missing in female, it has higher count in male suggesting an XY sex-determining system. Some gene and contig also do not have reads on them. 
+
+\includegraphics{{../results/coverage/2017_12_29_counts_per_features_not_present_in_both_sexe}.pdf}
+
+% ----------------------------------------------------------
+\subsection{Barplot of contig with number of gene abs(FC)>=threshold }
+  
+\setkeys{Gin}{width = 0.9\textwidth}
+
+\includegraphics{{../results/coverage/2017_12_29_barplot_FC_threshold1_per_sexe}.pdf}\\
+\includegraphics{{../results/coverage/2017_12_19_count_distribution_before_after_cov_at_gene_bp}.pdf}\\
+\includegraphics{{../results/coverage/2017_12_21_pval_output_tests_genes_log2_FC}.pdf}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Variants processing}
+
+% ----------------
+\subsection{Steps}
+
+\begin{enumerate}
+  \item call variants:\\
+  \textcolor{blue}{src/call\_var\_Mbelari.sh}: this was done on BAM files before (from BAM saved in \textcolor{red}{results/mapping/without\_duplicates}, \texttt{2017\_09\_20\_MRDR6\_trim\_Mbelari\_mapped\_rmdup.bam} and \texttt{2017\_09\_20\_MRDR5\_trim\_Mbelari\_mapped\_rmdup.bam}) and after having performed realignment around INDELs (from BAM saved in \textcolor{red}{results/mapping/without\_duplicates}, \texttt{2017\_09\_20\_MRDR6\_trim\_Mbelari\_mapped\_rmdup\_rg\_realign\_indels.bam} and \texttt{2017\_09\_20\_MRDR5\_trim\_Mbelari\_mapped\_rmdup\_rg\_realign\_indels.bam}). The raw list of variants kept is the one called after realignment around INDELs saved in \textcolor{red}{results/call\_var} as \texttt{2017\_09\_21\_MRDR6\_trim\_Mbelari\_mapped\_rmdup\_rg\_realign\_indels.vcf.gz} and \texttt{2017\_09\_21\_MRDR5\_trim\_Mbelari\_mapped\_rmdup\_rg\_realign\_indels.vcf.gz}.
+  
+  \item summarize variants found per pool and after intersection between sexes:\\
+  \textcolor{blue}{src/summary-vcf\_file.sh}: this used rtg tools to compute the type and number of variants in a VCF file as well as statistics about transitions and heterozygosity (Het/Hom ratio). Summaries are saved in  \textcolor{red}{results/mapping/call\_var} as \texttt{2017\_09\_21\_summary\_realign\_indels\_var\_female\_JU2917.txt} and \texttt{2017\_09\_21\_summary\_realign\_indels\_var\_male\_JU2917.txt}. \\
+  \textcolor{blue}{src/intersect-vcf\_files.sh}: I wanted to assess variants overlapping between both male and female pools (common variants could be errors in assembly, variants missing in one sexe could be interested). Summaries on intersected male and female VCF are saved in \texttt{results/call\_var/inter\_female\_male\_realign\_indels/summary\_in\_both\_0002.txt} (variants present in both female and male pools) and \texttt{results/call\_var/inter\_female\_male\_realign\_indels/summary\_in\_MRDR6\_not\_in\_MRDR5\_0000.txt}.   
+  
+  \item prepare count tables:\\
+\textcolor{blue}{src/extract\_info\_from\_VCF.R}: from VCF files, get counts per variants via R ExtractCountFromVCF function described in \texttt{src/func/functions.R}. Count tables are generated from \texttt{results/call\_var/2017\_09\_21\_MRDR5\_trim\_Mbelari\_mapped\_rmdup\_rg\_realign\_indels.vcf.gz} and  \texttt{results/call\_var/2017\_09\_21\_MRDR6\_trim\_Mbelari\_mapped\_rmdup\_rg\_realign\_indels.vcf.gz} and saved in \textcolor{red}{results/call\_var} as {2017\_09\_25\_MRDR5\_trim\_Mbelari\_mapped\_rmdup\_rg\_realign\_indels\_counts\_genic\_information.txt} and {2017\_09\_25\_MRDR6\_trim\_Mbelari\_mapped\_rmdup\_rg\_realign\_indels\_counts\_genic\_information.txt}. Distance from variants and the nearest INDEL is also computed and plotted as an histogram as well as the log2 density ratio of raw SNPs. 
+
+  \item filter variants to prepare inputs for fisher tests \textcolor{blue}{src/prep\_fisher.R}   :\\
+  \begin{itemize}
+    \item keep variants which have >1 read in total count in male or female 
+    \item if variant is found in one sexe, put the count for the other sex to 0
+    \item if variant is found at SNP in one sexe and INDEL in the other sexe for the same position, the SNP is kept and is set to 0 in the sexe where it is an INDEL
+    \item keep SNPs that are at >1bp away from the neighbour INDEL
+  \end{itemize}
+  Summary of the successive filtering steps is in \textcolor{red}{results/call\_var} as \texttt{ results/call\_var/2017\_12\_20\_summary\_filt\_variants.pdf}. The SNP and INDEL found are saved in \texttt{2017\_12\_08\_merge.sexe.all.filt.SNP.txt} for SNPs and \texttt{2017\_12\_08\_merge.sexe.all.filt.INDEL.txt} for INDELs which both indicate: contig (CHROM column), variant position (POS), reference (REF) and alternate allele (ALT.x for male and ALT.y for female), raw counts (count.ref for reads equal to the reference at this position, count.alt for reads different from the reference and tot. for the total number of reads at the position) contig length, if the alternate allele is the same between male and female (same.ALT column is set to TRUE if this is the case), if the variant has the same type in both sex (same\_class\_variant column set to FALSE if not). There is also one quality metrics on Phred scale from samtools mpileup (QUAL.). I also plot the log2 density of SNPs per contig and per gene; files of density of SNPs per contig and per genes are saved as \texttt{2017\_12\_29\_density.contigs.merge.sexe.all.filt.SNP.txt} and \texttt{2017\_12\_29\_density.genes.merge.sexe.all.filt.SNP.txt}.
+  
+\end{enumerate}
+
+% ---------------------------------
+\subsection{Summary on raw variants}
+
+\small
+\begin{tabular}{c|c|c|c|c}
+& male & female & intersection &  in male, not in female  \\
+&  &  & after realign &   after realign \\
+\hline
+& raw / after realignment & raw / after realignment &  & \\
+\hline
+SNPs & 653,292 / 646,096 & 943,379 / 807,802 & 533,693 & 136,139 \\
+Insertions & 55,379 / 47,326 & 81,318 / 65,917 & 31,018 & 16,308\\
+Deletions & 32,949 / 33,200 & 42,555 / 41,879 & 25,784 & 7,416 \\
+Indels & 17 / 13 &  34/ 26 & 1 & 12  \\
+MNPs & 0 & 0 & & \\
+het/hom ratio  & 3.4 / 3.88 / 1.5 / 1.6 & 8.75 / 11.76 / 2.59 / 3.32 &  & \\
+(total/SNPs/Ins/Del) & 3.47 / 3.85 / 1.72 / 1.71 & 9.49 / 11.83 / 3.33 / 3.62 & 3.21 / 3.47 / 1.78 / 1.63 & 5.09 / 7.21 / 1.63 / 2.02\\
+Ins/Del ratio & 1.68 / 1.43 & 1.91 / 1.57 & 1.20 & 2.20 \\
+SNP Transit/Transv & 1.45 / 1.47 & 1.43 / 1.45 & 1.52 & 1.21\\
+\end{tabular}
+
+\setkeys{Gin}{width = 0.49\textwidth}
+\includegraphics{{../results/call_var/2017_11_09_distance_from_INDEL_to_nearest_variant_female}.pdf}
+\includegraphics{{../results/call_var/2017_11_09_distance_from_INDEL_to_nearest_variant_male}.pdf}\\
+
+Summary of variants with pool and in genic region:\\
+\setkeys{Gin}{width = 1.43\textwidth}
+\hspace*{-4.1cm}
+\includegraphics{{../results/call_var/2017_11_09_summary_raw_variants}.pdf}\\
+\setkeys{Gin}{width = 0.75\textwidth}
+\includegraphics{{../results/call_var/2017_11_12_log2_density_ratio_raw_SNPs}.pdf}
+
+
+% --------------------------------------------------
+\subsection{Filter variants to perform fisher tests}
+
+\includegraphics{{../results/call_var/2017_12_20_summary_filt_variants}.pdf}\\
+
+\includegraphics{{../results/call_var/2017_12_08_summary_alleles_ALT_between_pools}.pdf}
+knowing that only variants sharing the same alt allele will be used for the analysis.\\
+
+\includegraphics{{../results/call_var/2017_12_29_frequency_SNPs_sexes}.pdf}\\
+\includegraphics{{../results/call_var/2017_12_29_log2_density_ratio_filt_SNPs}.pdf}
+
+
+% -------------------------------
+\subsection{Perform Fisher tests}
+
+
+\includegraphics{{../results/call_var/2017_12_13_signif_Fisher_contig_gene_level}.pdf}
+
+
 
 \end{document}
