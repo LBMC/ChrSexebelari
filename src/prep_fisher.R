@@ -4,7 +4,6 @@ library(foreach)
 library(doParallel)
 library(gridExtra)
 
-##### Select contigs with size >= 1,000 bp
 size.genome.mbelari <- read.table("data/ReferenceGenomes/2017_09_13_Mbelari.sizes.genome", h = F, sep = "\t", stringsAsFactors = F)
 
 do.prep.fisher <- F
