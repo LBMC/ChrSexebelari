@@ -1,0 +1,36 @@
+##### References #####
+
+Aho, Kernighan and Weinberger. Awk — a pattern scanning and processing language. Journal of Software: Practice and Experience, 1979.
+
+Anscombe. The transformation of poisson, binomial and negative binomial data. Biometrika, 1948. 
+
+Bastide, Andrea Betancourt, Nolte, Tobler, Stöbe, Futschik and Schlötterer. A Genome-Wide, Fine-Scale Map of Natural Pigmentation Variation in Drosophila melanogaster Plos Genetics, 2013.
+
+Benjamini and Hochberg. Controlling the false discovery rate: a practical and powerful approach to multiple testing. Journal of the Royal Statistical Society Series B, 1995.
+
+Bolstad. preprocessCore: A collection of pre-processing functions. R package version 1.40.0, https://github.com/bmbolstad/preprocessCore. 2017.
+
+Bray, Pimentel, Melsted and Pachter. Near-optimal probabilistic RNA-Seq quantification. Nature Biotechnology, 2016.
+
+Cleary et al. Joint Variant and De Novo Mutation Identification in Pedigrees from High-Throughput Sequencing Data. Journal of Computational Biology, 2014.
+
+Danecek, Auton, Abecasis, Albers, Banks, DePristo, Handsaker, Lunter, Marth, Sherry, McVean, Durbin and 1000 Genomes Project Analysis Group. The Variant Call Format and VCFtools. Bioinformatics, 2011.
+
+Lander, Waterman. Genomic mapping by fingerprinting random clones: a mathematical analysis. Genomics, 1988.
+
+Langmead, Salzberg. Fast gapped-read alignment with Bowtie 2. Nature Methods, 2012.
+
+Li, Handsaker, Wysoker, Fennell, Ruan, Homer, Marth, Abecasis, Durbin, and 1000 Genome Project Data Processing Subgroup.
+The Sequence Alignment/Map format and SAMtools. Bioinformatics, 2009.
+
+Li. A statistical framework for SNP calling, mutation discovery, association mapping and population genetical parameter estimation from sequencing data. Bioinformatics, 2011.
+
+Martin. Cutadapt removes adapter sequences from high-throughput sequencing reads. EMBnet.journal, 2011.
+
+Milne, Stephen, Bayer, Cock, Pritchard, Cardle, Shaw and Marshall. Using Tablet for visual exploration of second-generation sequencing data. Briefings in Bioinformatics, 2013.
+
+Neph, Kuehn, Reynolds, Haugen, Thurman, Johnson, Rynes, Maurano, Vierstra, Thomas, Sandstrom, Humbert and Stamatoyannopoulos. BEDOPS: high-performance genomic feature operations. Bioinformatics, 2012.
+
+Pimentel, Bray, Puente, Melsted and Pachter. Differential analysis of RNA-seq incorporating quantification uncertainty. Nature Methods, 2017.
+
+Quinlan and Hall. BEDTools: a flexible suite of utilities for comparing genomic features. Bioinformatics, 2010.
