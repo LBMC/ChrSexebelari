@@ -31,6 +31,7 @@
 \newcommand{\bslash}{\textbackslash}
 
 \begin{document}
+\SweaveOpts{concordance=TRUE}
 
 \setkeys{Gin}{width = 0.2\textwidth}  %% Auto position of the figures
 
@@ -79,7 +80,6 @@ For scripts ran on local computer:
   \item bowtie2 version 2.24
   \item samtools version 1.3
   \item tablet version 1.16.09.06
-  \item picard 2.3.0
   \item vcftools 0.1.15
   \item pigz 2.3
   \item picard 2.12.1
@@ -250,6 +250,9 @@ Note that the dictionnary must be created on the hybrid reference to avoid rehea
 \item \textbf{create dictionnary with picard for GATK} : \\
 \textcolor{blue}{src/picard\_dictionnary.sh}: this creates a dictionnary from the hybrid \texttt{data/ReferenceGenomes/2017\_09\_08\_combined\_belari\_coli.fasta} previously gunzip. The dictionnary is saved in \texttt{data/ReferenceGenomes/2017\_09\_08\_combined\_belari\_coli.dict}.
 
+\item \textbf{create a fasta index file for the hybrid reference} : \\
+\textcolor{blue}{src/faidx\_index.sh}
+
 \item \textbf{realign around INDELs using GATK}:\\
 \textcolor{blue}{src/realign.sh}: the realignment around INDELs is performed in 2 steps: firstly the detection of the intervals to be realigned and secondly the realignement in itself. This generated one intervals file such as \texttt{results/mapping/without\_duplicates/2017\_09\_20\_RDR6\_trim\_Mbelari\_mapped\_rmdup\_rg.intervals} and the final files are \texttt{2017\_09\_20\_MRDR6\_trim\_Mbelari\_mapped\_rmdup\_rg\_realign\_indels.bam} and \texttt{2017\_09\_20\_MRDR5\_trim\_Mbelari\_mapped\_rmdup\_rg\_realign\_indels.bam}.
 You need to index these outputs. 
@@ -301,6 +304,8 @@ female against belari / after rmdup & female against coli & male against belari 
 
 % --------------------------------------------------------
 \subsection{FastQC on belari mapped rmudp realigned reads}
+
+Note that I also performed FastQC on E. coli mapped reads. 
 
 \begin{itemize}
 \item bp content. First 6 bp are really less biased in bp content probably than after QC on whole set of reads. However, there is no more 2 modes on GC content and expected GC\% of 36 for female and 37 for male.
@@ -461,6 +466,10 @@ The following plot indicates that when one gene or contig is missing in male, it
   \end{itemize}
   Summary of the successive filtering steps is in \textcolor{red}{results/call\_var} as \texttt{ results/call\_var/2017\_12\_20\_summary\_filt\_variants.pdf}. The SNP and INDEL found are saved in \texttt{2017\_12\_08\_merge.sexe.all.filt.SNP.txt} for SNPs and \texttt{2017\_12\_08\_merge.sexe.all.filt.INDEL.txt} for INDELs which both indicate: contig (CHROM column), variant position (POS), reference (REF) and alternate allele (ALT.x for male and ALT.y for female), raw counts (count.ref for reads equal to the reference at this position, count.alt for reads different from the reference and tot. for the total number of reads at the position) contig length, if the alternate allele is the same between male and female (same.ALT column is set to TRUE if this is the case), if the variant has the same type in both sex (same\_class\_variant column set to FALSE if not). There is also one quality metrics on Phred scale from samtools mpileup (QUAL.). I also plot the log2 density of SNPs per contig and per gene; files of density of SNPs per contig and per genes are saved as \texttt{2017\_12\_29\_density.contigs.merge.sexe.all.filt.SNP.txt} and \texttt{2017\_12\_29\_density.genes.merge.sexe.all.filt.SNP.txt}.
   
+    \item make fisher tests and make an FDR correction described in the material and methods with \textcolor{blue}{src/fisher.R} :\\
+Two sets of SNPs were used to perform fisher tests: on all filtered SNPs and all filtered SNPs falling within genes. Results are saved in \texttt{results/fisher/2017\_12\_22\_merge.sexe.all.filt.SNP.same.alt.fisher.txt} (all SNPs) and \texttt{results/fisher/2017\_12\_22\_merge.sexe.all.filt.SNP.same.alt.fisher.genes.txt} (SNPs within genes). I then simulated 50 null datasets and computed the FDR per SNP after having estimated the parameters of the beta binomial (outputs of the vglm R function are stored in \texttt{2017\_12\_22\_params\_H0\_beta.RData} and \texttt{2017\_12\_22\_params\_H0\_beta.genes.RData} respectively).
+FDR estimates are then added to the observed raw fisher pvalue and saved in \texttt{results/fisher/2017\_12\_25\_merge.sexe.all.filt.SNP.same.alt.fisher.FDR.txt} and  \texttt{results/fisher/2017\_12\_25\_merge.sexe.all.filt.SNP.same.alt.fisher.FDR.genes.txt}.
+
 \end{enumerate}
 
 % ---------------------------------
@@ -511,9 +520,7 @@ knowing that only variants sharing the same alt allele will be used for the anal
 % -------------------------------
 \subsection{Perform Fisher tests}
 
-
-\includegraphics{{../results/call_var/2017_12_13_signif_Fisher_contig_gene_level}.pdf}
-
+\includegraphics{{../results/fisher/2017_12_25_signif_Fisher_contig_gene_level}.pdf}
 
 
 \end{document}
