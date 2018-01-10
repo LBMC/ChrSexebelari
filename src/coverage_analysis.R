@@ -82,8 +82,10 @@ if(compute.norm){
   ##### Normalize genes counts  Generate bed file for gene region coordinates
   system("bash src/convertgff_to_bed.sh data/ReferenceGenomes/Mesorhabditis_belari_JU2817_v2_genes.gff3 data/ReferenceGenomes/Mesorhabditis_belari_JU2817_v2_genes.bed")
   source("src/format_bed.R")
-  # Extract gene region in bed depth file at each bp with intersect_bed_genes.sh
-  system("bash src/intersect_gene_bed_genes.sh")
+  # At gene bp level
+  system("bash src/intersect_bed_genes.sh")
+  # At gene level
+  system("bash src/get_counts_per_gene.sh")
 
   ##### Normalize counts at contig level, gene level and at gene bp level
   # at contig
@@ -167,7 +169,7 @@ if(do.test.at.bp ){
   #dev.off()
 
   genes <- counts.bp %>% distinct(V8); genes <- unique(genes$V8)
-  counts.genes <- read.csv("2017_12_06_FC_normalized_coverage_at_gene.txt", 
+  counts.genes <- read.csv("results/coverage/2017_12_06_FC_normalized_coverage_at_gene.txt", 
     sep = "\t", h = T, stringsAsFactors = F)
   res <- NULL
   for(g in genes) {
@@ -219,7 +221,7 @@ if(do.test.at.bp ){
   res$is.gene.missing.sexe <- sapply(res$gene, function(x) {tmp <- which(counts.genes.missing.one.sexe$V4 == x); ifelse(length(tmp)>0, counts.genes.missing.one.sexe[tmp, "missing.sexe"], "")})
   res$is.contig.missing.sexe <- sapply(res$contig, function(x) {tmp <- which(counts.contigs.missing.one.sexe$Contig == x); ifelse(length(tmp)>0, counts.contigs.missing.one.sexe[tmp, "missing.sexe"], "")})
 
-  write.table(res, "tests_FC_normalized_coverage_at_bp_within_genes.txt", sep= "\t", quote =F, col.names = T, row.names = F)
+  write.table(res, "results/coverage/tests_FC_normalized_coverage_at_bp_within_genes.txt", sep= "\t", quote =F, col.names = T, row.names = F)
 
   system("bash src/date.sh results/coverage/tests_FC_normalized_coverage_at_bp_within_genes.txt")
 }
