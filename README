@@ -2,3 +2,29 @@
 # project initialisation
 
 start by executing the `src/init.sh` script
+
+# install CDHIT on PSMN
+source ../build_env.sh
+
+CDHIT_VERSION=4.6.8
+mkdir -p ${CDHIT_VERSION}/bin
+
+curl -k -L https://github.com/weizhongli/cdhit/releases/download/V${CDHIT_VERSION}/cd-hit-v${CDHIT_VERSION}-2017-0621-source.tar.gz -o cd-hit-v${CDHIT_VERSION}.tar.gz
+
+mkdir cd-hit-v${CDHIT_VERSION} && tar xzf cd-hit-v${CDHIT_VERSION}.tar.gz -C cd-hit-v${CDHIT_VERSION} --strip-components 1
+
+cd cd-hit-v${CDHIT_VERSION}
+
+make
+
+cd cd-hit-auxtools
+
+make
+
+cd ..
+
+cd ..
+
+rsync -av --exclude 'doc/' --exclude 'usecases/' --exclude 'doc cd-hit-v${CDHIT_VERSION}/ ${CDHIT_VERSION}/bin/
+
+rm -Rf cd-hit-v${CDHIT_VERSION}*
