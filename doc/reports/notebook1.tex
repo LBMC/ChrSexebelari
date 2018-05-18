@@ -1,0 +1,58 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{makeidx}
+\usepackage{graphicx}
+\usepackage{lmodern}
+
+\begin{document}
+
+
+\section{May 17th 2018}
+
+\subsection{Canu test with all reads of best qual that mapped to the MBELA01182 Illumina contig}
+The file from \verb!Canu_tests/data!
+ \verb!2018-05-17-MBELA01182_nanopore_reads_subset.fastq! was used to test canu.
+
+Command used:
+ \verb!canu -p 2018-05-17-testMBELA01182 -d 2018-05-17-testMBELA01182 genomeSize=57k useGrid=false -nanopore-raw Canu_tests/data/2018-05-17-MBELA01182_nanopore_reads_subset.fastq!
+
+Script in  \verb!src/scripts/2018-05-17-MBELA01182_canu.script!
+
+Results in \texttt{results/2018-05-17-testMBELA01182}
+
+\subsection{Canu test with all reads of best qual}
+The file used from  \verb!Canu_tests/data!
+ \verb!2018-05-17-Nanopore_all_reads_best_qual.fastq!
+
+Command used:
+ \verb!canu -p 2018-05-17-first_test_assembly -d 2018-05-17-first_test_assembly genomeSize=162.1m useGrid=false -nanopore-raw Canu_tests/data/2018-05-17-Nanopore_all_reads_best_qual.fastq!
+
+Script in  \verb!src/scripts/2018-05-17-first_test_assembly.script!
+
+Results in  \verb!results/2018-05-17-first_test_assembly!
+
+ABORTED because most of the reads were too short >1000kb we will retry by changing this parameter
+
+\subsection{Canu test with all reads of best qual test 2 changing parameters}
+The file used from  \verb!Canu_tests/data!
+  \verb!2018-05-17-Nanopore_all_reads_best_qual.fastq!
+
+Command used:
+ \verb!canu -p 2018-05-17-assembly_test_2 -d 2018-05-17-assembly_test_2 genomeSize=162.1m minReadLength=500 correctedErrorRate=0.16 useGrid=false -nanopore-raw Canu_tests/data/2018-05-17-Nanopore_all_reads_best_qual.fastq!
+
+Script in  \verb!src/scripts/2018-05-17-assembly_test_2.script!
+
+Results in  \verb!results/2018-05-17-assembly_test_2!
+Job aborted
+
+\section{May 18th 2018}
+
+\subsection{Removing \textit{E.coli} reads from nanopore reads}
+
+
+
+\end{document}
