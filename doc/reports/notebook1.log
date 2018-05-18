@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Debian) (preloaded format=pdflatex 2018.5.18)  18 MAY 2018 17:39
+This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Debian) (preloaded format=pdflatex 2018.5.18)  18 MAY 2018 17:46
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -625,26 +625,34 @@ ectedErrorRate=0.16 useGrid=false -nanopore-raw Canu_tests/data/2018-05-17-Nano
 pore_all_reads_best_qual.fastq 
  []
 
+
+Overfull \hbox (149.20995pt too wide) in paragraph at lines 56--57
+\OT1/lmr/m/it/10 E. coli \OT1/lmr/m/n/10 con-tam-i-na-tion was re-moved from th
+e nanopore reads [][]\OT1/lmtt/m/n/10 2018-05-17-Nanopore_all_reads_best_qual.f
+astq 
+ []
+
 [1
 
 {/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}] (./notebook1.aux) ) 
 Here is how much of TeX's memory you used:
- 3190 strings out of 494880
- 41048 string characters out of 6179601
+ 3194 strings out of 494880
+ 41098 string characters out of 6179601
  101133 words of memory out of 5000000
- 6461 multiletter control sequences out of 15000+600000
- 18682 words of font info for 20 fonts, out of 8000000 for 9000
+ 6463 multiletter control sequences out of 15000+600000
+ 27126 words of font info for 22 fonts, out of 8000000 for 9000
  36 hyphenation exceptions out of 8191
  41i,4n,25p,276b,136s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/s
-hare/texmf/fonts/enc/dvips/lm/lm-rmtt.enc}{/usr/share/texmf/fonts/enc/dvips/lm/
-lm-rm.enc}</usr/share/texmf/fonts/type1/public/lm/lmbx12.pfb></usr/share/texmf/
-fonts/type1/public/lm/lmr10.pfb></usr/share/texmf/fonts/type1/public/lm/lmtt10.
-pfb>
-Output written on notebook1.pdf (1 page, 83290 bytes).
+hare/texmf/fonts/enc/dvips/lm/lm-rm.enc}{/usr/share/texmf/fonts/enc/dvips/lm/lm
+-rmtt.enc}</usr/share/texmf/fonts/type1/public/lm/lmbx12.pfb></usr/share/texmf/
+fonts/type1/public/lm/lmbxi10.pfb></usr/share/texmf/fonts/type1/public/lm/lmr10
+.pfb></usr/share/texmf/fonts/type1/public/lm/lmri10.pfb></usr/share/texmf/fonts
+/type1/public/lm/lmtt10.pfb>
+Output written on notebook1.pdf (1 page, 109470 bytes).
 PDF statistics:
- 22 PDF objects out of 1000 (max. 8388607)
- 15 compressed objects within 1 object stream
+ 30 PDF objects out of 1000 (max. 8388607)
+ 21 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 

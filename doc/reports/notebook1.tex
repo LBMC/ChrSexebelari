@@ -53,6 +53,19 @@ Job aborted
 
 \subsection{Removing \textit{E.coli} reads from nanopore reads}
 
+\textit{E. coli} contamination was removed from the nanopore reads:
+\verb!2018-05-17-Nanopore_all_reads_best_qual.fastq!
+
+Script in  \verb!src/data_transformations/2018-05-15-Nanopore_reads_removing_ecoli.command!
+
+Output file \verb!results/nanopore_against_ecoli_genome/!
+
+\subsection{Aligning illumina reads of female and male against g17460,g15674,g21566}
+
+The reads of illumina cleaned from \textit{E.coli} contamination and PCR duplications were mapped against the sequence of genes g17460,g15674,g21566 to look for differences between females and males illumina files. Also againts RNAP2 which was used as a control for PCR experiments.
+
+
+
 
 
 \end{document}
