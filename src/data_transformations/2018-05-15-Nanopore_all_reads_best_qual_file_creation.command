@@ -1,1 +1,0 @@
-cat FC17_all_reads_best_qual.fastq FC18_all_reads_best_qual.fastq FC19_all_reads_best_qual.fastq FC20_all_reads_best_qual.fastq > 2018-05-15-Nanopore_all_reads_best_qual.fastq
