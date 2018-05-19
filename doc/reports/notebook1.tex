@@ -17,6 +17,8 @@
 The file from \verb!Canu_tests/data!
  \verb!2018-05-17-MBELA01182_nanopore_reads_subset.fastq! was used to test canu.
 
+The reference genome Escherichia coli OP50 was downloaded from https://www.ncbi.nlm.nih.gov/Traces/wgs/?val=ADBT01 
+
 Command used:
  \verb!canu -p 2018-05-17-testMBELA01182 -d 2018-05-17-testMBELA01182 genomeSize=57k useGrid=false -nanopore-raw Canu_tests/data/2018-05-17-MBELA01182_nanopore_reads_subset.fastq!
 
@@ -60,13 +62,27 @@ Script in  \verb!src/data_transformations/2018-05-15-Nanopore_reads_removing_eco
 
 Output file \verb!results/nanopore_against_ecoli_genome/!
 
+Nevertheless only a small part of the reads were removed, the file did not changed a lot in size after E.coli removing.
+
 \subsection{Aligning illumina reads of female and male against g17460,g15674,g21566}
 
 The reads of illumina cleaned from \textit{E.coli} contamination were mapped against the sequence of the 13 genes that were present in males but not in females to look for differences between females and males illumina files. Also againts RNAP2 which was used as a control for PCR experiments.
 
-Script in  \verb!src/13genes/2018-05-15-Mapping_MRDR_illumina_against_genes.command!
+Script in  \verb!src/13genes/2018-05-15-Mapping_MRDR_illumina_against_genes.sh!
 
-Output file \verb!results/*****!
+Output file \verb!results/13genes!
+
+This was tried to do in blast but the blast db could not be created
+
+Another try will be done with bowtie2
+
+Script in  \verb!src/13genes/2018-05-19-Mapping_MRDR_illumina_against_genes_bowtie2.sh!
+
+Output file \verb!results/13genes!
+
+\section{May 19th 2018}
+
+\subsection{Constructing Illumina reads subset}
 
 
 
