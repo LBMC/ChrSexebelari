@@ -8,15 +8,12 @@ samtools view -Sb results/13genes/MRDR5_Mbelai_vs_13_genes.sam > results/13genes
 
 samtools view -Sb results/13genes/MRDR6_Mbelai_vs_13_genes.sam > results/13genes/MRDR6_Mbelai_vs_13_genes.bam
 
-samtools sort results/13genes/MRDR5_Mbelai_vs_13_genes.bam results/13genes/MRDR5_Mbelai_vs_13_genes_sorted.bam
+samtools sort results/13genes/MRDR5_Mbelai_vs_13_genes.bam -o results/13genes/MRDR5_Mbelai_vs_13_genes_sorted.bam
 
-samtools sort results/13genes/MRDR6_Mbelai_vs_13_genes.bam results/13genes/MRDR6_Mbelai_vs_13_genes_sorted.bam
+samtools sort results/13genes/MRDR6_Mbelai_vs_13_genes.bam -o results/13genes/MRDR6_Mbelai_vs_13_genes_sorted.bam
+
+samtools index results/13genes/MRDR5_Mbelai_vs_13_genes_sorted.bam
 
 samtools index results/13genes/MRDR6_Mbelai_vs_13_genes_sorted.bam
 
-samtools index results/13genes/MRDR6_Mbelai_vs_13_genes_sorted.bam
-
-rm results/13genes/MRDR5_Mbelai_vs_13_genes.bam
-rm results/13genes/MRDR6_Mbelai_vs_13_genes.bam
-rm results/13genes/MRDR5_Mbelai_vs_13_genes.sam
-rm results/13genes/MRDR6_Mbelai_vs_13_genes.sam
+samtools faidx data/raw/2018-05-18-Complete_13_genes.fasta
