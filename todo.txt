@@ -1,0 +1,3 @@
+Raw Data is in data folder
+The scripts needed to run the analysis are in the src folder
+There is a subfolder PSMN_scripts with the scripts used for analysis on the PSMN
