@@ -4,10 +4,10 @@
 ### nom du job (a changer)
 #$ -N CanuAssemblyt4
 ### file d'attente (a changer)
-#$ -q E5_test
+#$ -q E5-2697Av4deb256
 ### charger l'environnement utilisateur pour SGE
 #$ -cwd
-#$ -pe test_debian 2
+#$ -pe openmp32 32
 ### exporter les variables d'environnement sur tous les noeuds d'execution
 #$ -V
 ### mails en debut et fin d'execution
@@ -29,7 +29,6 @@ ml canu/1.7
 ### execution du programme
 ###EXECDIR=${HOME}/Formations/Sequentiel
 ###${EXECDIR}/SommeVecVecSEQ.exe < Monfichierdedata > monfichierresultat
-canu -p 2018-05-24-assembly_test_4 -d 2018-05-24-assembly_test_4 genomeSize=162.1m minReadLength=500 correctedErrorRate=0.16 useGrid=false maxMemory=256 maxThreads=32 -nanopore-raw /scratch/lestrada/stage_mbelari/data/raw/2018-05-19-Nanopore_all_reads_best_qual_wo_ecoli.fastq
-
+canu -p 2018-05-23-assembly_test_4 -d 2018-05-23-assembly_test_4 genomeSize=162.1m minReadLength=500 correctedErrorRate=0.16 useGrid=false maxMemory=256 maxThreads=32 -nanopore-raw /scratch/lestrada/Canu_tests/data/2018-05-19-Nanopore_all_reads_best_qual_wo_ecoli.fastq
 
 # fin```
