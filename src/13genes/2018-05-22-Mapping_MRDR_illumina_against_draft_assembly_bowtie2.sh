@@ -4,7 +4,7 @@ bowtie2 -x results/13genes/2018-05-22-mbela_assembly_JU2817 -U data/raw/2017_09_
 
 bowtie2 -x results/13genes/2018-05-22-mbela_assembly_JU2817 -U data/raw/2017_09_13_MRDR6_trim_Mbelari_mapped_sort.fastq.gz -S results/13genes/2018-05-22-MRDR6_vs_Mbelari_assembly.sam --no-unal
 
-samtools view -Sb results/13genes/2018-05-22-MRDR5_vs_Mbelari_assembly.sam > results/13genes/2018-05-22-MRDR5_vs_Mbelari_assembly.sam
+samtools view -Sb results/13genes/2018-05-22-MRDR5_vs_Mbelari_assembly.sam > results/13genes/2018-05-22-MRDR5_vs_Mbelari_assembly.bam
 
 samtools view -Sb results/13genes/2018-05-22-MRDR6_vs_Mbelari_assembly.sam > results/13genes/2018-05-22-MRDR6_vs_Mbelari_assembly.bam
 

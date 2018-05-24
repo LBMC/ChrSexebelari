@@ -1,1 +1,1 @@
-./SparseAssembler g 15 k 51 LD 1 GS 60000 NodeCovTh 2 EdgeCovTh 1 p1 ~/Documents/stage_mbelari/data/sample/MR_350_mapped_to_Mbelari-01182_1.fastq p2 ~/Documents/stage_mbelari/data/sample/MR_350_mapped_to_Mbelari-01182_2.fastq
+./SparseAssembler g 15 k 51 LD 1 GS 100000 NodeCovTh 1 EdgeCovTh 1 p1 ~/Documents/stage_mbelari/data/sample/MR_350_mapped_to_Mbelari-01182_1.fastq p2 ~/Documents/stage_mbelari/data/sample/MR_350_mapped_to_Mbelari-01182_2.fastq  &
