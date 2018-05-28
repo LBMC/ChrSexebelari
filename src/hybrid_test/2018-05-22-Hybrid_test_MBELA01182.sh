@@ -8,7 +8,7 @@ cat Contigs.txt MBELA01182subset.fasta > ctg_pb.fasta
 
 ulimit -n unlimited
 
-sh ~/Programs/DBG2OLC-master/utility/split_and_run_sparc.sh backbone_raw.fasta DBG2OLC_Consensus_info.txt ctg_pb.fasta consensus_dir 2 >cns_log.txt
+sh ./split_and_run_sparc.sh ~/Documents/stage_mbelari/results/hybrid_test/backbone_raw.fasta ~/Documents/stage_mbelari/results/hybrid_test/DBG2OLC_Consensus_info.txt ~/Documents/stage_mbelari/results/hybrid_test/ctg_pb.fasta ~/Documents/stage_mbelari/results/hybrid_test/consensus_dir 2 > ~/Documents/stage_mbelari/results/hybrid_test/cns_log.txt
 
-sh ./split_and_run_sparc.sh ~/Documents/stage_mbelari/results/hybrid_assembly/backbone_raw.fasta ~/Documents/stage_mbelari/results/hybrid_assembly/DBG2OLC_Consensus_info.txt ~/Documents/stage_mbelari/results/hybrid_assembly/ctg_pb.fasta ~/Documents/stage_mbelari/results/hybrid_assembly/consensus_dir 2 > ~/Documents/stage_mbelari/results/hybrid_assembly/cns_log.txt
+sh ./split_and_run_sparc.sh ~/Documents/stage_mbelari/results/hybrid_test/backbone_raw.fasta ~/Documents/stage_mbelari/results/hybrid_test/DBG2OLC_Consensus_info.txt ~/Documents/stage_mbelari/results/hybrid_test/ctg_pb.fasta ~/Documents/stage_mbelari/results/hybrid_test/consensus_dir 2 > ~/Documents/stage_mbelari/results/hybrid_test/cns_log.txt
 
