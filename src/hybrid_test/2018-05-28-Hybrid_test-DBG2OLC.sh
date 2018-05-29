@@ -25,3 +25,4 @@ cat Contigs.txt ${nanopore_reads_fa} > ctg_pb.fasta
 #Consensus step
 
 sh ~/Programs/DBG2OLC-master/utility/split_and_run_sparc_test.sh backbone_raw.fasta DBG2OLC_Consensus_info.txt ctg_pb.fasta consensus_dir 5 > cns_log.txt
+s	
