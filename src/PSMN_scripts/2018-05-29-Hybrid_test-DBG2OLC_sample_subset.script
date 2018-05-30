@@ -23,7 +23,7 @@ source /usr/share/lmod/lmod/init/bash
 ###EXECDIR=${HOME}/Formations/Sequentiel
 ###${EXECDIR}/SommeVecVecSEQ.exe < Monfichierdedata > monfichierresultat
 
-~/Documents/stage_mbelari/src/hybrid_test/2018-05-28-Hybrid_test-DBG2OLC.sh ~/Documents/stage_mbelari/data/sample/MR_350_mapped_to_Mbelari-01182_1.fastq ~/Documents/stage_mbelari/data/sample/MR_350_mapped_to_Mbelari-01182_2.fastq 100000 ~/Documents/stage_mbelari/data/sample/MBELA01182subset.fasta
+~/stage_mbelari/src/PSMN_scripts/2018-05-28-Hybrid_test-DBG2OLC-PSMN.sh ~/stage_mbelari/data/sample/MR_350_mapped_to_Mbelari-01182_1.fastq ~/stage_mbelari/data/sample/MR_350_mapped_to_Mbelari-01182_2.fastq 100000 ~/stage_mbelari/data/sample/MBELA01182subset.fasta
 
 # fin```
 
