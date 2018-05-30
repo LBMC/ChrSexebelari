@@ -4,7 +4,7 @@
 ### nom du job (a changer)
 #$ -N DBG2OLC_full_test_1
 ### file d'attente (a changer)
-#$ -q monointeldeb128
+#$ -q r820deb768
 ### charger l'environnement utilisateur pour SGE
 #$ -cwd
 ### exporter les variables d'environnement sur tous les noeuds d'execution
