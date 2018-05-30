@@ -4,7 +4,7 @@
 ### nom du job (a changer)
 #$ -N DBG2OLC_full_test_1
 ### file d'attente (a changer)
-#$ -q r820deb768
+#$ -q monointeldeb128
 ### charger l'environnement utilisateur pour SGE
 #$ -cwd
 ### exporter les variables d'environnement sur tous les noeuds d'execution
@@ -23,7 +23,7 @@ source /usr/share/lmod/lmod/init/bash
 ###EXECDIR=${HOME}/Formations/Sequentiel
 ###${EXECDIR}/SommeVecVecSEQ.exe < Monfichierdedata > monfichierresultat
 
-~/stage_mbelari/src/PSMN_scripts/2018-05-28-Hybrid_test-DBG2OLC-PSMN.sh ~/stage_mbelari/data/raw/MR_350_clean_1.fastq.gz ~/stage_mbelari/data/raw/MR_350_clean_2.fastq.gz 162000000 ~/stage_mbelari/data/nanopore_merged_files/2018-05-24-Nanopore_all_reads_best_qual_wo_ecoli.fasta
+~/stage_mbelari/src/PSMN_scripts/2018-05-28-Hybrid_test-DBG2OLC-PSMN.sh ~/stage_mbelari/data/raw/MR_350_clean_1.fastq ~/stage_mbelari/data/raw/MR_350_clean_2.fastq 162000000 ~/stage_mbelari/data/nanopore_merged_files/2018-05-24-Nanopore_all_reads_best_qual_wo_ecoli.fasta
 
 
 # fin```
