@@ -4,7 +4,7 @@
 ### nom du job (a changer)
 #$ -N CanuAssemblyt4
 ### file d'attente (a changer)
-#$ -q E5-2697Av4deb256
+#$ -q M6142deb384B
 ### charger l'environnement utilisateur pour SGE
 #$ -cwd
 #$ -pe openmp32 32

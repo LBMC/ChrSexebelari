@@ -7,7 +7,7 @@ illumina_fq_2_2=$4
 genome_size=$5
 nanopore_reads_fa=$6
 
-#/scratch/lestrada/stage_mbelari/bin/DBG2OLC-master/compiled/SparseAssembler g 15 k 51 LD 0 GS ${genome_size} NodeCovTh 2 EdgeCovTh 1 p1 ${illumina_fq_1_1} p2 ${illumina_fq_1_2} p1 ${illumina_fq_2_1} p2 ${illumina_fq_2_2}
+/scratch/lestrada/stage_mbelari/bin/DBG2OLC-master/compiled/SparseAssembler g 15 k 32 LD 0 GS ${genome_size} NodeCovTh 2 EdgeCovTh 1 p1 ${illumina_fq_1_1} p2 ${illumina_fq_1_2} p1 ${illumina_fq_2_1} p2 ${illumina_fq_2_2}
 
 
 #Nanopore files and Contigs.txt file from previous step
@@ -20,4 +20,4 @@ cat Contigs.txt ${nanopore_reads_fa} > ctg_pb.fasta
 
 #Consensus step
 
-sh /scratch/lestrada/stage_mbelari/bin/DBG2OLC-master/utility/split_and_run_sparc_test.sh backbone_raw.fasta DBG2OLC_Consensus_info.txt ctg_pb.fasta consensus_dir 5 > cns_log.txt
+sh /scratch/lestrada/stage_mbelari/bin/DBG2OLC-master/utility/split_and_run_sparc_test.sh backbone_raw.fasta DBG2OLC_Consensus_info.txt ctg_pb.fasta consensus_dir 2 > cns_log.txt
