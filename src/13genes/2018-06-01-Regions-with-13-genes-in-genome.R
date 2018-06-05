@@ -8,7 +8,7 @@ sense <- file[,9]>file[,10]
 file <- data.frame(file,sense)
 
 #genome contigs
-genome <- read.fasta('~/Documents/stage_mbelari/results/hybrid_test/2018-06-01-DGB2OLC/final_assembly.fasta')
+genome <- read.fasta('~/Documents/stage_mbelari/results/hybrid_test/DGB2OLC/2018-06-01/final_assembly.fasta')
 genome_names <- getName(genome)
 genome_seqs <- getSequence(genome)
 
@@ -24,7 +24,7 @@ cds_sequences <- getSequence(cds_13)
 
 genes_tested <- unique(names(table(file[,1])))
 
-outer_regions <- function(gene,file){
+outer_regions <- function(gene,file,nb){
 	subfile <- file[file[,1]==gene,]
 	reads <- subfile[,2]
 	sizes <- lengths(genome_seqs[match(reads,genome_names)])
@@ -33,13 +33,13 @@ outer_regions <- function(gene,file){
 	ends <- c()
 	for (x in 1:length(reads)){
 		read <- as.character(reads[x])
-		if (subfile[x,9]>500){
-			bgns[x] <- subfile[x,9]-500
+		if (subfile[x,9]>nb){
+			bgns[x] <- subfile[x,9]-nb
 		} else {
 			bgns[x] <- 1
 		}
-		if ((sizes[x]-subfile[x,10])>500){
-			ends[x] <- subfile[x,10]+500
+		if ((sizes[x]-subfile[x,10])>nb){
+			ends[x] <- subfile[x,10]+nb
 		} else {
 			ends[x] <- sizes[x]
 		}
@@ -47,17 +47,33 @@ outer_regions <- function(gene,file){
 		}
 		
 	seqs_to_cut <- genome_seqs[match(reads,genome_names)]
+	finalseqs <- list()
 	for (s in 1:length(seqs_to_cut)){
 		finalseqs[[s]] <- seqs_to_cut[[s]][bgns[s]:ends[s]]
 		if (sense[s]==TRUE){
 			 finalseqs[[s]] <- rev(comp(finalseqs[[s]]))
 		}
 	}
+	
+	finalseqs[[s+1]] <- genes_sequences[genes_13_names==gene][[1]]
+	finalseqs[[s+2]] <- cds_sequences[[grep(gene,cds_names)]]
+	finalnames <- genome_names[match(reads,genome_names)]
+	finalnames <- c(finalnames, gene, paste0(gene,'_cds'))
+	
 	namefile <- paste0('Contigs_w_',gene,'.txt')
-	write.fasta(finalseqs,genome_names[match(reads,genome_names)],file.out=namefile)	
+	write.fasta(finalseqs,finalnames,file.out=namefile)	
 }
 
-for (l in (1:genes_tested)){
+for (l in (1:length(genes_tested))){
 	gene <- genes_tested[l]
-	outer_regions(gene,file)
+	outer_regions(gene,file,1000)
 	}
+
+count_genes_in_scaffolds <- table(file[,1],file[,2])
+write.csv(count_genes_in_scaffolds,'Genes_in_scaffolds.csv')
+
+Large_contig <- file[file[,2]=='Backbone_495',]
+Check <- c(1,1,1,0,1,0,1)
+Large_contig <- data.frame(Large_contig,Check)
+Large_contig[Check==1,]
+
