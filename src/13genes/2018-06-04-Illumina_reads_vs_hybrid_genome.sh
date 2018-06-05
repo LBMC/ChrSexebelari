@@ -7,3 +7,8 @@ samtools view -Sb ~/Documents/stage_mbelari/results/13genes/Illumina_reads_vs_hg
 samtools view -f 2 ~/Documents/stage_mbelari/results/13genes/Illumina_reads_vs_hgenome.bam > ~/Documents/stage_mbelari/results/13genes/Illumina_reads_vs_hgenome.paired.bam
 
 samtools sort ~/Documents/stage_mbelari/results/13genes/Illumina_reads_vs_hgenome.paired.bam > ~/Documents/stage_mbelari/results/13genes/Illumina_reads_vs_hgenome.sorted.bam
+
+samtools index ~/Documents/stage_mbelari/results/13genes/Illumina_reads_vs_hgenome.sorted.bam
+
+samtools faidx ~/Documents/stage_mbelari/results/hybrid_test/DBG2OLC/2018-06-01/final_assembly.fasta
+
