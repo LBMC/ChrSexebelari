@@ -8,7 +8,7 @@ sense <- file[,9]>file[,10]
 file <- data.frame(file,sense)
 
 #genome contigs
-genome <- read.fasta('~/Documents/stage_mbelari/results/hybrid_test/DGB2OLC/2018-06-01/final_assembly.fasta')
+genome <- read.fasta('~/Documents/stage_mbelari/results/hybrid_test/DBG2OLC/2018-06-01/final_assembly.fasta')
 genome_names <- getName(genome)
 genome_seqs <- getSequence(genome)
 
@@ -24,8 +24,11 @@ cds_sequences <- getSequence(cds_13)
 
 genes_tested <- unique(names(table(file[,1])))
 
-outer_regions <- function(gene,file,nb){
+outer_regions <- function(gene,file,nb,th){
 	subfile <- file[file[,1]==gene,]
+	scores <- subfile[,12]/subfile[1,12]
+	subfile <- data.frame(subfile,scores)
+	subfile <- subfile[subfile[,14]>th,]
 	reads <- subfile[,2]
 	sizes <- lengths(genome_seqs[match(reads,genome_names)])
 
@@ -60,13 +63,13 @@ outer_regions <- function(gene,file,nb){
 	finalnames <- genome_names[match(reads,genome_names)]
 	finalnames <- c(finalnames, gene, paste0(gene,'_cds'))
 	
-	namefile <- paste0('Contigs_w_',gene,'.txt')
+	namefile <- paste0('Hybrid_contigs_w_',gene,'.txt')
 	write.fasta(finalseqs,finalnames,file.out=namefile)	
 }
 
 for (l in (1:length(genes_tested))){
 	gene <- genes_tested[l]
-	outer_regions(gene,file,1000)
+	outer_regions(gene,file,0,0.75)
 	}
 
 count_genes_in_scaffolds <- table(file[,1],file[,2])
