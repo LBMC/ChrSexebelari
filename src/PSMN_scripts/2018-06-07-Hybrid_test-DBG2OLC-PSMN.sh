@@ -11,8 +11,9 @@ nanopore_reads_fa=$6
 
 
 #Nanopore files and Contigs.txt file from previous step
+#MinLen250 AdaptiveTh 0.001
 
-/scratch/lestrada/stage_mbelari/bin/DBG2OLC-master/compiled/DBG2OLC k 17 MinLen 500 AdaptiveTh 0.005 KmerCovTh 3 MinOverlap 15 RemoveChimera 1 Contigs Contigs.txt f ${nanopore_reads_fa}
+/scratch/lestrada/stage_mbelari/bin/DBG2OLC-master/compiled/DBG2OLC k 17 MinLen 250 AdaptiveTh 0.001 KmerCovTh 3 MinOverlap 15 RemoveChimera 1 Contigs Contigs.txt f ${nanopore_reads_fa}
 
 cat Contigs.txt ${nanopore_reads_fa} > ctg_pb.fasta
 
