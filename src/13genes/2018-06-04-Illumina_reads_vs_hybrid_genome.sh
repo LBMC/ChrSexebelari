@@ -4,9 +4,9 @@ bowtie2 --very-sensitive -x ~/Documents/stage_mbelari/results/13genes/hybrid_ind
 
 samtools view -Sb ~/Documents/stage_mbelari/results/13genes/Illumina_reads_vs_hgenome.sam > ~/Documents/stage_mbelari/results/13genes/Illumina_reads_vs_hgenome.bam
 
-samtools view -f 2 ~/Documents/stage_mbelari/results/13genes/Illumina_reads_vs_hgenome.bam > ~/Documents/stage_mbelari/results/13genes/Illumina_reads_vs_hgenome.paired.bam
+samtools sort ~/Documents/stage_mbelari/results/13genes/Illumina_reads_vs_hgenome.bam > ~/Documents/stage_mbelari/results/13genes/Illumina_reads_vs_hgenome.sorted.bam
 
-samtools sort ~/Documents/stage_mbelari/results/13genes/Illumina_reads_vs_hgenome.paired.bam > ~/Documents/stage_mbelari/results/13genes/Illumina_reads_vs_hgenome.sorted.bam
+samtools view -f 2 ~/Documents/stage_mbelari/results/13genes/Illumina_reads_vs_hgenome.bam > ~/Documents/stage_mbelari/results/13genes/Illumina_reads_vs_hgenome.paired.bam
 
 samtools index ~/Documents/stage_mbelari/results/13genes/Illumina_reads_vs_hgenome.sorted.bam
 
