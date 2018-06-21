@@ -1,0 +1,29 @@
+#!/bin/bash
+### shell du job
+#$ -S /bin/bash
+### nom du job (a changer)
+#$ -N Masurca_sample
+### file d'attente (a changer)
+#$ -q E5-2697Av4deb256
+### charger l'environnement utilisateur pour SGE
+#$ -cwd
+#$ -pe openmp32 32
+### exporter les variables d'environnement sur tous les noeuds d'execution
+#$ -V
+### mails en debut et fin d'execution
+#$ -m be
+# aller dans le repertoire de travail/soumission
+# important, sinon, le programme est lancé depuis ~/
+cd ${SGE_O_WORKDIR}
+echo ${SGE_O_WORKDIR}
+echo ${HOSTNAME}
+
+### configurer l'environnement
+source /usr/share/lmod/lmod/init/bash
+
+### execution du programme
+###EXECDIR=${HOME}/Formations/Sequentiel
+###${EXECDIR}/SommeVecVecSEQ.exe < Monfichierdedata > monfichierresultat
+~/Programs/MaSuRCA-3.2.6/bin/masurca /scratch/lestrada/stage_mbelari/results/hybrid_test/masurca/assemble.sh
+
+# fin```
