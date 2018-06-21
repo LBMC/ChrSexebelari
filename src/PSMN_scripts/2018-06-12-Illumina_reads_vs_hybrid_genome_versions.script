@@ -1,0 +1,46 @@
+#!/bin/bash
+### shell du job
+#$ -S /bin/bash
+### nom du job (a changer)
+#$ -N illum_vs_hybrid
+### file d'attente (a changer)
+#$ -q monointeldeb128
+### charger l'environnement utilisateur pour SGE
+#$ -cwd
+### exporter les variables d'environnement sur tous les noeuds d'execution
+#$ -V
+### mails en debut et fin d'execution
+#$ -m be
+
+# aller dans le repertoire de travail/soumission
+# important, sinon, le programme est lancé depuis ~/
+cd ${SGE_O_WORKDIR}
+
+### configurer l'environnement
+source /usr/share/lmod/lmod/init/bash
+module load GCC/6.4.0/Bowtie2/2.3.3
+
+### execution du programme
+###EXECDIR=${HOME}/Formations/Sequentiel
+###${EXECDIR}/SommeVecVecSEQ.exe < Monfichierdedata > monfichierresultat
+
+assembly='/scratch/lestrada/stage_mbelari/results/hybrid_test/full_test/test3/MinLen500-0-001/consensus_dir/final_assembly.fasta'
+pe1='/scratch/lestrada/stage_mbelari/data/raw/s_MR_550_clean_1.fastq'
+pe2='/scratch/lestrada/stage_mbelari/data/raw/s_MR_550_clean_2.fastq'
+
+bowtie2-build ${assembly} hybrid_index_500
+
+bowtie2 --very-sensitive -x hybrid_index_500 -1 ${pe1} -2 ${pe2} -S 2018-06-14-Illumina_sreads_vs_hgenome_3_500.sam
+
+samtools view -Sb 2018-06-14-Illumina_sreads_vs_hgenome_3_500.sam > 2018-06-14-Illumina_sreads_vs_hgenome_3_500.bam
+
+samtools sort 2018-06-14-Illumina_sreads_vs_hgenome_3_500.bam > 2018-06-14-Illumina_sreads_vs_hgenome_3_500.sorted.bam
+
+samtools index 2018-06-14-Illumina_sreads_vs_hgenome_3_500.sorted.bam
+
+
+
+
+
+# fin```
+
