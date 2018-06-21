@@ -3,7 +3,7 @@ library(seqinr)
 #read files
 
 #blast output
-file <- read.table('~/Documents/stage_mbelari/results/13genes/2018-06-01-13genes_in_hybrid_genome.txt',header=F)
+file <- read.table('~/Documents/stage_mbelari/results/13genes/version2/2018-06-11-13genes_in_hybrid_genome.txt',header=F)
 sense <- file[,9]>file[,10]
 file <- data.frame(file,sense)
 
@@ -13,14 +13,17 @@ genome_names <- getName(genome)
 genome_seqs <- getSequence(genome)
 
 #13 genes
-genes_13 <- read.fasta('~/Documents/stage_mbelari/data/raw/2018-05-18-Complete_13_genes.fasta')
+genes_13 <- read.fasta('~/Documents/stage_mbelari/results/13genes/version2/2018-06-11-13genes_genomic_region.fasta')
 genes_13_names <- getName(genes_13)
 genes_sequences <- getSequence(genes_13)
 
 #cds seqs
-cds_13 <- read.fasta('~/Documents/stage_mbelari/data/raw/mbela_cds_JU2817.fa')
+cds_13 <- read.fasta('~/Documents/stage_mbelari/results/13genes/version2/2018-06-11-13genes_cds_v2.fasta')
 cds_names <- getName(cds_13)
 cds_sequences <- getSequence(cds_13)
+
+#primers
+primer <- read.table('~/primers_input.txt', skip=1, row.names=1)
 
 genes_tested <- unique(names(table(file[,1])))
 
@@ -60,20 +63,24 @@ outer_regions <- function(gene,file,nb,th){
 	
 	finalseqs[[s+1]] <- genes_sequences[genes_13_names==gene][[1]]
 	finalseqs[[s+2]] <- cds_sequences[[grep(gene,cds_names)]]
+	finalseqs[[s+3]] <- tolower(s2c(as.character(primer[gene,1])))
+	finalseqs[[s+4]] <- rev(comp(tolower(s2c(as.character(primer[gene,2])))))
 	finalnames <- genome_names[match(reads,genome_names)]
 	finalnames <- c(finalnames, gene, paste0(gene,'_cds'))
+	finalnames <- c(finalnames, paste0('primer_f_',gene), paste0('primer_r_',gene))
 	
-	namefile <- paste0('Hybrid_contigs_w_',gene,'.txt')
+	namefile <- paste0('contigs_w_v2_1000_',gene,'.txt')
 	write.fasta(finalseqs,finalnames,file.out=namefile)	
 }
 
 for (l in (1:length(genes_tested))){
 	gene <- genes_tested[l]
-	outer_regions(gene,file,0,0.75)
+	outer_regions(gene,file,1000,0.75)
 	}
 
 count_genes_in_scaffolds <- table(file[,1],file[,2])
 #write.csv(count_genes_in_scaffolds,'Genes_in_scaffolds.csv')
+
 
 Large_contig <- file[file[,2]=='Backbone_495',]
 Check <- c(1,1,1,0,1,0,1)
@@ -84,6 +91,8 @@ genes_13 <- read.fasta('~/Documents/stage_mbelari/data/raw/2018-05-18-Complete_1
 cds_names <- sub('\\.t[0-9]*','',cds_names)
 getcds <- match(getName(genes_13)[-1],cds_names)
 
+
+#Blast scores heatmap
 file <- read.table('~/Documents/stage_mbelari/results/13genes/2018-06-01-13genes_in_hybrid_genome.txt',header=F)
 sense <- file[,9]>file[,10]
 file <- data.frame(file,sense)
@@ -103,9 +112,11 @@ library(RColorBrewer)
 my_col=colorRampPalette(c("white","purple"))(10)
 heatmap(final_count, col= my_col)
 library(gplots)
-heatmap.2(final_count, col= my_col, trace='none', Rowv=FALSE, Colv=FALSE)
-png('Genes_in_contigs.png', width=1000,height=1000)
-heatmap.2(final_count, col= my_col, trace='none', Rowv=FALSE, Colv=FALSE,keysize=1,key.title=NA, key.xlab='Alignment score', cexRow=0.9, cexCol=1.3, margins=c(5.5,6.8))
+fm <- t(read.csv('Genes_in_scaffolds.csv'))
+cellnotehm <- matrix(fm[rownames(final_count),13],nrow=nrow(final_count),ncol=12)
+png('Genes_in_contigs_2.png', width=1000,height=1000)
+heatmap.2(final_count, col= my_col, trace='none', Rowv=FALSE, Colv=FALSE,keysize=1,key.title=NA, key.xlab='Alignment score', cexRow=0.9, cexCol=1.3, margins=c(5.5,6.8), cellnote=cellnotehm, notecol='white')
+legend('topright',c('m - male', 'b - both','b* - both not complete','x - see bam file'))
 dev.off()
 
 library(genoPlotR)
