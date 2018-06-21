@@ -1,14 +1,10 @@
-makeblastdb -in ~/Documents/stage_mbelari/results/hybrid_test/2018-06-01-DGB2OLC/final_assembly.fasta -parse_seqids -dbtype nucl
+assembly=~/Documents/stage_mbelari/results/hybrid_test/DBG2OLC/2018-06-01/final_assembly.fasta
+fasta_file=~/Documents/stage_mbelari/results/13genes/version2/2018-06-20-Top_50_genes_fem_abs.fasta
 
-blastn -query ~/Documents/stage_mbelari/results/13genes/version2/2018-06-11-13genes_genomic_region.fasta \
--db ~/Documents/stage_mbelari/results/hybrid_test/DBG2OLC/2018-06-07/final_assembly_min500_001.fasta -out 2018-06-11-13genes_in_hybrid_genome_v3.txt -outfmt 6
+outputfile=2018-06-20-Genes_absent_females.txt
+outputfilealign=2018-06-20-Genes_absent_females-align.txt
 
-blastn -query ~/Documents/stage_mbelari/results/13genes/version2/2018-06-11-13genes_genomic_region.fasta -db ~/Documents/stage_mbelari/results/hybrid_test/DBG2OLC/2018-06-07/final_assembly_min500_001.fasta -out 2018-06-11-13genes_in_hybrid_genome_v3-align.txt
+#makeblastdb -in ${assembly} -parse_seqids -dbtype nucl
 
-blastn -query ~/Documents/stage_mbelari/results/13genes/version2/2018-06-11-Contigs_test.fasta \
--db ~/Documents/stage_mbelari/results/hybrid_test/DBG2OLC/2018-06-01/final_assembly.fasta \
--out 2018-06-11-males_contigs_in_hybrid_genome-align.txt
-
-blastn -query ~/Documents/stage_mbelari/results/13genes/version2/2018-06-11-Contigs_test.fasta \
--db ~/Documents/stage_mbelari/results/hybrid_test/DBG2OLC/2018-06-01/final_assembly.fasta \
--out 2018-06-11-males_contigs_in_hybrid_genome.txt -outfmt 6
+blastn -query ${fasta_file} -db ${assembly} -out ${outputfile} -outfmt 6
+blastn -query ${fasta_file} -db ${assembly} -out ${outputfilealign}
