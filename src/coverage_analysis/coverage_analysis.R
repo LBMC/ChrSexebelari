@@ -15,3 +15,9 @@ cov.male <- cov.male[which(cov.male$Contig %in% contigs.mbela$V1), ]
 
 source('~/Documents/stage_mbelari/src/coverage_analysis/functions_claire.R')
 counts.contigs <- ComputeNormalizedCount(cov.female, cov.male, "contig")
+
+counts.contigs$missing.sexe <- ""; counts.contigs$missing.sexe[which(counts.contigs$counts.raw.female == 0)] <- "female"; 
+counts.contigs$missing.sexe[which(counts.contigs$counts.raw.male == 0)] <- "male"; 
+write.table(counts.contigs, "results/coverage/FC_normalized_coverage_at_contig.txt", 
+    sep = "\t", quote = F, col.names = T, row.names = F)
+
