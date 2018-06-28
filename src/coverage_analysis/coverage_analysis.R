@@ -72,4 +72,12 @@ for(g in genes) {
     }
   }
 
+bed.female <- fread("~/Documents/stage_mbelari/results/coverage_analysis/2018_06_21_MRDR5_vs_Hybrid_assembly.sorted.filtered.bed", sep = "\t", h = F, stringsAsFactors = F)
+bed.male <- fread("~/Documents/stage_mbelari/results/coverage_analysis/2018_06_21_MRDR5_vs_Hybrid_assembly.sorted.filtered.bed", sep = "\t", h = F, stringsAsFactors = F)
+
+contigs <- rownames(contigs.mbela)
+for (c in contigs){
+tmp <- bed.female[bed.female[,1]==c,]
+}
+
 
