@@ -6,8 +6,8 @@ library(preprocessCore)
 source('~/Documents/stage_mbelari/src/coverage_analysis/functions_claire.R')
 
 contigs.mbela <- read.table("~/Documents/stage_mbelari/results/coverage_analysis/2018-06-21-Mbelari_hybrid_genome_sizes.txt", sep = "\t", head = F, row.names=1)
-cov.female <- fread("~/Documents/stage_mbelari/results/coverage_analysis/2018_06_21_MRDR5_vs_Hybrid_assembly.sorted.filtered.counts", sep = "\t", h = T, stringsAsFactors = F)
-cov.male <- fread("~/Documents/stage_mbelari/results/coverage_analysis/2018_06_21_MRDR6_vs_Hybrid_assembly.sorted.filtered.counts", sep = "\t", h = T, stringsAsFactors = F)
+cov.female <- fread("~/Documents/stage_mbelari/results/coverage_analysis/2018_06_29_MRDR6_vs_redundans_assembly.sorted.filtered.counts", sep = "\t", h = T, stringsAsFactors = F)
+cov.male <- fread("~/Documents/stage_mbelari/results/coverage_analysis/2018_06_29_MRDR6_vs_redundans_assembly.sorted.filtered.counts", sep = "\t", h = T, stringsAsFactors = F)
 
 colnames(cov.female) <- c('Contig','Length','Reads','Unmapped')
 colnames(cov.male) <- c('Contig','Length','Reads','Unmapped')
@@ -79,5 +79,55 @@ contigs <- rownames(contigs.mbela)
 for (c in contigs){
 tmp <- bed.female[bed.female[,1]==c,]
 }
+
+
+##################################
+
+library(gplots)
+
+blast.results <- read.table("~/Documents/stage_mbelari/results/13genes/version2/2018-06-28-Genes_absent_females.txt", sep = "\t", head = F)
+counts.contigs <- read.table('~/Documents/stage_mbelari/results/coverage_analysis/2018-06-21-FC_normalized_coverage_at_contig.txt', sep='\t',head=T,row.names=1)
+
+genes.contigs <- table(blast.results[,1],blast.results[,2])
+#reduce the heat map
+genes.contigs <- genes.contigs[c(1,2,4,6,7,14,15),]
+genes.contigs <- genes.contigs[,apply(genes.contigs,2,sum)>0]
+
+
+log2fc <- counts.contigs[colnames(genes.contigs),'log2.norm.FC']
+#genes.contigs <- rbind(genes.contigs,log2fc)
+
+Contigs.low.fc <- list()
+
+for (n in 1:nrow(genes.contigs)){
+contigs.present <- which(genes.contigs[c(n),]>0)
+Contigs.low.fc[[n]] <- genes.contigs['log2fc',names(contigs.present)]	
+}
+
+names(Contigs.low.fc) <- rownames(genes.contigs)
+
+
+log2fc.contigs <- matrix(log2fc,nrow=nrow(genes.contigs),ncol=ncol(genes.contigs), byrow=TRUE)
+log2fc.contigs[which(genes.contigs==0)]<-NA
+my_col <- colorRampPalette(c("green","black","red"))(256)
+rownames(log2fc.contigs) <- rownames(genes.contigs)
+colnames(log2fc.contigs) <- colnames(genes.contigs)
+rownames(log2fc.contigs) <- sub('MBELA\\.','',rownames(log2fc.contigs))
+
+heatmap.2(t(log2fc.contigs), col= my_col, trace='none', Rowv=FALSE, Colv=FALSE,keysize=1,key.title=NA, key.xlab='Log2FC', cexRow=1, cexCol=1.2, margins=c(5.7,7) , notecol='white', density.info='none')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

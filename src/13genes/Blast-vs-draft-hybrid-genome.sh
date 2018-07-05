@@ -1,8 +1,8 @@
 assembly=~/Documents/stage_mbelari/results/hybrid_test/DBG2OLC/2018-06-01/final_assembly.fasta
-fasta_file=~/Documents/stage_mbelari/results/13genes/version2/2018-06-20-Top_50_genes_fem_abs.fasta
+fasta_file=~/Documents/stage_mbelari/results/13genes/version2/sex-determination-genes.fasta
 
-outputfile=2018-06-20-Genes_absent_females.txt
-outputfilealign=2018-06-20-Genes_absent_females-align.txt
+outputfile=2018-07-04-sex-deter-genes.txt
+outputfilealign=2018-07-sex-deter-genes.txt
 
 #makeblastdb -in ${assembly} -parse_seqids -dbtype nucl
 

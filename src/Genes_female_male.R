@@ -20,3 +20,21 @@ genes_in_backbones <- table(Blast_results[,1],Blast_results[,2])
 genes_in_backbones[genes_in_backbones>=1]<-1
 apply(genes_in_backbones,2,sum)
 
+######################
+
+counts.genes.bp <- read.table('~/Documents/stage_mbelari/data/claire_sex_analysis/2017_12_20_tests_FC_normalized_coverage_at_bp_within_genes.txt', head=TRUE, sep='\t')
+counts.genes.bp <- counts.genes.bp[which(counts.genes.bp$type == "norm"), ]
+
+tmp  <- counts.genes.bp[,c('gene','mean.f','mean.m','mean.fc','pval.ttest.a','pval.ttest.both','pval.ttest.both.a', 'pval.ttest.both.lower.a')]
+tmp <- tmp[tmp$mean.fc<(-5) & tmp$pval.ttest.both<0.01 & tmp$pval.ttest.a<0.01 & tmp$pval.ttest.both.lower.a,]
+tmp <- tmp[order(tmp$mean.fc),]
+top30 <- as.character(tmp[1:30,1])
+
+getCdsV2(top30,'2018-06-28-Top-30-genes-significatives.fasta')
+
+
+
+
+
+
+

@@ -1,11 +1,11 @@
 
-assembly=~/Documents/stage_mbelari/results/redundans/2018-06-26-redundans_1/redundans/test1/scaffolds.reduced.fa
+assembly=~/Documents/stage_mbelari/results/redundans/redundans_stats_changed/scaffolds.reduced.fa
 pe5_1=~/Documents/stage_mbelari/data/raw/2017_09_14_MRDR5_trim_Mbelari_mapped_sort_1.fastq
 pe5_2=~/Documents/stage_mbelari/data/raw/2017_09_14_MRDR5_trim_Mbelari_mapped_sort_2.fastq
 pe6_1=~/Documents/stage_mbelari/data/raw/2017_09_14_MRDR6_trim_Mbelari_mapped_sort_1.fastq
 pe6_2=~/Documents/stage_mbelari/data/raw/2017_09_14_MRDR6_trim_Mbelari_mapped_sort_2.fastq
-index_name=hybrid_reduced
-out_name=2018-06-26-reduced_assembly_default
+index_name=redundans2
+out_name=2018-06-29-redundans_assembly_2
 
 bowtie2-build ${assembly} ${index_name}
 
