@@ -1,1 +1,0 @@
-blastx -query ~/Documents/stage_mbelari/results/13genes/version2/2018-06-28-Top-30-genes-significatives.fasta -db ~/Programs/ncbi-blast-2.7.1+/blastdb/nr -out 2018-07-03-Blastx-top-30genes.txt -outfmt 6

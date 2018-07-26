@@ -1,1 +1,0 @@
-cat ~/Documents/stage_mbelari/data/raw/FC17_all_reads_best_qual.fastq ~/Documents/stage_mbelari/data/raw/FC18_all_reads_best_qual.fastq ~/Documents/stage_mbelari/data/raw/FC19_all_reads_best_qual.fastq ~/Documents/stage_mbelari/data/raw/FC20_all_reads_best_qual.fastq > ~/Documents/stage_mbelari/data/nanopore_merged_files/2018-05-24-Nanopore_all_reads_best_qual.fastq

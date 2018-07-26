@@ -1,1 +1,0 @@
-cat data/raw/FC17_all_reads_best_qual.fastq data/raw/FC18_all_reads_best_qual.fastq data/raw/FC19_all_reads_best_qual.fastq data/raw/FC20_all_reads_best_qual.fastq > data/raw/2018-05-15-Nanopore_all_reads_best_qual.fastq
