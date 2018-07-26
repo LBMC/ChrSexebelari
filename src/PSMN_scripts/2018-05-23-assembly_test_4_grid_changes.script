@@ -2,7 +2,7 @@
 ### shell du job
 #$ -S /bin/bash
 ### nom du job (a changer)
-#$ -N CanuAssemblyt4
+#$ -N CanuAssembly
 ### file d'attente (a changer)
 #$ -q M6142deb384B
 ### charger l'environnement utilisateur pour SGE
