@@ -1,0 +1,10 @@
+Report
+
+96 as missing female but some had very few reads in males
+89 were significatives
+
+239 as missing male but those had no reads in females too or very few
+
+there are genes that are not covered (may de duplicated)
+
+
