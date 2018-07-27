@@ -64,7 +64,7 @@ write.table(counts.genes, "~/Documents/stage_mbelari/results/annotation/coverage
 
  counts.genes.bp <- ComputeNormalizedCount(counts.genes.female, counts.genes.male, 
     "bp")
-  write.table(counts.genes, "2018-07-17-FC_normalized_coverage_at_bp_within_genes.txt", 
+  write.table(counts.genes, "2018-07-25-FC_normalized_coverage_at_bp_within_genes.txt", 
     sep = "\t", quote = F, col.names = T, row.names = F)
 
 #Analysis
@@ -90,7 +90,7 @@ write.table(genes.females.absent,'2018-07-24-Genes_absent_in_females.txt', col.n
 
 #tests
 
-counts.bp <- tbl_df(fread("2018-07-17-FC_normalized_coverage_at_bp_within_genes.txt", 
+counts.bp <- tbl_df(fread("2018-07-25-FC_normalized_coverage_at_bp_within_genes.txt", 
     sep = "\t", stringsAsFactors = F))
 
   counts.genes.missing.one.sexe <- read.csv("2018-07-24-counts_per_genes_raw_counts_not_present_in_both_sexe.txt", sep = "\t", h = T, stringsAsFactors = F)
@@ -162,9 +162,9 @@ counts.bp <- tbl_df(fread("2018-07-17-FC_normalized_coverage_at_bp_within_genes.
   res$is.gene.missing.sexe <- sapply(res$gene, function(x) {tmp <- which(counts.genes.missing.one.sexe$V4 == x); ifelse(length(tmp)>0, counts.genes.missing.one.sexe[tmp, "missing.sexe"], "")})
   res$is.contig.missing.sexe <- sapply(res$contig, function(x) {tmp <- which(counts.contigs.missing.one.sexe$Contig == x); ifelse(length(tmp)>0, counts.contigs.missing.one.sexe[tmp, "missing.sexe"], "")})
 
-  write.table(res, "2018-07-24-tests_FC_normalized_coverage_at_bp_within_genes.txt", sep= "\t", quote =F, col.names = T, row.names = F)
+  write.table(res, "2018-07-25-tests_FC_normalized_coverage_at_bp_within_genes.txt", sep= "\t", quote =F, col.names = T, row.names = F)
 
-counts.genes.bp <- read.csv("2018-07-24-tests_FC_normalized_coverage_at_bp_within_genes.txt", 
+counts.genes.bp <- read.csv("2018-07-25-tests_FC_normalized_coverage_at_bp_within_genes.txt", 
   sep = "\t", h = T, stringsAsFactors = T)
 counts.genes.bp.raw <- counts.genes.bp[which(counts.genes.bp$type == "raw"), ]
 counts.genes.bp <- counts.genes.bp[which(counts.genes.bp$type == "norm"), ]
