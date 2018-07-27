@@ -1,6 +1,7 @@
 require(data.table)
 require(dplyr)
 library(preprocessCore)
+library(ggplot2)
 source("~/stage_mbelari/src/functions_claire.R")
 
  counts.genes.female <- tbl_df(fread("~/stage_mbelari/results/coverage_analysis/2018-07-25-MRDR5_vs_Hybrid_assembly_sort_in_genes_bp.bed", 

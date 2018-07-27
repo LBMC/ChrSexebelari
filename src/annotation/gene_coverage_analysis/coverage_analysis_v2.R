@@ -164,7 +164,7 @@ counts.bp <- tbl_df(fread("2018-07-17-FC_normalized_coverage_at_bp_within_genes.
 
   write.table(res, "2018-07-24-tests_FC_normalized_coverage_at_bp_within_genes.txt", sep= "\t", quote =F, col.names = T, row.names = F)
 
-counts.genes.bp <- read.csv("2018-07-24-tests_FC_normalized_coverage_at_bp_within_genes.txt", 
+counts.genes.bp <- read.csv("2018-07-25-tests_FC_normalized_coverage_at_bp_within_genes.txt", 
   sep = "\t", h = T, stringsAsFactors = T)
 counts.genes.bp.raw <- counts.genes.bp[which(counts.genes.bp$type == "raw"), ]
 counts.genes.bp <- counts.genes.bp[which(counts.genes.bp$type == "norm"), ]

@@ -1,5 +1,5 @@
 #R functions
-#to call source('~/Documents/stage_mbelari/src/Functions.R')
+#to call source('~/Documents/stage_mbelari/src/functions/Functions.R')
 
 #To install: install.packages('seqinr')
 
