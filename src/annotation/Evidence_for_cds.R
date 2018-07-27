@@ -95,8 +95,6 @@ for (n in 1:length(Backbones)){
 count.sum.log2fc <- data.frame(count.sum.fem,count.sum.mal$V3)
 
 
-
-
 fem.reads <- table(count.sum.fem[,1],count.sum.fem[,2])
 mal.reads <- table(count.sum.mal[,1],count.sum.mal[,2])
 fem.reads <- as.matrix(fem.reads, 'numeric')
