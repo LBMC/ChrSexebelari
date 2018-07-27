@@ -5,24 +5,24 @@ source("~/Documents/stage_mbelari/src/coverage_analysis/functions_claire.R")
 
 #Extract gff3 at gene level
 
-gff.mbela <- read.csv("~/Documents/stage_mbelari/results/annotation/BRAKER/soft_masked/augustus.hints.gff3", 
+gff.mbela <- read.csv("~/Documents/stage_mbelari/results/annotation/BRAKER/augustus.hints.gff3", 
   sep = "\t", h = F, stringsAsFactors = F)
 gff.genes.mbela <- gff.mbela[which(gff.mbela$V3 == "gene"), ]
-write.table(gff.genes.mbela, "~/Documents/stage_mbelari/results/annotation/coverage_analysis/Mesorhabditis_belari_JU2817_hybrid_assembly_genes.gff3", 
+write.table(gff.genes.mbela, "~/Documents/stage_mbelari/results/coverage_analysis/Mesorhabditis_belari_JU2817_hybrid_assembly_genes.gff3", 
   col.names = F, row.names = F, quote = F, sep = "\t")
 
 contigs.mbela <- fread("~/Documents/stage_mbelari/results/coverage_analysis/2018-06-21-Mbelari_hybrid_genome_sizes.txt", sep = "\t", 
   h = F, stringsAsFactors = F)
 
 #the gff3 file is converted to bed
-system("bash ~/Documents/stage_mbelari/src/coverage_analysis/convertgff_to_bed.sh ~/Documents/stage_mbelari/results/annotation/coverage_analysis/Mesorhabditis_belari_JU2817_hybrid_assembly_genes.gff3 ~/Documents/stage_mbelari/results/annotation/coverage_analysis/Mesorhabditis_belari_JU2817_hybrid_assembly_genes.bed")
+system("bash ~/Documents/stage_mbelari/src/5-coverage_analysis/convertgff_to_bed.sh ~/Documents/stage_mbelari/results/coverage_analysis/Mesorhabditis_belari_JU2817_hybrid_assembly_genes.gff3 ~/Documents/stage_mbelari/results/coverage_analysis/Mesorhabditis_belari_JU2817_hybrid_assembly_genes.bed")
 
 #the previous output bed is formated 
-source("~/Documents/stage_mbelari/src/coverage_analysis/format_bed.R")
+source("~/Documents/stage_mbelari/src/5-coverage_analysis/format_bed.R")
 
 #
-system("bash ~/Documents/stage_mbelari/src/coverage_analysis/intersect_bed_genes.sh")
-system("bash ~/Documents/stage_mbelari/src/coverage_analysis/get_counts_per_gene.sh")
+system("bash ~/Documents/stage_mbelari/src/5-coverage_analysis/intersect_bed_genes.sh")
+system("bash ~/Documents/stage_mbelari/src/5-coverage_analysis/get_counts_per_gene.sh")
 
 #Contig level
 
@@ -40,7 +40,7 @@ counts.contigs <- ComputeNormalizedCount(cov.female, cov.male, "contig")
 
 counts.contigs$missing.sexe <- ""; counts.contigs$missing.sexe[which(counts.contigs$counts.raw.female == 0)] <- "female";
 counts.contigs$missing.sexe[which(counts.contigs$counts.raw.male == 0)] <- "male";
-write.table(counts.contigs, "2018-06-21-FC_normalized_coverage_at_contig.txt", sep = "\t", quote = F, col.names = T, row.names = F)
+write.table(counts.contigs, "~/Documents/stage_mbelari/results/coverage_analysis/2018-06-21-FC_normalized_coverage_at_contig.txt", sep = "\t", quote = F, col.names = T, row.names = F)
 
 counts.contigs <- read.table('~/Documents/stage_mbelari/results/coverage_analysis/2018-06-21-FC_normalized_coverage_at_contig.txt', sep='\t',head=T,row.names=1)
 
@@ -53,7 +53,7 @@ counts.genes.male <- fread("~/Documents/stage_mbelari/results/coverage_analysis/
 counts.genes <- ComputeNormalizedCount(counts.genes.female, counts.genes.male, "gene")
 counts.genes$missing.sexe <- ""; counts.genes$missing.sexe[which(counts.genes$counts.raw.female == 0)] <- "female"; 
 counts.genes$missing.sexe[which(counts.genes$counts.raw.male == 0)] <- "male"; 
-write.table(counts.genes, "~/Documents/stage_mbelari/results/annotation/coverage_analysis/2018-07-24-FC_normalized_coverage_at_gene.txt", 
+write.table(counts.genes, "~/Documents/stage_mbelari/results/coverage_analysis/2018-07-24-FC_normalized_coverage_at_gene.txt", 
     sep = "\t", quote = F, col.names = T, row.names = F)
 
 #At bp level
@@ -64,37 +64,37 @@ write.table(counts.genes, "~/Documents/stage_mbelari/results/annotation/coverage
 
  counts.genes.bp <- ComputeNormalizedCount(counts.genes.female, counts.genes.male, 
     "bp")
-  write.table(counts.genes, "2018-07-25-FC_normalized_coverage_at_bp_within_genes.txt", 
+  write.table(counts.genes, "~/Documents/stage_mbelari/results/coverage_analysis/2018-07-25-FC_normalized_coverage_at_bp_within_genes.txt", 
     sep = "\t", quote = F, col.names = T, row.names = F)
 
 #Analysis
- gene <-read.table('~/Documents/stage_mbelari/results/annotation/coverage_analysis/2018-07-24-FC_normalized_coverage_at_gene.txt',
+ gene <-read.table('~/Documents/stage_mbelari/results/coverage_analysis/2018-07-24-FC_normalized_coverage_at_gene.txt',
 sep="\t", header=T)
 
 #genes and contigs without counts
 
 counts.contigs <- read.csv("~/Documents/stage_mbelari/results/coverage_analysis/2018-06-21-FC_normalized_coverage_at_contig.txt",  sep = "\t", h = T, stringsAsFactors = F)
-counts.genes <- read.csv("~/Documents/stage_mbelari/results/annotation/coverage_analysis/2018-07-24-FC_normalized_coverage_at_gene.txt",  sep = "\t", h = T, stringsAsFactors = F)
+counts.genes <- read.csv("~/Documents/stage_mbelari/results/coverage_analysis/2018-07-24-FC_normalized_coverage_at_gene.txt",  sep = "\t", h = T, stringsAsFactors = F)
 
 counts.genes.missing.one.sexe <- counts.genes[which(counts.genes$missing.sexe != ""), ]
 counts.genes.missing.one.sexe <- counts.genes.missing.one.sexe[order(counts.genes.missing.one.sexe$missing.sexe), ]
 counts.contigs.missing.one.sexe <- counts.contigs[which(counts.contigs$missing.sexe != ""), ]
 counts.contigs.missing.one.sexe <- counts.contigs.missing.one.sexe[order(counts.contigs.missing.one.sexe$missing.sexe), ]
-write.table(counts.genes.missing.one.sexe, "~/Documents/stage_mbelari/results/annotation/coverage_analysis/2018-07-24-counts_per_genes_raw_counts_not_present_in_both_sexe.txt", sep = "\t", col.names = T, row.names = F, quote = F)
-write.table(counts.contigs.missing.one.sexe, "~/Documents/stage_mbelari/results/annotation/coverage_analysis/2018-07-24-counts_per_contigs_raw_counts_not_present_in_both_sexe.txt", sep = "\t", col.names = T, row.names = F, quote = F)
+write.table(counts.genes.missing.one.sexe, "~/Documents/stage_mbelari/results/coverage_analysis/2018-07-24-counts_per_genes_raw_counts_not_present_in_both_sexe.txt", sep = "\t", col.names = T, row.names = F, quote = F)
+write.table(counts.contigs.missing.one.sexe, "~/Documents/stage_mbelari/results/coverage_analysis/2018-07-24-counts_per_contigs_raw_counts_not_present_in_both_sexe.txt", sep = "\t", col.names = T, row.names = F, quote = F)
 
 genes.females.absent <- counts.genes.missing.one.sexe[counts.genes.missing.one.sexe$missing.sexe=='female',1]
-write.table(genes.females.absent,'2018-07-24-Genes_absent_in_females.txt', col.names=F,row.names=F, quote=F)
+write.table(genes.females.absent,'~/Documents/stage_mbelari/results/coverage_analysis/2018-07-24-Genes_absent_in_females.txt', col.names=F,row.names=F, quote=F)
 
 
 
 #tests
 
-counts.bp <- tbl_df(fread("2018-07-25-FC_normalized_coverage_at_bp_within_genes.txt", 
+counts.bp <- tbl_df(fread("~/Documents/stage_mbelari/results/coverage_analysis/2018-07-25-FC_normalized_coverage_at_bp_within_genes.txt", 
     sep = "\t", stringsAsFactors = F))
 
-  counts.genes.missing.one.sexe <- read.csv("2018-07-24-counts_per_genes_raw_counts_not_present_in_both_sexe.txt", sep = "\t", h = T, stringsAsFactors = F)
-  counts.contigs.missing.one.sexe <- read.csv("2018-07-24-counts_per_contigs_raw_counts_not_present_in_both_sexe.txt", sep = "\t", h = T, stringsAsFactors = F)
+  counts.genes.missing.one.sexe <- read.csv("~/Documents/stage_mbelari/results/coverage_analysis/2018-07-24-counts_per_genes_raw_counts_not_present_in_both_sexe.txt", sep = "\t", h = T, stringsAsFactors = F)
+  counts.contigs.missing.one.sexe <- read.csv("~/Documents/stage_mbelari/results/coverage_analysis/2018-07-24-counts_per_contigs_raw_counts_not_present_in_both_sexe.txt", sep = "\t", h = T, stringsAsFactors = F)
 
   #pdf("results/coverage/count_distribution_before_after_cov_at_gene_bp.pdf", w = 12, 
   #  h = 8)
@@ -110,7 +110,7 @@ counts.bp <- tbl_df(fread("2018-07-25-FC_normalized_coverage_at_bp_within_genes.
   #dev.off()
 
   genes <- counts.bp %>% distinct(V8); genes <- unique(genes$V8)
-  counts.genes <- read.csv("2018-07-24-FC_normalized_coverage_at_gene.txt", 
+  counts.genes <- read.csv("~/Documents/stage_mbelari/results/coverage_analysis/2018-07-24-FC_normalized_coverage_at_gene.txt", 
     sep = "\t", h = T, stringsAsFactors = F)
   res <- NULL
   for(g in genes) {
@@ -162,9 +162,9 @@ counts.bp <- tbl_df(fread("2018-07-25-FC_normalized_coverage_at_bp_within_genes.
   res$is.gene.missing.sexe <- sapply(res$gene, function(x) {tmp <- which(counts.genes.missing.one.sexe$V4 == x); ifelse(length(tmp)>0, counts.genes.missing.one.sexe[tmp, "missing.sexe"], "")})
   res$is.contig.missing.sexe <- sapply(res$contig, function(x) {tmp <- which(counts.contigs.missing.one.sexe$Contig == x); ifelse(length(tmp)>0, counts.contigs.missing.one.sexe[tmp, "missing.sexe"], "")})
 
-  write.table(res, "2018-07-25-tests_FC_normalized_coverage_at_bp_within_genes.txt", sep= "\t", quote =F, col.names = T, row.names = F)
+  write.table(res, "~/Documents/stage_mbelari/results/coverage_analysis/2018-07-25-tests_FC_normalized_coverage_at_bp_within_genes.txt", sep= "\t", quote =F, col.names = T, row.names = F)
 
-counts.genes.bp <- read.csv("2018-07-25-tests_FC_normalized_coverage_at_bp_within_genes.txt", 
+counts.genes.bp <- read.csv("~/Documents/stage_mbelari/results/coverage_analysis/2018-07-25-tests_FC_normalized_coverage_at_bp_within_genes.txt", 
   sep = "\t", h = T, stringsAsFactors = T)
 counts.genes.bp.raw <- counts.genes.bp[which(counts.genes.bp$type == "raw"), ]
 counts.genes.bp <- counts.genes.bp[which(counts.genes.bp$type == "norm"), ]
@@ -262,7 +262,7 @@ all.subset$is.gene.missing.sexe <- sapply(all.subset$gene, function(x) {tmp <- w
 all.subset$is.contig.missing.sexe <- sapply(all.subset$contig, function(x) {tmp <- which(counts.contigs.missing.one.sexe$Contig == x); 
   ifelse(length(tmp)>0, counts.contigs.missing.one.sexe[tmp, "missing.sexe"], "")})
 write.table(all.subset, paste("results/coverage/subset_genes_FC_norm_threshold", thresh.norm.FC, ".txt", sep = ""), sep = "\t", col.names = T, row.names = F, quote = F)
-system(paste("bash src/date.sh results/coverage/subset_genes_FC_norm_threshold", thresh.norm.FC, ".txt", sep = ""))
+
 
 # barplot 
 trans <- function(x){pmin(x,lim) + 0.05*pmax(x-lim,0)}
@@ -285,7 +285,7 @@ gm <- ggplot(data=dat, aes(x=label, y=value)) +
 pdf(paste("results/coverage/barplot_FC_threshold", thresh.norm.FC, "_per_sexe.pdf", sep = ""), w = 12, h = 8)
 multiplot(gf, gm, cols = 1)
 dev.off()
-system(paste("bash src/date.sh results/coverage/barplot_FC_threshold", thresh.norm.FC, "_per_sexe.pdf", sep = ""))
+
 
 ##### Histogram of pvalue for FC tests at bp level
 tests <- counts.genes.bp
