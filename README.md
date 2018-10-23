@@ -1,17 +1,10 @@
-# nextflow pipeline
+# SNP calling pipeline
 
-This repository is a template and a library repository to help you build nextflow pipeline.
-You can fork this repository to build your own pipeline.
-To get the last commits from this repository into your fork use the following commands:
-
-```sh
-git remote add upstream gitlab_lbmc:pipelines/nextflow.git
-git pull upstream master
-```
+SNP calling pipeline to find homozygote SNPs present in JU2817 strain but not in JU2859
 
 ## Getting Started
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+These instructions will get you a working version of the pipeline the SNP calling pipeline.
 
 ### Prerequisites
 
@@ -35,75 +28,34 @@ To install nextflow on you computer simply run the following command:
 src/install_nextflow.sh
 ```
 
-Then to initialize a given tools run the following command:
+Then to initialize the necessary Docker tools with the following command:
 
 ```sh
-src/docker_modules/<tool_name>/<tool_version>/docker_init.sh
+src/docker_modules/cutadapt/1.14/docker_init.sh
+src/docker_modules/UrQt/d62c1f8/docker_init.sh
+src/docker_modules/bioawk/1.0/docker_init.sh
+src/docker_modules/Bowtie2/2.3.4.1/docker_init.sh
+src/docker_modules/sambamba/0.6.7/docker_init.sh
+src/docker_modules/sambamba/0.6.7/docker_init.sh
+src/docker_modules/GATK/4.0.8.1/docker_init.sh
+src/docker_modules/SAMtools/1.7/docker_init.sh
+src/docker_modules/bcftools/1.7/docker_init.sh
 ```
 
-For example to initialize `file_handle` version `0.1.1`, run:
+Necessary R packages
 
 ```sh
-src/docker_modules/file_handle/0.1.1/docker_init.sh
+R -e 'install.packages(c("tidyverse", "seqinr"), repos = "https://cloud.r-project.org")'
 ```
 
-To initialize all the tools:
-```sh
-find src/docker_modules/ -name "docker_init.sh" | awk '{system($0)}'
-```
 
-## Running the tests
+### Running
 
-To run tests we first need to get a training set
-```sh
-cd data
-git clone -c http.sslVerify=false https://gitlab.biologie.ens-lyon.fr/LBMC/tiny_dataset.git
-cp tiny_dataset/fastq/tiny_R1.fastq tiny_dataset/fastq/tiny2_R1.fastq
-cp tiny_dataset/fastq/tiny_R2.fastq tiny_dataset/fastq/tiny2_R2.fastq
-cp tiny_dataset/fastq/tiny_S.fastq tiny_dataset/fastq/tiny2_S.fastq
-cd ..
-```
+To launch the analysis, you can execute the content of the script `src/1_JU28_59vs17_SNP_calling.sh`.
+There, is a first section to run the pipeline locally with Docker on a training set (after generating the training set), a second to run it with Docker on the full data set, and a last seciton to run it on the PSMN.
 
-Then to run the tests for a given tools run the following command:
-
-```sh
-src/nf_modules/<tool_name>/<tool_version>/tests.sh
-```
-
-For example to run the tests on `Bowtie2` run:
-
-```sh
-src/nf_modules/Bowtie2/tests.sh
-```
-
-## Available tools
-
-| tool | nf module | docker module | sge module |
-|------|:---------:|:-------------:|:----------:|
-BEDtools | ok | ok | ok
-Bowtie | ok | ok | **no**
-Bowtie2 | ok | ok | ok
-canu | ok | ok | ok
-cutadapt | ok | ok | ok
-deepTools | **no** | ok | ok
-FastQC | ok | ok | ok
-file_handle | **no** | ok | ok
-HISAT2 | **no** | ok | **no**
-HTSeq | ok | ok | ok
-Kallisto | ok | ok | ok
-MACS2 | **no** | ok | ok
-MultiQC | ok | ok | ok
-MUSIC | ok | ok | ok
-picard | **no** | ok | ok
-pigz | **no** | ok | ok
-RSEM | ok | ok | ok
-SAMtools | ok | ok | ok
-SRAtoolkit | ok | ok | ok
-Salmon | **no** | ok | ok
-TopHat | **no** | ok | ok
-Trimmomatic | **no** | ok | ok
-UrQt | ok | ok | ok
-
+After running the `src/SNP_calling.nf` pipeline, the `src/intersect_SNP.R` R scripts will format the `.vcf` files into `.csv` table.
+The final output is filtered to keep only SNP matching a list of enzymes and SNP that are homozygote in one strain and not present in the other.
 
 ## Contributing
 
