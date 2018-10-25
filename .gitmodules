@@ -1,3 +1,3 @@
 [submodule "src/sge_modules"]
-	path = src/sge_modules
+	path = src/psmn_modules
 	url = gitlab_lbmc:PSMN/modules.git

@@ -78,7 +78,7 @@ src/nf_modules/Bowtie2/tests.sh
 
 ## Available tools
 
-| tool | nf module | docker module | sge module |
+| tool | nf module | docker module | psmn module |
 |------|:---------:|:-------------:|:----------:|
 BEDtools | ok | ok | ok
 BFCtools |**no**  | ok | ok
