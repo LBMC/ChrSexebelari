@@ -60,7 +60,6 @@ fi
 process mapping_fastq {
   tag "$pair_id"
   cpus 4
-  publishDir "results/mapping/bams/", mode: 'copy'
 
   input:
   set pair_id, file(reads) from fastq_files
@@ -92,6 +91,7 @@ fi
 process sort_bam {
   tag "$file_id"
   cpus 4
+  publishDir "results/mapping/bams/", mode: 'copy'
 
   input:
     set file_id, file(bam) from bam_files
@@ -102,6 +102,23 @@ process sort_bam {
   script:
 """
 sambamba sort -t ${task.cpus} -o ${file_id}_sorted.bam ${bam}
+"""
+}
+
+process index_bam {
+  tag "$file_id"
+  cpus 4
+  publishDir "results/mapping/bams/", mode: 'copy'
+
+  input:
+    set file_id, file(bam) from sorted_bam_files
+
+  output:
+    set file_id, "*.bam*" into indexed_bam_file
+
+  script:
+"""
+sambamba index -t ${task.cpus} ${bam}
 """
 }
 
