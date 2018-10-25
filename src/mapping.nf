@@ -1,6 +1,7 @@
 params.fasta = "$baseDir/data/bam/*.fasta"
 params.fastq = "$baseDir/data/fastq/*_{1,2}.fastq"
 params.contig = ""
+params.cpus = 10
 
 log.info "fasta files : ${params.fasta}"
 log.info "fastq files : ${params.fastq}"
@@ -37,7 +38,6 @@ cp ${fasta} contigs.fasta
 
 process index_fasta {
   tag "$fasta.baseName"
-  cpus 4
   publishDir "results/mapping/index/", mode: 'copy'
 
   input:
@@ -59,7 +59,7 @@ fi
 
 process mapping_fastq {
   tag "$pair_id"
-  cpus 4
+  cpus params.cpus
 
   input:
   set pair_id, file(reads) from fastq_files
@@ -90,7 +90,8 @@ fi
 
 process sort_bam {
   tag "$file_id"
-  cpus 4
+  cpus params.cpus
+
   publishDir "results/mapping/bams/", mode: 'copy'
 
   input:
@@ -107,7 +108,7 @@ sambamba sort -t ${task.cpus} -o ${file_id}_sorted.bam ${bam}
 
 process index_bam {
   tag "$file_id"
-  cpus 4
+  cpus params.cpus
   publishDir "results/mapping/bams/", mode: 'copy'
 
   input:
