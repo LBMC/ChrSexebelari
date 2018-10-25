@@ -14,13 +14,27 @@ Channel
   .splitFasta( record: [id: true, text: true])
   .filter { record -> record.id in contig_list }
   .map{record -> record.text}
-  .collectFile( name:'contigs.fasta')
-  .set { fasta_file }
+  .collectFile( name:'sequences.fasta')
+  .set { contig_file }
 
 Channel
   .fromFilePairs( params.fastq )
   .ifEmpty { error "Cannot find any fastq files matching: ${params.fastq}" }
   .set { fastq_files }
+
+process contigs_fasta {
+  publishDir "results/mapping/fasta/", mode: 'copy'
+  input:
+    file fasta from contig_file
+  output:
+    file "*.fasta" into fasta_file
+
+  script:
+"""
+cp ${fasta} contigs.fasta
+"""
+}
+
 
 process index_fasta {
   tag "$fasta.baseName"
@@ -75,4 +89,5 @@ if grep -q "Error" ${pair_id}_bowtie2_report.txt; then
 fi
 """
 }
+
 
