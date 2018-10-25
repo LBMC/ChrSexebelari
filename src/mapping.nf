@@ -35,7 +35,6 @@ cp ${fasta} contigs.fasta
 """
 }
 
-
 process index_fasta {
   tag "$fasta.baseName"
   cpus 4
@@ -90,4 +89,19 @@ fi
 """
 }
 
+process sort_bam {
+  tag "$file_id"
+  cpus 4
+
+  input:
+    set file_id, file(bam) from bam_files
+
+  output:
+    set file_id, "*_sorted.bam" into sorted_bam_files
+
+  script:
+"""
+sambamba sort -t ${task.cpus} -o ${file_id}_sorted.bam ${bam}
+"""
+}
 
