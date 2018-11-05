@@ -4,7 +4,7 @@ library("tidyverse")
 library("seqinr")
 
 args <- c(
-  "results/SNP/vcf_samtools/normal_sample_filtered.csv",
+  "results/SNP/vcf_samtools/normal_sample_raw.csv",
   "results/SNP/vcf_samtools/tumor_sample_filtered.csv",
   "results/fasta/DBG2OLC_output2_filtered.fasta",
   "data/list_of_enzymes.csv"
@@ -19,7 +19,7 @@ snp_b <- read_delim(args[2], delim = "\t") %>%
 
 only_b <- snp_b %>%
   select(cords) %>%
-  setdiff(snp_a %>% select(cords)) %>%
+  setdiff((snp_a %>% select(cords))) %>%
   pull(cords)
 
 snp <- snp_b %>%

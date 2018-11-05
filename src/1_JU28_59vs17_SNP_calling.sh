@@ -21,7 +21,7 @@ cd tests
 ./nextflow src/SNP_calling.nf -c src/SNP_calling.config -profile docker --fasta "data/fasta/DBG2OLC_output2.fasta" --fastq "data/fastq/*_{1,2}.fastq.gz" -resume -w ~/data/work/ --tumor "[\"NG-10944_JU2859_bis_lib169352_5217_1\"]" --normal "[\"MR_550_clean\", \"MR_350_clean\"]"
 ~/scripts/sms.sh "SNP done"
 src/intersect_SNP.R \
-  results/SNP/vcf_samtools/normal_sample_filtered.csv \
+  results/SNP/vcf_samtools/normal_sample_raw.csv \
   results/SNP/vcf_samtools/tumor_sample_filtered.csv \
   results/fasta/DBG2OLC_output2_filtered.fasta \
   data/list_of_enzymes.csv
@@ -30,7 +30,7 @@ src/intersect_SNP.R \
 ./nextflow src/SNP_calling.nf -c src/SNP_calling.config -profile docker --fasta "data/fasta/final_assembly.fasta" --fastq "data/fastq/*_{1,2}.fastq.gz" -resume -w ~/data/work/ --tumor "[\"NG-10944_JU2859_bis_lib169352_5217_1\"]" --normal "[\"MR_550_clean\", \"MR_350_clean\"]"
 ~/scripts/sms.sh "SNP done"
 src/intersect_SNP.R \
-  results/SNP/vcf_samtools/normal_sample_filtered.csv \
+  results/SNP/vcf_samtools/normal_sample_raw.csv \
   results/SNP/vcf_samtools/tumor_sample_filtered.csv \
   results/fasta/final_assembly_filtered.fasta \
   data/list_of_enzymes.csv
