@@ -30,18 +30,44 @@ system("bash src/5-coverage_analysis/get_counts_per_gene.sh")
 
 #outputs from 1-bam_read_count.sh
 
-load_coverage <- function(file_name, contig_list) {
-  fread(file_name, sep = "\t", h = F, stringsAsFactors = F) %>%
+load_coverage_genes <- function(data, contig_list) {
+  data %>%
+    select(V1, V2, V3, V4, V6, V11) %>%
+    rename(Contig = V1,
+           Start = V2,
+           Stop = V3,
+           Gene = V4,
+           Strand = V6,
+           Reads = V11
+    ) %>%
+    mutate(Length = abs(Start - Stop)) %>%
+  filter(Contig %in% contig_list$Contig)
+}
+
+load_coverage_contigs <- function(data, contig_list) {
+  data %>%
     rename(Contig = V1,
           Length = V2,
           Reads = V3,
           Unmapped = V4
     ) %>%
+    select(-Unmapped) %>%
   filter(Contig %in% contig_list$Contig)
 }
 
+load_coverage <- function(file_name, contig_list) {
+  data <- fread(file_name, sep = "\t", h = F, stringsAsFactors = F)
+  if (ncol(data) == 4) {
+    data <- data %>% load_coverage_contigs(contig_list)
+  }
+  if (ncol(data) == 11) {
+    data <- data %>% load_coverage_genes(contig_list)
+  }
+  return(data)
+}
+
 segment_pos <- function(x) {
-  return(c(1, cumsum(x)[-length(x)]))
+  return(c(1, cumsum(as.numeric(x))[-length(x)]))
 }
 
 normalize_counts <- function(cov_female, cov_male) {
@@ -49,25 +75,37 @@ normalize_counts <- function(cov_female, cov_male) {
                      cov.male %>% pull(Reads)),
                    byrow = F, ncol = 2)
   counts_norm <- normalize.quantiles(counts)
-
   cov_female <- cov_female %>%
     mutate(Reads_F_norm = counts_norm[, 1]) %>%
-    rename(Reads_F = Reads,
-           Unmapped_F = Unmapped
-    ) %>%
+    rename(Reads_F = Reads) %>%
     arrange(Contig)
-  cov_male <- cov_male %>%
-    mutate(Reads_M_norm = counts_norm[, 2]) %>%
-    rename(Reads_M = Reads,
-           Unmapped_M = Unmapped
-    ) %>%
-    arrange(Contig)
-
-  cov_data <- cov_female %>%
-    bind_cols(cov_male) %>%
-    mutate(log2FC = log2( (Reads_F + 1) / (Reads_M + 1) ),
-           log2FC_norm = log2( (Reads_F_norm + 1) / (Reads_M_norm + 1) )
-    )
+  if ("Gene" %in% colnames(cov_male)) {
+    cov_male <- cov_male %>%
+      mutate(Reads_M_norm = counts_norm[, 2]) %>%
+      rename(Reads_M = Reads) %>%
+      arrange(Contig) %>%
+      select(Contig, Gene, Reads_M, Reads_M_norm)
+    cov_data <- cov_female %>%
+      merge(cov_male, by = c("Contig", "Gene")) %>%
+      mutate(log2FC = log2( (Reads_F + 1) / (Reads_M + 1) ),
+            log2FC_norm = log2( (Reads_F_norm + 1) / (Reads_M_norm + 1) ),
+            missing.sexe = ""
+      )
+  } else {
+    cov_male <- cov_male %>%
+      mutate(Reads_M_norm = counts_norm[, 2]) %>%
+      rename(Reads_M = Reads) %>%
+      arrange(Contig) %>%
+      select(Contig, Reads_M, Reads_M_norm)
+    cov_data <- cov_female %>%
+      merge(cov_male, by = "Contig") %>%
+      mutate(log2FC = log2( (Reads_F + 1) / (Reads_M + 1) ),
+            log2FC_norm = log2( (Reads_F_norm + 1) / (Reads_M_norm + 1) ),
+            missing.sexe = ""
+      )
+  }
+  cov_data$missing.sexe[cov_data$Reads_F == 0] <- "female"
+  cov_data$missing.sexe[cov_data$Reads_M == 0] <- "male"
   return(cov_data)
 }
 
@@ -78,6 +116,9 @@ cov.male <- load_coverage(file_name =
   "results/coverage_analysis/2018-06-12-MRDR6_vs_Hybrid_assembly.sorted.filtered.counts",
   contig_list = contigs.mbela)
 counts.contigs <- normalize_counts(cov.female, cov.male)
+write.table(counts.contigs,
+            "results/coverage_analysis/2018-06-21-FC_normalized_coverage_at_contig.txt",
+            sep = "\t", quote = F, col.names = T, row.names = F)
 
 data_contigs <- counts.contigs %>%
   arrange(desc(log2FC)) %>%
@@ -108,6 +149,15 @@ data_contigs %>%
 ggsave("results/coverage_analysis/contigs_raw_vs_norm_coverage.pdf")
 
 data_contigs %>%
+  filter(normalization %in% "full quantile") %>%
+  ggplot() +
+  geom_abline(intercept = 0, slope = 1) +
+  geom_point(aes(x = Reads_M, y = Reads_F, color = normalization)) +
+  coord_trans(x = "sqrt", y = "sqrt") +
+  theme_bw()
+ggsave("results/coverage_analysis/contigs_norm_coverage.pdf")
+
+data_contigs %>%
   arrange(desc(Length)) %>%
   ggplot(aes(x = pos, y = log2FC, color = normalization)) +
   geom_abline(intercept = 1, slope = 0) +
@@ -128,76 +178,102 @@ data_contigs %>%
   theme_bw()
 ggsave("results/coverage_analysis/contigs_norm_coverage_length.pdf")
 
-
-counts.contigs$missing.sexe <- ""; counts.contigs$missing.sexe[which(counts.contigs$counts.raw.female == 0)] <- "female";
-counts.contigs$missing.sexe[which(counts.contigs$counts.raw.male == 0)] <- "male";
-write.table(counts.contigs, "results/coverage_analysis/2018-06-21-FC_normalized_coverage_at_contig.txt", sep = "\t", quote = F, col.names = T, row.names = F)
-
-counts.contigs <- read.table('results/coverage_analysis/2018-06-21-FC_normalized_coverage_at_contig.txt', sep='\t',head=T,row.names=1)
-
-
 #Gene level
-counts.genes.female <- fread("results/coverage_analysis/2018-07-24-MRDR5_vs_Hybrid_assembly.sorted.count.genes.txt",
-    h = F, sep = "\t", stringsAsFactors = F)
-counts.genes.male <- fread("results/coverage_analysis/2018-07-24-MRDR6_vs_Hybrid_assembly.sorted.count.genes.txt",
-    h = F, sep = "\t", stringsAsFactors = F)
-counts.genes <- ComputeNormalizedCount(counts.genes.female, counts.genes.male, "gene")
 
+cov.female <- load_coverage(file_name =
+  "results/coverage_analysis/2018-07-24-MRDR5_vs_Hybrid_assembly.sorted.count.genes.txt",
+  contig_list = contigs.mbela)
+cov.male <- load_coverage(file_name =
+  "results/coverage_analysis/2018-07-24-MRDR6_vs_Hybrid_assembly.sorted.count.genes.txt",
+  contig_list = contigs.mbela)
+counts.genes <- normalize_counts(cov.female, cov.male)
 summary(counts.genes)
+
+write.table(counts.genes,
+            "results/coverage_analysis/2018-07-24-FC_normalized_coverage_at_gene.txt",
+            sep = "\t", quote = F, col.names = T, row.names = F)
+
 data_genes <- counts.genes %>%
+  merge(counts.genes %>%
+        select(Contig, log2FC) %>%
+        group_by(Contig) %>%
+        summarise(log2FC_contig = mean(log2FC)),
+      by.x = "Contig", by.y = "Contig") %>%
+  arrange(log2FC_contig) %>%
   mutate(normalization = "none",
-         pos = contig_pos(Length, log2.norm.FC)) %>%
-  select("Contig", "Length", "counts.raw.male", "counts.raw.female",
-         "log2.raw.FC", "pos", "normalization") %>%
-  rename(counts.male = counts.raw.male,
-         counts.female = counts.raw.female,
-         log2.FC = log2.raw.FC
-  ) %>%
+         pos = segment_pos(Length)) %>%
+  select("Contig", "Length", "Reads_M", "Reads_F",
+         "log2FC", "pos", "normalization") %>%
   bind_rows(
     counts.genes %>%
+      merge(counts.genes %>%
+            select(Contig, log2FC_norm) %>%
+            group_by(Contig) %>%
+            summarise(log2FC_norm_contig = mean(log2FC_norm)),
+          by.x = "Contig", by.y = "Contig") %>%
+      arrange(log2FC_norm_contig) %>%
       mutate(normalization = "full quantile",
-             pos = contig_pos(Length, log2.norm.FC)      )
+             pos = segment_pos(Length)      )
       %>%
-      select("Contig", "Length", "counts.norm.male", "counts.norm.female",
-             "log2.norm.FC", "pos", "normalization") %>%
-      rename(counts.male = counts.norm.male,
-             counts.female = counts.norm.female,
-             log2.FC = log2.norm.FC
+      select("Contig", "Length", "Reads_M_norm", "Reads_F_norm",
+            "log2FC_norm", "pos", "normalization") %>%
+      rename(Reads_M = Reads_M_norm,
+             Reads_F = Reads_F_norm,
+             log2FC = log2FC_norm
   )) %>%
-  mutate(pos_start = pos - Length)
+  mutate(pos_end = pos + Length)
 
-ggplot(data = data_genes) +
+data_genes %>%
+  ggplot() +
   geom_abline(intercept = 0, slope = 1) +
-  geom_point(aes(x = counts.male, y = counts.female, color = normalization)) +
+  geom_point(aes(x = Reads_M, y = Reads_F, color = normalization)) +
   coord_trans(x = "sqrt", y = "sqrt") +
   theme_bw()
 ggsave("results/coverage_analysis/genes_raw_vs_norm_coverage.pdf")
 
-ggplot(data = data_genes %>% filter(normalization %in% "none"),
-       aes(x = pos+1, y = log2.FC, color = normalization)) +
-  geom_abline(intercept = 1, slope = 0) +
-  geom_abline(intercept = -1, slope = 0) +
-  geom_segment(aes(xend=pos_start+1,
-                   yend=log2.FC), size = 2) +
-  theme_bw()
-ggsave("results/coverage_analysis/genes_raw_coverage.pdf")
-
-ggplot(data = data_genes %>% filter(normalization %in% "full quantile"),
-       aes(x = pos+1, y = log2.FC, color = normalization)) +
-  geom_abline(intercept = 1, slope = 0) +
-  geom_abline(intercept = -1, slope = 0) +
-  geom_segment(aes(xend=pos_start+1,
-                   yend=log2.FC), size = 2) +
+data_genes %>%
+  filter(normalization %in% "full quantile") %>%
+  ggplot() +
+  geom_abline(intercept = 0, slope = 1) +
+  geom_point(aes(x = Reads_M, y = Reads_F, color = normalization)) +
+  coord_trans(x = "sqrt", y = "sqrt") +
   theme_bw()
 ggsave("results/coverage_analysis/genes_norm_coverage.pdf")
 
+data_genes %>%
+  arrange(desc(Length)) %>%
+  ggplot(aes(x = pos, y = log2FC, color = normalization)) +
+  geom_abline(intercept = 1, slope = 0) +
+  geom_abline(intercept = -1, slope = 0) +
+  geom_segment(aes(xend=pos_end,
+                   yend=log2FC), size = 2) +
+  theme_bw()
+ggsave("results/coverage_analysis/genes_raw_vs_norm_coverage_length.pdf")
 
-counts.genes$missing.sexe <- ""; counts.genes$missing.sexe[which(counts.genes$counts.raw.female == 0)] <- "female";
-counts.genes$missing.sexe[which(counts.genes$counts.raw.male == 0)] <- "male";
-write.table(counts.genes, "results/coverage_analysis/2018-07-24-FC_normalized_coverage_at_gene.txt",
-    sep = "\t", quote = F, col.names = T, row.names = F)
+data_genes %>%
+  arrange(desc(Length)) %>%
+  filter(normalization %in% "full quantile") %>%
+  ggplot(aes(x = pos, y = log2FC, color = normalization)) +
+  geom_abline(intercept = 1, slope = 0) +
+  geom_abline(intercept = -1, slope = 0) +
+  geom_segment(aes(xend=pos_end,
+                   yend=log2FC), size = 2) +
+  theme_bw()
+ggsave("results/coverage_analysis/genes_norm_coverage_length.pdf")
 
 #At bp level
+
+cov.female <- load_coverage(file_name =
+  "results/coverage_analysis/2018-07-25-MRDR5_vs_Hybrid_assembly_sort_in_genes_bp.bed",
+  contig_list = contigs.mbela)
+head(cov.female)
+cov.male <- load_coverage(file_name =
+  "results/coverage_analysis/2018-07-25-MRDR6_vs_Hybrid_assembly_sort_in_genes_bp.bed",
+  contig_list = contigs.mbela)
+counts.genes <- normalize_counts(cov.female, cov.male)
+summary(counts.genes)
+
+
  counts.genes.female <- tbl_df(fread("results/coverage_analysis/2018-07-17-MRDR5_vs_Hybrid_assembly_sort_in_genes_bp.bed",
     h = F, sep = "\t", stringsAsFactors = F))
   counts.genes.male <- tbl_df(fread("results/coverage_analysis/2018-07-17-MRDR6_vs_Hybrid_assembly_sort_in_genes_bp.bed",
