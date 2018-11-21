@@ -15,4 +15,4 @@ BED1=results/coverage_analysis/2018_07_25_MRDR6_vs_Hybrid_assembly.sorted.filter
 BED2=results/coverage_analysis/2018_07_25_MRDR5_vs_Hybrid_assembly.sorted.filtered.bed
 OUTPUTcov=results/coverage_analysis/2018_07_25_MRDR5_MRDR6_vs_Hybrid_assembly.sorted.filtered.bed
 
-paste $BED1 $BED2 > $OUTPUTcov
+paste $BED1 $BED2 | awk 'BEGIN{print "contig", "pos", "count_M", "count_F"}; {print $1, $2, $3, $6}' > $OUTPUTcov
