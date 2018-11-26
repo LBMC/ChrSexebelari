@@ -97,13 +97,14 @@ normalize_counts <- function(cov_female, cov_male) {
     rename(Reads_F = Reads) %>%
     arrange(Contig)
   merge_by <- "Contig"
-  if ("Gene" %in% colnames(cov_male)) {
-    merge_by <- c("Contig", "Gene")
-    message("merging on Contig and Gene")
-  }
   if ("nt_pos" %in% colnames(cov_male)) {
     merge_by <- c("Contig", "Gene", "nt_pos")
     message("merging on Contig, Gene and nt_pos")
+  } else {
+    if ("Gene" %in% colnames(cov_male)) {
+      merge_by <- c("Contig", "Gene")
+      message("merging on Contig and Gene")
+    }
   }
   cov_male <- cov_male %>%
     mutate(Reads_M_norm = counts_norm[, 2]) %>%
@@ -209,6 +210,39 @@ data_contigs %>%
   )
 ggsave("results/coverage_analysis/contigs_norm_coverage_length.pdf")
 
+counts.contigs %>%
+  ggplot() +
+  geom_point(aes(x = Reads_M_norm,
+                 y = Reads_F_norm
+                 )) +
+  geom_point(aes(x = Reads_M_norm/Length,
+                 y = Reads_F_norm/Length,
+                 color = pnorm((-abs(Reads_M_norm/Length - Reads_F_norm/Length) ) )/0.5
+                 )) +
+  coord_trans(x = "sqrt", y = "sqrt") +
+  geom_abline(intercept = 0, slope = 1) +
+  theme_bw() +
+  labs(title = "normalized reads counts at the gene level",
+       x = "reads number in males",
+       y = "reads number in females"
+  )
+
+counts.contigs %>%
+  mutate(log2FC = log2( ( Reads_M_norm/Length + 1 ) / ( Reads_F_norm/Length + 1 ) )) %>%
+  arrange(desc(log2FC)) %>%
+  mutate(pos = segment_pos(Length),
+         pos_end = pos + Length) %>%
+  ggplot(aes(x = pos, y = log2FC)) +
+  geom_abline(intercept = 1, slope = 0) +
+  geom_abline(intercept = -1, slope = 0) +
+  geom_segment(aes(xend=pos_end,
+                   yend=log2FC), size = 2) +
+  theme_bw() +
+  labs(title = "normalized log2 fold-change at the gene level",
+       x = "contigs",
+       y = "log2(( reads male + 1 ) / ( reads male +1 ))"
+  )
+
 ################################### genes ####################################
 
 cov.female <- load_coverage(file_name =
@@ -217,7 +251,7 @@ cov.female <- load_coverage(file_name =
 cov.male <- load_coverage(file_name =
   "results/coverage_analysis/2018-07-24-MRDR6_vs_Hybrid_assembly.sorted.count.genes.txt",
   contig_list = contigs.mbela)
-counts.genes <- normalize_counts(cov.female, cov.male) %>%
+counts.genes <- normalize_counts(cov.female, cov.male, Length_norm = F) %>%
   select(-ends_with("y")) %>%
   rename(Start = Start.x,
          Stop = Stop.x,
@@ -312,6 +346,155 @@ data_genes %>%
   )
 ggsave("results/coverage_analysis/genes_norm_coverage_length.pdf")
 
+x11()
+counts.genes <- normalize_counts(cov.female, cov.male) %>%
+  select(-ends_with("y")) %>%
+  rename(Start = Start.x,
+         Stop = Stop.x,
+         Strand = Strand.x,
+         Length = Length.x
+  )
+
+counts.genes %>%
+  gather(Reads_M_norm, Reads_F_norm, key = "Sexe", value = "Reads_norm") %>%
+  mutate(Reads_nn = glm(round( Reads_norm ) ~ Sexe)$residuals) %>%
+  unite(Reads_n, Reads_norm, Reads_nn) %>%
+  spread(Sexe, Reads_n) %>%
+  separate(Reads_F_norm, c( "Reads_F_norm", "Reads_F_nn")) %>%
+  separate(Reads_M_norm, c( "Reads_M_norm", "Reads_M_nn")) %>%
+  mutate(Reads_F_norm = as.numeric(Reads_F_norm),
+         Reads_M_norm = as.numeric(Reads_M_norm),
+         Reads_F_nn = as.numeric(Reads_F_nn),
+         Reads_M_nn = as.numeric(Reads_M_nn),
+  ) %>%
+  ggplot() +
+  geom_point(aes(x =  Reads_M_nn,
+                 y = Reads_F_nn,
+                 color = (Reads_M_nn + Reads_F_nn) ^ 2
+                 )) +
+  coord_trans(x = "sqrt", y = "sqrt") +
+  geom_abline(intercept = 0, slope = 1) +
+  theme_bw() +
+  labs(title = "normalized reads counts at the gene level",
+       x = "reads number in males",
+       y = "reads number in females"
+  )
+
+counts.genes %>%
+  mutate(Reads_M_nn = glm(round( Reads_M_norm ) ~ Length, data = ., family = poisson)$residuals,
+         Reads_F_nn = glm(round( Reads_F_norm ) ~ Length, data = ., family = poisson)$residuals,
+         Reads_M_nn = Reads_M_nn + abs(min(Reads_M_nn)),
+         Reads_F_nn = Reads_F_nn + abs(min(Reads_F_nn))
+  ) %>%
+  mutate(log2FC = log2( ( Reads_M_nn + 1) / ( Reads_F_nn + 1) )) %>%
+  mutate(log2FC_nn = lm(log2( ( Reads_M_norm + 1) / ( Reads_F_norm + 1) ) ~ Length)$residuals)%>%
+  arrange(desc(log2FC_nn)) %>%
+  mutate(pos = segment_pos(Length),
+         pos_end = pos + Length) %>%
+  ggplot() +
+  geom_abline(intercept = 1, slope = 0) +
+  geom_abline(intercept = -1, slope = 0) +
+  geom_segment(aes(x = pos,
+                   y = log2FC,
+                   xend=pos_end,
+                   yend=log2FC), size = 2) +
+  geom_segment(aes(x = pos,
+                   y = log2FC_nn,
+                   xend=pos_end,
+                   yend=log2FC_nn,
+                   color = pnorm((-abs(Reads_M_nn - Reads_F_nn) ) )/0.5
+                   ), size = 2) +
+  theme_bw() +
+  labs(title = "normalized log2 fold-change at the gene level",
+       x = "contigs",
+       y = "log2(( reads male + 1 ) / ( reads male +1 ))"
+  )
+
+
+counts.genes %>%
+  mutate(log2FC_nn = lm(log2( ( Reads_M_norm + 1) / ( Reads_F_norm + 1) ) ~ Length)$residuals) %>%
+  ggplot() +
+  geom_histogram(aes(x = log2FC_norm, alpha = 0.6, fill = "norm"), bins = 100) +
+  geom_histogram(aes(x = log2FC_nn, alpha = 0.6, fill = "nn"), bins = 100)
+
+library("mixtools")
+
+counts.genes %>%
+  mutate(log2FC_nn = lm(log2( ( Reads_M_norm + 1) / ( Reads_F_norm + 1) ) ~ Length)$residuals) %>%
+  bind_cols(
+    normalmixEM(
+      .$log2FC_nn,
+    lambda = c(0.1, 0.8, 0.1),
+    mu = c(2, 0, -2), sigma = c(1, 1, 1)
+    )$posterior %>%
+    as.tibble()
+  ) %>%
+  arrange(desc(log2FC_nn)) %>%
+  mutate(pos = segment_pos(Length),
+         pos_end = pos + Length) %>%
+  ggplot() +
+  geom_abline(intercept = 1, slope = 0) +
+  geom_abline(intercept = -1, slope = 0) +
+  geom_segment(aes(x = pos,
+                   y = log2FC_nn,
+                   xend=pos_end,
+                   yend=log2FC_nn,
+                   color = comp.1
+                   ), size = 2) +
+  geom_segment(aes(x = pos,
+                   y = log2FC_nn+0.5,
+                   xend=pos_end,
+                   yend=log2FC_nn+0.5,
+                   color = comp.2
+                   ), size = 2) +
+  geom_segment(aes(x = pos,
+                   y = log2FC_nn-0.5,
+                   xend=pos_end,
+                   yend=log2FC_nn-0.5,
+                   color = comp.3
+                   ), size = 2) +
+  theme_bw() +
+  labs(title = "normalized log2 fold-change at the gene level",
+       x = "contigs",
+       y = "log2(( reads male + 1 ) / ( reads male +1 ))"
+  )
+
+counts.genes %>%
+  mutate(Reads_M_nn = glm(round( Reads_M_norm ) ~ Length, data = ., family = poisson)$residuals,
+         Reads_F_nn = glm(round( Reads_F_norm ) ~ Length, data = ., family = poisson)$residuals,
+         Reads_M_nn = Reads_M_nn + abs(min(Reads_M_nn)),
+         Reads_F_nn = Reads_F_nn + abs(min(Reads_F_nn))
+  ) %>%
+  mutate(log2FC_nn = lm(log2( ( Reads_M_norm + 1) / ( Reads_F_norm + 1) ) ~ Length)$residuals) %>%
+  bind_cols(
+    normalmixEM(
+      .$log2FC_nn,
+    lambda = c(0.1, 0.8, 0.1),
+    mu = c(2, 0, -2), sigma = c(1, 1, 1)
+    )$posterior %>%
+    as.tibble()
+  ) %>%
+  ggplot() +
+  geom_point(aes(x =  Reads_M_nn,
+                 y = Reads_F_nn,
+                 color = comp.1
+                 )) +
+  coord_trans(x = "sqrt", y = "sqrt") +
+  geom_abline(intercept = 0, slope = 1) +
+  theme_bw() +
+  labs(title = "normalized reads counts at the gene level",
+       x = "reads number in males",
+       y = "reads number in females"
+  )
+
+library(bmixture)
+
+model <- counts.genes %>%
+  mutate(log2FC_nn = lm(log2( ( Reads_M_norm + 1) / ( Reads_F_norm + 1) ) ~ Length)$residuals) %>%
+  pull(log2FC_nn) %>%
+  bmixnorm(., k = 3, iter = 5000)
+
+
 ################################## bp #########################################
 
 cov.female <- load_coverage(file_name =
@@ -346,19 +529,19 @@ test.genes <- counts.genes %>%
     Gene_t_tval = ifelse(
       sd(Reads_t_F_norm-Reads_t_M_norm) == 0,
       NA,
-      t.test(Reads_t_F_norm, Reads_t_M_norm, paired=TRUE)$statistic),
+      t.test(Reads_t_F_norm, Reads_t_M_norm, paired=FALSE)$statistic),
     Gene_t_pval = ifelse(
       sd(Reads_t_F_norm-Reads_t_M_norm) == 0,
       NA,
-      t.test(Reads_t_F_norm, Reads_t_M_norm, paired=TRUE)$p.value),
+      t.test(Reads_t_F_norm, Reads_t_M_norm, paired=FALSE)$p.value),
     Gene_t_pval_F_less_M = ifelse(
       sd(Reads_t_F_norm-Reads_t_M_norm) == 0,
       NA,
-      t.test(Reads_t_F_norm, Reads_t_M_norm, alt = "less", paired=TRUE)$p.value),
+      t.test(Reads_t_F_norm, Reads_t_M_norm, alt = "less", paired=FALSE)$p.value),
     Gene_t_pval_F_greater_M = ifelse(
       sd(Reads_t_F_norm-Reads_t_M_norm) == 0,
       NA,
-      t.test(Reads_t_F_norm, Reads_t_M_norm, alt = "greater", paired=TRUE)$p.value)
+      t.test(Reads_t_F_norm, Reads_t_M_norm, alt = "greater", paired=FALSE)$p.value)
   ) %>%
   mutate(Gene_t_FDR = p.adjust(Gene_t_pval, method = "BH"),
          Gene_t_FDR_F_less_M = p.adjust(Gene_t_pval_F_less_M, method = "BH"),
