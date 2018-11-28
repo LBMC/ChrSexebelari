@@ -1,0 +1,160 @@
+\documentclass[a4paper,12pt]{article}
+\title{Mbelari project technical report}
+
+%====================== PACKAGES ======================
+\usepackage[french]{babel}
+\usepackage[utf8x]{inputenc}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{url}
+
+\usepackage{hyperref}
+
+%police et mise en page (marges) du document
+\usepackage[T1]{fontenc}
+\usepackage[top=3cm, bottom=3cm, left=2cm, right=2cm]{geometry}
+%Pour les galerie d'images
+\usepackage{subfig}
+\linespread{1.3} % correspond à un interligne de 1.5
+\usepackage{fancyhdr}
+\usepackage[justification=centering]{caption}
+\usepackage{sectsty}
+\usepackage{color}
+\usepackage[htt]{hyphenat}
+
+
+
+%----------------------------------------------------------------------------------------
+%	HEADING SECTIONS
+%----------------------------------------------------------------------------------------
+\begin{document}
+
+
+%----------------------------------------------------------------------------------------
+%	TITLE SECTION
+%----------------------------------------------------------------------------------------
+\begin{center}
+\LARGE{\textbf{\textit{M. belari} hybrid genome assembly and sex chromosome analysis}}\\
+\large{Lilia Estrada, Marie Delattre, Laurent Modolo}\\[0.5cm]
+\end{center}
+
+\tableofcontents
+% Title
+
+
+\section{Introduction}
+This document contains information about the procedure followed to perform the \textit{hybrid assembly} during my internship at the LBMC.
+The project is in a folder in \path{/Xnfs/lbmcdb/Delattre\_team/Lilia/} on the PSMN. In the hard disk the folder is \path{/LILIA/stage\_mbelari}.
+
+
+The project consisted on the hybrid assembly of \textit{M. belari} genome and sex chromosome analysis.
+
+The main process followed is described in this report.
+
+\section{Long reads preparation}
+The MinION reads were prepared before the assembly. As the nematode \textit{M. belari} strain used on the laboratory is feed with \textit{E. coli} the genomic reads can be contaminated with \textit{E. coli reads}. Therefore, the first step is to remove the contaminated reads that can be found in the MinION library.
+
+The scripts used for this process is found in \path{stage\_mbelari/src/1-long\_reads\_preparation}.
+First, the script \path{1-nanopore\_ecoli\_contamination\_removal.sh} uses as\\
+\textbf{Input:} the Nanopore reads were put all together in the same \textit{fastq} file.\\
+\textbf{Process:} The reads are aligned using bwa mem (with \texttt{-x ont2d} because we are working with nanopore reads) to the genome of \textit{E. coli} OP50 found in \path{data/reference\_genomes/ADBT01.1.fsa\_nt.gz}. With samtools the reads were separated in aligned and unaligned. The unaligned reads were kept in a fastq file by using seqtk subseq.\\
+\textbf{Output:} \path{results/cleaned\_from\_ecoli/2018-05-24-Nanopore\_all\_reads\_best\_qual\_wo\_ecoli.fastq}
+a fastq file with cleaned long reads.
+
+\section{Assembly}
+The scripts used in the assembly step are in \path{stage\_mbelari/src/2-assembly}.
+The hybrid assembly was performed using the software DBG2OLC. \textbf{Note:} using this software requires changing some paths on the scripts of the same software (and may not be specified). The script used is \path{3-dbg2olc\_hybrid\_pipeline\_psmn.sh} and it runs the DBG2OLC pipeline on the PSMN.
+
+\textbf{Input: }As input it uses the 4 files of the 2 Illumina libraries: \\
+\path{MR\_350\_clean\_1.fastq MR\_350\_clean\_2.fastq} \path{MR\_550\_clean\_1.fastq MR\_550\_clean\_2.fastq},
+it also requires the long reads file but in fasta format thus the file  \path{results/cleaned\_from\_ecoli/2018-05-24-Nanopore\_all\_reads\_best\_qual\_wo\_ecoli.fastq} was converted to fasta using \path{2-fastq\_to\_fasta.sh}\\
+\textbf{Process:}
+The parameters for Sparse Assembler step were \texttt{g 15 k 51 LD 0 GS 200000000 NodeCovTh 2 EdgeCovTh 1} GS (Genome Size) was set like this because it suggests to chose a number larger.
+The parameters for DBG2OLC \texttt{k 17 MinLen 250 AdaptiveTh 0.001 KmerCovTh 3 MinOverlap 15 RemoveChimera 1} and for consensus step 2 iterations.\\
+\textbf{Output:} \path{results/assembly/hybrid\_assembly/DBG2OLC/final\_assembly.fasta}
+
+For the assembly, others software were used such as Canu to run a \textit{de novo} assembly with only long reads, Redundans which uses long reads, the 4 files of short reads and gives also an assembly. As well, a different way to run DBG2OLC was done by combining the \path{final\_assembly.fasta} with the long reads library. Nevertheless for the final result, the output of the described assembly was used. The other scripts are also found on the folder \path{stage\_mbelari/src/2-assembly}.
+
+\section{Assembly evaluation}
+
+As more than one genome were produced, to decide which was the best candidate we considered to evaluate different aspects. The scripts used in this part are in \path{stage\_mbelari/src/3-assembly\_evaluation}\\
+
+First, we aligned the Illumina \texttt{MR\_550} reads to the different genomes to test, using \texttt{bowtie 2 --very-sensitive-local}. The script to perform this step is \texttt{1-illumina\_mapping.sh}\\
+\textbf{Input:} \path{MR\_550\_clean\_1.fastq} and \path{MR\_550\_clean\_2.fastq} and the genome to which the reads will be aligned.\\
+\textbf{Process:} reads are aligned and a sorted bam file is produced.\\
+\textbf{Output:} %Agregar aqui lista de bam files.
+
+We kept record of the percentage of reads aligned (this was not on the script but can be added a command to save the output info of the statistics of the Illumina reads) for the 3 main genomes (Canu was not considered). \\
+
+These files were visualized on IGV to look for chimeric regions and look for the coverage homogeneity along the contigs.
+
+Then, we used the software ALE to calculate the likelihood of the assembly given the quality of the Illumina reads alignment. This step was performed using the script \path{2-ALE.sh}\\
+\textbf{Input:} it uses the bam file produced on the previous step (each of the files listed on the output of the previous step).\\
+\textbf{Process:} it runs ALE software with default parameters\\
+\textbf{Output:} it produces a .ale file but we only used the ALE Score. The highest score is the best one.
+
+Not only Illumina reads were aligned to the genome but also long reads were aligned and visualized on IGV to see the behavior of the assembly. There was no quantitative information obtained from this step.
+
+
+\section{Annotation}
+
+The genome annotation was performed using the output of DBG2OLC \path{results/assembly/hybrid\_assembly/DBG2OLC/final\_assembly.fasta}
+The scripts used in this part are in the folder \path{src/4-annotation}:
+
+The annotation was performed with BRAKER and it requires the masked genome and the information of the transcriptome.
+
+The first step is to mask the repetitive regions of the genome. With dnaPipeTE we detected the repetitive regions. The script used in this step is: \path{1-dnaPipeTE.sh}:\\
+\textbf{Input:} It requires the paired fastq files \path{MR\_550\_clean\_1.fastq} and \path{MR\_550\_clean\_2.fastq} to be merged.\\
+\textbf{Output:} There are several useful output files. In this step we require a fasta file with sequences that are repeated in the genome:\\
+\path{results/annotation/dnaPipeTE/mbelari\_illumina550/Trinity.fasta}\\
+
+Then we masked the genome using RepeatMasker. The script is in the file: \path{2-RepeatMasker.sh}
+\textbf{Input:} The genome \path{results/assembly/hybrid\_assembly/DBG2OLC/final\_assembly.fasta} the repeated elements in \path{Trinity.fasta} \\
+\textbf{Process:} The repeated elements found with dnaPipeTE were used as a library for RepeatMasket\\
+\textbf{Output:} The masked genome \path{results/annotation/RepeatMasker/final\_assembly.fasta.soft.masked}
+The script was run to get a soft-masked (the masked regions are set to lower case) and again to obtain a hard-masked genome \path{final\_assembly.fasta.hard.masked} (the masked regions are changed to X characters).\\
+
+The RNASeq reads were aligned against the masked genome with STAR and the script used is \path{3-STAR\_RNAseq\_alignment.sh}:\\
+\textbf{Input:} The masked genome \path{final\_assembly.fasta.hard.masked} and aligns the RNASeq reads\\
+\textbf{Process:} It performs a \textit{de novo} annotation considering transcriptome information\\
+\textbf{Output:} \path{Aligned.out.sorted.bam} (intermediate file, not found on the disk)\\
+
+
+
+To run the annonation the script file used was \path{4-BRAKER.sh}\\
+\textbf{Input:} The masked genome the RNASeq reads\\
+\textbf{Process:}Takes the bam file and the soft-masked genome and annotates by \textit{de novo} using the RNA-seq information.\\
+\textbf{Output:} \path{results/annotation/BRAKER/augustus.hints.gff3} and other files
+
+To obatin the fasta files with aminoacid and cds information. A script that was present in the BRAKER folder was used \\
+\textbf{Input:} \path{results/annotation/BRAKER/augustus.hints.gtf}\\
+\textbf{Process:} Converts gtf to gff3 and produces files with cds and aminoacid sequences\\
+\textbf{Output:} \path{augustus.hints.codingseq} and \path{augustus.hints.aa}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\end{document}
