@@ -2,6 +2,7 @@ rm(list = ls())
 require(data.table)
 library(tidyverse)
 library(preprocessCore)
+library(latex2exp)
 source("src/coverage_analysis/functions_claire.R")
 
 contigs.mbela <- fread("results/coverage_analysis/2018-06-21-Mbelari_hybrid_genome_sizes.txt", sep = "\t",
@@ -256,12 +257,23 @@ counts.genes %>%
   geom_abline(intercept = 0, slope = 1) +
   geom_abline(intercept = 0, slope = 2) +
   geom_abline(intercept = 0, slope = 0) +
-  theme_bw() +
+  coord_cartesian(xlim = c(0, 22000), ylim = c(0, 22000)) +
+  annotate("text", x=4500, y=15000,
+           label= TeX("$y = 2 \\times x$", output = 'character'),
+           parse = TRUE, size = 10) +
+  annotate("text", x=14000, y=17000,
+           label= TeX("$y = 1 \\times x$", output = 'character'),
+           parse = TRUE, size = 10) +
+  annotate("text", x=15000, y=800,
+           label= TeX("$y = 0 \\times x$", output = 'character'),
+           parse = TRUE, size = 10) +
+  theme_bw(base_size = 20) +
   labs(title = "normalized reads counts at the gene level",
        x = "reads number in males",
        y = "reads number in females"
   )
-ggsave("results/coverage_analysis/2018-11-26-genes_norm_M_vs_F.pdf")
+ggsave(height = 10, width = 10,
+       file = "results/coverage_analysis/2018-11-26-genes_norm_M_vs_F.pdf")
 
 counts.genes %>%
   merge(counts.genes %>%
@@ -271,7 +283,7 @@ counts.genes %>%
       by = c("Contig")) %>%
   arrange(desc(log2FC_norm_contig)) %>%
   mutate(pos = segment_pos(Length),
-         pos_end = pos + Length) %>%
+         pos_end = pos + Length + 100000) %>%
   ggplot() +
   geom_abline(intercept = 1, slope = 0) +
   geom_abline(intercept = -1, slope = 0) +
@@ -280,12 +292,40 @@ counts.genes %>%
                    xend=pos_end,
                    yend=log2FC_norm,
                    color = sexe), size = 2) +
-  theme_bw() +
+  coord_cartesian(ylim = c(-2, 7)) +
+  theme_bw(base_size = 25) +
   labs(title = "normalized log2 fold-change at the gene level",
        x = "contigs",
-       y = "log2(( reads male + 1 ) / ( reads male +1 ))"
+       y = TeX("$\\log2\\frac{reads_{ male } + 1 }{ reads_{ female } +1 }$")
   )
-ggsave("results/coverage_analysis/2018-11-26-genes_norm_log2FC.pdf")
+ggsave(height = 10, width = 20,
+       "results/coverage_analysis/2018-11-26-genes_norm_log2FC_contig.pdf")
+
+counts.genes %>%
+  merge(counts.genes %>%
+        select(Contig, log2FC_norm) %>%
+        group_by(Contig) %>%
+        summarise(log2FC_norm_contig = mean(log2FC_norm)),
+      by = c("Contig")) %>%
+  arrange(desc(log2FC_norm)) %>%
+  mutate(pos = segment_pos(Length),
+         pos_end = pos + Length + 100000) %>%
+  ggplot() +
+  geom_abline(intercept = 1, slope = 0) +
+  geom_abline(intercept = -1, slope = 0) +
+  geom_segment(aes(x = pos,
+                   y = log2FC_norm,
+                   xend=pos_end,
+                   yend=log2FC_norm,
+                   color = sexe), size = 2) +
+  coord_cartesian(ylim = c(-2, 7)) +
+  theme_bw(base_size = 25) +
+  labs(title = "normalized log2 fold-change at the gene level",
+       x = "contigs",
+       y = TeX("$\\log2\\frac{reads_{ male } + 1 }{ reads_{ female } +1 }$")
+  )
+ggsave(height = 10, width = 20,
+       "results/coverage_analysis/2018-11-26-genes_norm_log2FC.pdf")
 
 counts.genes %>%
   arrange(desc(log2FC_norm)) %>%
