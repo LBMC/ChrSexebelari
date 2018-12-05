@@ -46,4 +46,3 @@ sambamba view -t 8 --valid -S -f bam -l 0 /dev/stdin \
 -o /root/results/backbone_541_JU2859.bam
 exit
 
- ~/scripts/sms.sh "mapping done !"
