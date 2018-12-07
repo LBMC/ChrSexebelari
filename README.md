@@ -54,6 +54,40 @@ R -e 'install.packages(c("tidyverse", "seqinr"), repos = "https://cloud.r-projec
 To launch the analysis, you can execute the content of the script `src/1_JU28_59vs17_SNP_calling.sh`.
 There, is a first section to run the pipeline locally with Docker on a training set (after generating the training set), a second to run it with Docker on the full data set, and a last seciton to run it on the PSMN.
 
+## Available tools
+
+| tool | nf module | docker module | psmn module |
+|------|:---------:|:-------------:|:----------:|
+BEDtools | ok | ok | ok
+BFCtools |**no**  | ok | ok
+bioawk |**no**  | ok | ok
+Bowtie | ok | ok | **no**
+Bowtie2 | ok | ok | ok
+BWA | ok | ok | ok
+canu | ok | ok | ok
+cutadapt | ok | ok | ok
+deepTools | **no** | ok | ok
+FastQC | ok | ok | ok
+file_handle | **no** | ok | ok
+GATK | **no** | ok | ok
+HISAT2 | **no** | ok | **no**
+HTSeq | ok | ok | ok
+Kallisto | ok | ok | ok
+MACS2 | **no** | ok | ok
+MultiQC | ok | ok | ok
+MUSIC | ok | ok | ok
+picard | **no** | ok | ok
+pigz | **no** | ok | ok
+RSEM | ok | ok | ok
+sambamba | ok | ok | ok
+samblaster | ok | ok | ok
+SAMtools | ok | ok | ok
+SRAtoolkit | ok | ok | ok
+Salmon | **no** | ok | ok
+TopHat | **no** | ok | ok
+Trimmomatic | **no** | ok | ok
+UrQt | ok | ok | ok
+
 After running the `src/SNP_calling.nf` pipeline, the `src/intersect_SNP.R` R scripts will format the `.vcf` files into `.csv` table.
 The final output is filtered to keep only SNP matching a list of enzymes and SNP that are homozygote in one strain and not present in the other.
 

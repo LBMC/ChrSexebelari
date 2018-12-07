@@ -95,14 +95,14 @@ total 16
 -rwxr-xr-x 1 laurent users 627 Jun 18 17:14 tests.sh*
 ```
 
-The [`kallisto.config`](./src/nf_modules/Kallisto/kallisto.config) file contains instructions for two profiles : `sge` and `docker`.
+The [`kallisto.config`](./src/nf_modules/Kallisto/kallisto.config) file contains instructions for two profiles : `psmn` and `docker`.
 The [`kallisto.nf`](./src/nf_modules/Kallisto/kallisto.nf) file contains nextflow processes to use `Kallisto`.
 
 The [`tests/tests.sh`](./src/nf_modules/Kallisto/tests/tests.sh) script (with executable rights), contains a series of nextflow calls on the other `.nf` files of the [`tests/`](./src/nf_modules/kallisto/tests/) folder. Those tests correspond to execution of the processes present in the [`kallisto.nf`](./src/nf_modules/Kallisto/kallisto.nf) file on the [LBMC/tiny_dataset](https://gitlab.biologie.ens-lyon.fr/LBMC/tiny_dataset) dataset with the `docker` profile. You can read the *Running the tests* section of the [README.md](https://gitlab.biologie.ens-lyon.fr/pipelines/nextflow/blob/master/README.md).
 
 ## [`kallisto.config`](./src/nf_modules/Kallisto/kallisto.config)
 
-The `.config` file defines the configuration to apply to your process conditionally to the value of the `-profile` option. You must define configuration for at least the `sge` and `docker` profile.
+The `.config` file defines the configuration to apply to your process conditionally to the value of the `-profile` option. You must define configuration for at least the `psmn` and `docker` profile.
 
 ```Groovy
 profiles {
@@ -112,7 +112,7 @@ profiles {
     process {
     }
   }
-  sge {
+  psmn {
     process{
     }
   }
@@ -134,16 +134,16 @@ process {
 }
 ```
 
-### `sge` profile
+### `psmn` profile
 
-The `sge` profile defines for each process all the informations necessary to launch your process on a given queue with SGE at the [PSMN](http://www.ens-lyon.fr/PSMN/doku.php).
+The `psmn` profile defines for each process all the informations necessary to launch your process on a given queue with SGE at the [PSMN](http://www.ens-lyon.fr/PSMN/doku.php).
 For example, for `Kallisto`, we have:
 
 ```Groovy
 process{
   $index_fasta {
     beforeScript = "module purge; module load Kallisto/0.44.0"
-    executor = "sge"
+    executor = "psmn"
     cpus = 1
     memory = "5GB"
     time = "6h"
@@ -154,7 +154,7 @@ process{
   }
   $mapping_fastq {
     beforeScript = "module purge; module load Kallisto/0.44.0"
-    executor = "sge"
+    executor = "psmn"
     cpus = 4
     memory = "5GB"
     time = "6h"
