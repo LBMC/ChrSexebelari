@@ -1,0 +1,29 @@
+ SGE
+### shell du job
+#$ -S /bin/bash
+### nom du job (a changer)
+#$ -N CanuTest3
+### file d'attente (a changer)
+#$ -q r820deb768
+### charger l'environnement utilisateur pour SGE
+#$ -cwd
+### exporter les variables d'environnement sur tous les noeuds d'execution
+#$ -V
+### mails en debut et fin d'execution
+#$ -m be
+
+# aller dans le repertoire de travail/soumission
+# important, sinon, le programme est lancé depuis ~/
+cd ${SGE_O_WORKDIR}
+
+### configurer l'environnement
+source /usr/share/modules/init/bash
+module use ~/privatemodules
+ml canu/1.7
+
+### execution du programme
+###EXECDIR=${HOME}/Formations/Sequentiel
+###${EXECDIR}/SommeVecVecSEQ.exe < Monfichierdedata > monfichierresultat
+canu -p 2018-05-17-assembly_test_2 -d 2018-05-17-assembly_test_2 genomeSize=162.1m minReadLength=500 correctedErrorRate=0.16 useGrid=false -nanopore-raw Canu_tests/data/2018-05-17-Nanopore_all_reads_best_qual.fastq
+
+# fin```

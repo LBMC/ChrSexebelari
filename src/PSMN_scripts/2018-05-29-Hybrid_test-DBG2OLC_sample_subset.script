@@ -1,0 +1,29 @@
+#!/bin/bash
+### shell du job
+#$ -S /bin/bash
+### nom du job (a changer)
+#$ -N DBG2OLC_sample_test
+### file d'attente (a changer)
+#$ -q monointeldeb128
+### charger l'environnement utilisateur pour SGE
+#$ -cwd
+### exporter les variables d'environnement sur tous les noeuds d'execution
+#$ -V
+### mails en debut et fin d'execution
+#$ -m be
+
+# aller dans le repertoire de travail/soumission
+# important, sinon, le programme est lancé depuis ~/
+cd ${SGE_O_WORKDIR}
+
+### configurer l'environnement
+source /usr/share/lmod/lmod/init/bash
+
+### execution du programme
+###EXECDIR=${HOME}/Formations/Sequentiel
+###${EXECDIR}/SommeVecVecSEQ.exe < Monfichierdedata > monfichierresultat
+
+~/stage_mbelari/src/PSMN_scripts/2018-05-28-Hybrid_test-DBG2OLC-PSMN.sh ~/stage_mbelari/data/sample/MR_350_mapped_to_Mbelari-01182_1.fastq ~/stage_mbelari/data/sample/MR_350_mapped_to_Mbelari-01182_2.fastq 100000 ~/stage_mbelari/data/sample/MBELA01182subset.fasta
+
+# fin```
+
