@@ -1,7 +1,4 @@
-all: TP_experimental_biologists.pdf TP_computational_biologists.pdf
+all: mat_meth.pdf
 
-TP_experimental_biologists.pdf: TP_experimental_biologists.md
-	R -e 'require(rmarkdown); rmarkdown::render("TP_experimental_biologists.md")'
-
-TP_computational_biologists.pdf: TP_computational_biologists.md
-	R -e 'require(rmarkdown); rmarkdown::render("TP_computational_biologists.md")'
+mat_meth.pdf: mat_meth.tex
+	R -e 'require(rmarkdown); rmarkdown::render("mat_meth.tex")'
