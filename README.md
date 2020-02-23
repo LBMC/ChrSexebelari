@@ -1,3 +1,4 @@
+# The project new URL is now https://gitbio.ens-lyon.fr/LBMC/Delattre/ChrSexebelari
 # SNP calling pipeline
 
 SNP calling pipeline to find homozygote SNPs present in JU2817 strain but not in JU2859
